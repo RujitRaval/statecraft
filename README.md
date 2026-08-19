@@ -4,6 +4,8 @@ Statecraft is an open-source UI product-state coverage tool: **find, render, and
 
 This folder is the implementation source of truth intended to be handed to Codex.
 
+The repository currently contains the approved product and engineering specifications. Implementation begins with Phase 1 and Phase 2 only.
+
 ## Start here
 1. `codex/MASTER_PROMPT.md`
 2. `codex/IMPLEMENTATION_SPEC.md`
@@ -17,3 +19,7 @@ This folder is the implementation source of truth intended to be handed to Codex
 `configure -> scan -> inspect report -> identify broken states`
 
 Do not expand scope until this local-first v0.1 workflow is excellent.
+
+## Development
+
+Read [AGENTS.md](AGENTS.md) before making changes. Every development step starts from `main`, uses a focused branch, runs GStack `review`, and is published through GStack `ship` as a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.

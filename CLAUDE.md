@@ -1,0 +1,31 @@
+# Statecraft
+
+Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. The active implementation boundary is Phase 1 and Phase 2 unless the user explicitly advances it.
+
+## Skill routing
+
+When the user's request matches an available skill, invoke it. When in doubt, invoke the skill.
+
+Key routing rules:
+
+- Product ideas or brainstorming: `/office-hours`
+- Strategy or scope: `/plan-ceo-review`
+- Architecture: `/plan-eng-review`
+- Design system or plan review: `/design-consultation` or `/plan-design-review`
+- Full review pipeline: `/autoplan`
+- Bugs or errors: `/investigate`
+- QA or site behavior: `/qa` or `/qa-only`
+- Code review or diff check: `/review`
+- Visual polish: `/design-review`
+- Ship, deploy, or pull request: `/ship` or `/land-and-deploy`
+- Save progress: `/context-save`
+- Resume context: `/context-restore`
+- Backlog-ready specification or issue: `/spec`
+
+## Git policy
+
+All development work starts from `main`, uses a focused branch, passes GStack review, and lands through a pull request. Never push implementation work directly to `main` and never force-push.
+
+## Testing
+
+The root package must expose `lint`, `typecheck`, `test`, and `build` scripts once the TypeScript workspace exists. Run all four for each development step. Add a regression test for every bug fix and test both paths of new conditionals.
