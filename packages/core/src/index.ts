@@ -15,3 +15,5 @@ export type {
   ConfigValidationIssueCode,
   StatecraftErrorCode,
 } from "./errors.js";
+export { expandMatrix } from "./matrix.js";
+export type { MatrixCell, MatrixFilter } from "./matrix.js";

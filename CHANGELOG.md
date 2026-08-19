@@ -4,6 +4,19 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.3.0.0] - 2026-08-19
+
+### Added
+
+- Developers can expand a validated configuration into one deterministic execution cell for every configured route, state, viewport, and theme combination.
+- Matrix planning supports exact route, state, viewport, and theme selections while preserving configured order and preventing duplicate filter values from duplicating cells.
+- The public core API now exports `expandMatrix`, `MatrixCell`, and `MatrixFilter`, with behavioral, edge-case, built-package, and compile-time contract coverage.
+
+### Changed
+
+- The core API documentation and ADRs now define matrix ordering, shared state-ID filtering, unmatched-selection behavior, and the browser-independent planner boundary.
+- The Phase 2 checklist now records matrix expansion as complete while leaving coverage calculations, result contracts, artifact paths, Playwright, and the report UI for their approved steps.
+
 ## [0.2.0.0] - 2026-08-19
 
 ### Added

@@ -47,6 +47,27 @@ The underlying Zod schema is intentionally private. Callers use `parseConfig` so
 
 Configuration and scenario modules are trusted local code running with the user's privileges. Validation checks their declared shape; it does not execute or inspect scenario modules.
 
+## Matrix planning
+
+`expandMatrix(config, filter?)` expands a validated `StatecraftConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that a future runner will need.
+
+Expansion follows routes and states in declaration order, viewport keys in deterministic ECMAScript property order, then themes in declaration order. Repeating the same validated input produces the same sequence. For normal named viewport IDs such as `mobile` and `desktop`, property order is declaration order; integer-like IDs are enumerated numerically before other keys. Filters do not change that order:
+
+```ts
+import { expandMatrix, parseConfig } from "@statecraft/core";
+
+const cells = expandMatrix(parseConfig(config), {
+  routeIds: ["dashboard"],
+  stateIds: ["success", "error"],
+  viewportIds: ["mobile"],
+  themes: ["dark"],
+});
+```
+
+`MatrixFilter` selections use exact, case-sensitive IDs. An omitted dimension selects all configured values; an empty selection or an unknown value selects no cells. Duplicate filter values never duplicate cells, and filter array order never reorders the configured matrix. Filtering is selection only: the future CLI owns user-facing validation for unmatched flags.
+
+The planner is pure and browser-independent. It does not load scenario modules, access the filesystem, create artifact paths, launch Playwright, or generate reports.
+
 ## Exported types
 
 - `StatecraftConfig`
@@ -54,5 +75,6 @@ Configuration and scenario modules are trusted local code running with the user'
 - `RouteDefinition`
 - `StateDefinition`
 - `FailurePolicy`
+- `MatrixCell` and `MatrixFilter`
 - `StatecraftErrorCode`
 - `ConfigValidationIssue` and `ConfigValidationIssueCode`

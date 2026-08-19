@@ -53,6 +53,7 @@ describe("@statecraft/core package boundary", () => {
       "ConfigValidationError",
       "StatecraftError",
       "defineConfig",
+      "expandMatrix",
       "parseConfig",
     ]);
   });
