@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { runCi } from "./run-ci.mjs";
+import { corepackInvocation, runCi } from "./run-ci.mjs";
 
 async function makeFixture(packageJson) {
   const root = await mkdtemp(path.join(tmpdir(), "statecraft-ci-"));
@@ -13,6 +13,21 @@ async function makeFixture(packageJson) {
   }
   return root;
 }
+
+test("uses a command shell only for the Windows Corepack shim", () => {
+  assert.deepEqual(corepackInvocation("win32", "lint", "C:\\Windows\\cmd.exe"), {
+    command: "C:\\Windows\\cmd.exe",
+    args: ["/d", "/s", "/c", "corepack pnpm run lint"],
+  });
+  assert.deepEqual(corepackInvocation("linux", "test"), {
+    command: "corepack",
+    args: ["pnpm", "run", "test"],
+  });
+});
+
+test("rejects commands outside the repository check allowlist", () => {
+  assert.throws(() => corepackInvocation("win32", "lint & whoami"), /Unsupported repository check/u);
+});
 
 test("skips implementation checks before package.json exists", async (t) => {
   const root = await makeFixture();

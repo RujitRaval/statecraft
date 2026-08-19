@@ -18,7 +18,7 @@ Statecraft is currently in its Phase 1 and Phase 2 foundation work. Read `AGENTS
    ```
 
 3. Implement one coherent step with tests and documentation.
-4. Install the locked dependencies once `package.json` exists:
+4. Use Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24 and newer, and install the locked dependencies:
 
    ```bash
    corepack pnpm install --frozen-lockfile
@@ -27,8 +27,11 @@ Statecraft is currently in its Phase 1 and Phase 2 foundation work. Read `AGENTS
 5. Run the local checks:
 
    ```bash
+   pnpm lint
+   pnpm typecheck
+   pnpm test
+   pnpm build
    node scripts/check-docs.mjs
-   node --test scripts/*.test.mjs
    node scripts/run-ci.mjs
    ```
 

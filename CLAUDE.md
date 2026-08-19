@@ -28,4 +28,4 @@ All development work starts from `main`, uses a focused branch, passes GStack re
 
 ## Testing
 
-The root package must expose `lint`, `typecheck`, `test`, and `build` scripts once the TypeScript workspace exists. Run all four for each development step. Add a regression test for every bug fix and test both paths of new conditionals.
+Use Node.js 22.20 or newer within the Node 22 line, or Node.js 24 and newer. Install with `corepack pnpm install --frozen-lockfile`, then run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` for each development step. Vitest covers TypeScript packages, while Node's built-in test runner covers the repository check scripts. Add a regression test for every bug fix and test both paths of new conditionals.
