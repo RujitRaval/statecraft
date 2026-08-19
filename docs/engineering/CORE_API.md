@@ -68,6 +68,41 @@ const cells = expandMatrix(parseConfig(config), {
 
 The planner is pure and browser-independent. It does not load scenario modules, access the filesystem, create artifact paths, launch Playwright, or generate reports.
 
+## Coverage calculations
+
+`calculateCoverage(cells, observations)` calculates configured-state coverage without depending on runner or report contracts. The matrix is the source of truth for what was configured. Each `CoverageObservation` is a minimal exact coordinate plus a `passed` boolean:
+
+```ts
+import { calculateCoverage, expandMatrix } from "@statecraft/core";
+
+const cells = expandMatrix(config);
+const coverage = calculateCoverage(cells, [
+  {
+    passed: true,
+    routeId: "dashboard",
+    stateId: "success",
+    viewportId: "mobile",
+    theme: "light",
+  },
+]);
+
+coverage.execution;
+// { covered: 1, total: cells.length, percentage: ... }
+```
+
+Every metric is a `CoverageMetric` with an integer `covered` numerator, integer `total` denominator, and percentage from 0 through 100 rounded to at most two decimal places:
+
+- Execution coverage counts passed execution cells out of unique configured cells.
+- State coverage counts route/state pairs with at least one passed cell.
+- Responsive coverage counts route/state pairs where every configured viewport has at least one passed cell across its configured themes.
+- Theme coverage counts route/state pairs where every configured theme has at least one passed cell across its configured viewports.
+
+Route/state pairs remain route-scoped, so the same state ID on two routes contributes two state denominators. Coverage is calculated against the supplied matrix, including a filtered matrix when a caller intentionally measures a selection.
+
+Missing observations remain uncovered. Unknown or case-mismatched coordinates are ignored, so an unconfigured state can never inflate configured-state coverage. Duplicate configured coordinates are counted once. Duplicate observations pass only when every observation for that coordinate passed, making conflicts conservative and independent of input order. An empty matrix returns zero numerators, denominators, and percentages instead of `NaN`.
+
+The calculator is pure, does not mutate its inputs, and returns immutable summary and metric objects. A later runner or result contract can project its records into `CoverageObservation`; coverage calculation does not define execution diagnostics, report serialization, Playwright behavior, or the report UI.
+
 ## Screenshot artifact paths
 
 `screenshotArtifactPath(cell)` returns an opaque `ScreenshotArtifactPath`: the project-relative PNG path reserved for a `MatrixCell`:
@@ -97,8 +132,9 @@ Plain strings are not assignable to `ScreenshotArtifactPath`. Code that reads a 
 - `StateDefinition`
 - `FailurePolicy`
 - `MatrixCell` and `MatrixFilter`
+- `CoverageObservation`, `CoverageMetric`, and `CoverageSummary`
 - `ScreenshotArtifactPath`
 - `StatecraftErrorCode`
 - `ConfigValidationIssue` and `ConfigValidationIssueCode`
 
-Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, and `screenshotArtifactPath`.
+Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, `calculateCoverage`, and `screenshotArtifactPath`.

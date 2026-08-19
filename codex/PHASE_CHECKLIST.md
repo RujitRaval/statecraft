@@ -13,7 +13,7 @@
 - [x] Runtime config validation
 - [x] `defineConfig`
 - [x] Matrix expansion
-- [ ] Coverage calculations
+- [x] Coverage calculations
 - [ ] Result/report contracts with schema version
 - [x] Deterministic artifact paths
 - [x] Stable error model

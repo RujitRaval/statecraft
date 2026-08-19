@@ -4,7 +4,7 @@ Statecraft is an open-source UI product-state coverage tool: **find, render, and
 
 This folder is the implementation source of truth intended to be handed to Codex.
 
-Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 is underway with typed, runtime-validated configuration, deterministic matrix planning, and collision-resistant screenshot artifact paths in `@statecraft/core`.
+Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 is underway with typed, runtime-validated configuration, deterministic matrix planning, configured-state coverage calculations, and collision-resistant screenshot artifact paths in `@statecraft/core`.
 
 ## Start here
 1. [Master prompt](codex/MASTER_PROMPT.md)
@@ -20,7 +20,7 @@ Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 is underway 
 - Project guidance: [agent guide](AGENTS.md), [Claude guidance](CLAUDE.md), [phase checklist](codex/PHASE_CHECKLIST.md), [contributing](CONTRIBUTING.md), [security policy](SECURITY.md), and [changelog](CHANGELOG.md)
 - Product: [CLI and configuration](docs/product/CLI_AND_CONFIG_SPEC.md) and [report UX](docs/product/REPORT_UX_SPEC.md)
 - Engineering: [`@statecraft/core` API](docs/engineering/CORE_API.md) and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
-- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), and [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md)
+- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), and [configured-state coverage](docs/decisions/0008-configured-state-coverage.md)
 - Open source: [contributing plan](docs/open-source/CONTRIBUTING_PLAN.md)
 
 ## Governing workflow
