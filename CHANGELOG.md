@@ -6,13 +6,13 @@ This project uses the four-part version format required by the GStack ship workf
 
 ## [0.0.1.0] - 2026-08-19
 
-### Added
+### For contributors
 
-- Defined the branch, pull request, GStack review, and GStack ship workflow for contributors and coding agents.
-- Added required documentation and repository quality checks with regression coverage for their success and failure paths.
-- Added CodeQL analysis, dependency review, Dependabot updates, code ownership, a pull request template, and security reporting guidance.
+- Contributors and coding agents now follow a documented branch and pull request workflow with GStack review and ship as required gates.
+- Repository checks now catch missing or broken documentation and, once implementation starts, block missing or failing lint, typecheck, test, and build scripts.
+- Pull requests now receive CodeQL analysis and dependency review, while Dependabot, code ownership, a pull request template, and security reporting guidance support ongoing maintenance.
 
 ### Changed
 
-- Expanded the ignore policy so local archives, credentials, reports, browser artifacts, caches, logs, editor files, and agent state stay out of the public repository.
-- Documented the Phase 1 and Phase 2 implementation boundary in the repository entry points.
+- The ignore policy now keeps local archives, credentials, reports, browser artifacts, caches, logs, editor files, and agent state out of the public repository.
+- Repository entry points now keep implementation work inside the approved Phase 1 and Phase 2 boundary.
