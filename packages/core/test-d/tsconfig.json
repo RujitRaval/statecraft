@@ -1,0 +1,13 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "noEmit": true,
+    "types": []
+  },
+  "include": [
+    "public-api.test-d.ts"
+  ]
+}

@@ -9,15 +9,15 @@
 - [x] Clean install verified
 
 ## Phase 2
-- [ ] Public config types
-- [ ] Runtime config validation
-- [ ] `defineConfig`
+- [x] Public config types
+- [x] Runtime config validation
+- [x] `defineConfig`
 - [ ] Matrix expansion
 - [ ] Coverage calculations
 - [ ] Result/report contracts with schema version
 - [ ] Deterministic artifact paths
-- [ ] Stable error model
+- [x] Stable error model
 - [ ] Unit tests cover edge cases
-- [ ] Public API documented
+- [x] Public API documented
 
 Stop after Phase 2 and report findings before proceeding.
