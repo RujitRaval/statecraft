@@ -10,7 +10,7 @@ Phase 1 needs a repeatable TypeScript workspace with strict checks while the imp
 
 ## Decision
 
-- Use a pnpm workspace pinned by version and integrity hash through Corepack. Support Node.js 22 from 22.20 onward so runtime and type declarations share a floor, skip Node.js 23 because the toolchain does not support it, and support Node.js 24 and newer.
+- Use a pnpm workspace pinned by version and integrity hash through Corepack. Support Node.js 22 from 22.20 onward so runtime and type declarations share a floor, and support Node.js 24.x. Exclude Node.js 23 and Node.js 25+, where the current toolchain contract does not apply and Corepack is no longer bundled.
 - Use TypeScript 6.0, ESLint 10 with TypeScript ESLint and Node globals, and Vitest 4 as development-only tooling.
 - Keep dependency versions exact, quarantine releases for one day by default, and enforce peer dependency and engine compatibility during explicit installs. Disable pnpm's implicit pre-script install so checks never mutate dependencies or prompt for input.
 - Create only `@statecraft/core` because Phase 2 implements it next. Keep it private until its public contracts are ready.

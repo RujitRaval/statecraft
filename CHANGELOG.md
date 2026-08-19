@@ -14,8 +14,9 @@ This project uses the four-part version format required by the GStack ship workf
 
 ### Changed
 
-- Development now targets Node.js 22.20 or newer within the Node 22 line, or Node.js 24 and newer.
+- Development now targets Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x.
 - Dependency installs now use exact versions, an integrity-pinned package manager, strict engine and peer checks, and a one-day release quarantine.
+- Repository commands invoke the pinned package manager through Corepack, so fresh environments do not require a global pnpm shim.
 - Contributor documentation now describes the implemented Phase 1 foundation and keeps later packages out of scope until their development phases begin.
 
 ## [0.0.1.0] - 2026-08-19

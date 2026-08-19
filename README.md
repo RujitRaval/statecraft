@@ -32,14 +32,14 @@ Do not expand scope until this local-first v0.1 workflow is excellent.
 
 Read [AGENTS.md](AGENTS.md) before making changes. Every development step starts from `main`, uses a focused branch, runs GStack `review`, and is published through GStack `ship` as a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 
-Statecraft requires Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24 and newer, and uses the pnpm version pinned in `package.json`:
+Statecraft requires Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x, and uses the pnpm version pinned in `package.json`:
 
 ```bash
 corepack pnpm install --frozen-lockfile
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
+corepack pnpm lint
+corepack pnpm typecheck
+corepack pnpm test
+corepack pnpm build
 ```
 
 Phase 1 creates only `packages/core`. The CLI, Playwright runner, report, and example application packages are added when their implementation phases begin.
