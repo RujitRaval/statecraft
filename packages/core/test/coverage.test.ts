@@ -267,6 +267,26 @@ describe("calculateCoverage", () => {
     });
   });
 
+  it("rounds exact percentage midpoints up", () => {
+    const [cell] = expandMatrix(coverageConfig(), {
+      routeIds: ["dashboard"],
+      stateIds: ["success"],
+      themes: ["light"],
+      viewportIds: ["desktop"],
+    });
+    const configured = Array.from({ length: 800 }, (_, index) => ({
+      ...cell!,
+      viewportId: `viewport-${index}`,
+    }));
+    const observations = configured
+      .slice(0, 57)
+      .map((configuredCell) => observation(configuredCell, true));
+
+    expect(calculateCoverage(configured, observations)).toMatchObject({
+      execution: { covered: 57, percentage: 7.13, total: 800 },
+    });
+  });
+
   it("returns zero-valued metrics for an empty filtered matrix", () => {
     expect(
       calculateCoverage(expandMatrix(coverageConfig(), { routeIds: [] }), [

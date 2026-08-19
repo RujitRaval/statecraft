@@ -17,6 +17,10 @@ This project uses the four-part version format required by the GStack ship workf
 - Core API documentation and ADR 0008 now define metric aggregation, route-scoped identity, two-decimal percentages, conservative duplicate handling, immutable outputs, and the boundary from later result/report contracts.
 - The Phase 2 checklist now records coverage calculations as complete while leaving result/report contracts, Playwright, and the report UI for their approved development steps.
 
+### Fixed
+
+- Exact half-way coverage percentages now round correctly to two decimal places, including `57 / 800` as `7.13%`.
+
 ## [0.4.0.0] - 2026-08-19
 
 ### Added

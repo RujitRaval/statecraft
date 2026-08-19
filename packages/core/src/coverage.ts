@@ -66,7 +66,7 @@ function everyValueIsPresent(
 
 function metric(covered: number, total: number): CoverageMetric {
   const percentage =
-    total === 0 ? 0 : Math.round((covered / total) * 10_000) / 100;
+    total === 0 ? 0 : Math.round((covered * 10_000) / total) / 100;
   return Object.freeze({ covered, percentage, total });
 }
 
