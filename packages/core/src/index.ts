@@ -17,3 +17,5 @@ export type {
 } from "./errors.js";
 export { expandMatrix } from "./matrix.js";
 export type { MatrixCell, MatrixFilter } from "./matrix.js";
+export { screenshotArtifactPath } from "./artifacts.js";
+export type { ScreenshotArtifactPath } from "./artifacts.js";

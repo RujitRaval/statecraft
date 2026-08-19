@@ -4,12 +4,14 @@ import {
   defineConfig,
   expandMatrix,
   parseConfig,
+  screenshotArtifactPath,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
   type FailurePolicy,
   type MatrixCell,
   type MatrixFilter,
   type RouteDefinition,
+  type ScreenshotArtifactPath,
   type StateDefinition,
   type StatecraftConfig,
   type StatecraftErrorCode,
@@ -33,9 +35,15 @@ const config = defineConfig({
 const parsed: StatecraftConfig = parseConfig(config);
 const filter: MatrixFilter = { routeIds: ["dashboard"] };
 const matrix: readonly MatrixCell[] = expandMatrix(parsed, filter);
+const screenshotPath: ScreenshotArtifactPath = screenshotArtifactPath(matrix[0]!);
+// @ts-expect-error Artifact paths must come from the safe encoder.
+const forgedScreenshotPath: ScreenshotArtifactPath =
+  ".statecraft/artifacts/../../outside/screenshot.png";
 const validationError: StatecraftError = new ConfigValidationError([]);
 void parsed;
 void matrix;
+void screenshotPath;
+void forgedScreenshotPath;
 void validationError;
 
 export type PublicTypeContract = {
