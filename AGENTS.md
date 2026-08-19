@@ -40,7 +40,7 @@ node --test scripts/*.test.mjs
 node scripts/run-ci.mjs
 ```
 
-Run `corepack pnpm install --frozen-lockfile` first when dependencies are present.
+Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. For Phase 3 runner work, also install the pinned browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium` before running browser-backed tests.
 
 ## Engineering constraints
 

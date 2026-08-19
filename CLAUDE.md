@@ -28,4 +28,4 @@ All development work starts from `main`, uses a focused branch, passes GStack re
 
 ## Testing
 
-Use Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x. Install with `corepack pnpm install --frozen-lockfile`, then run `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`, and `corepack pnpm build` for each development step. Vitest covers TypeScript packages, while Node's built-in test runner covers the repository check scripts. Add a regression test for every bug fix and test both paths of new conditionals.
+Use Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x. Install dependencies with `corepack pnpm install --frozen-lockfile`, then install the pinned runner browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium`. Run `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`, and `corepack pnpm build` for each development step. Vitest covers TypeScript packages, while Node's built-in test runner covers the repository check scripts. Add a regression test for every bug fix and test both paths of new conditionals.
