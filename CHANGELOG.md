@@ -4,6 +4,20 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.2.0.0] - 2026-08-19
+
+### Added
+
+- Developers can author typed Statecraft configurations with `defineConfig` and validate unknown runtime values with `parseConfig`.
+- Configuration validation now covers HTTP(S) base URLs, local route paths, named viewports and themes, explicit route states, scenario module paths, failure policies, duplicate IDs, and unknown properties.
+- Callers can classify failures through Statecraft-owned error and issue codes with deterministic property paths instead of depending on validator internals.
+- The public core API, validation rules, trusted-code boundary, and dependency decision are documented for Phase 2 contributors.
+
+### Changed
+
+- `@statecraft/core` now uses exact-versioned Zod 4 as its only runtime dependency while remaining browser-independent and private until the remaining Phase 2 contracts stabilize.
+- The Phase 2 checklist now records configuration types, runtime validation, `defineConfig`, stable errors, and API documentation as complete.
+
 ## [0.1.0.0] - 2026-08-19
 
 ### Added
