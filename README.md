@@ -4,7 +4,7 @@ Statecraft is an open-source UI product-state coverage tool: **find, render, and
 
 This folder is the implementation source of truth intended to be handed to Codex.
 
-Phase 1 provides the pnpm and strict TypeScript foundation. Product behavior begins in Phase 2 with the `@statecraft/core` contracts.
+Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 is underway with typed, runtime-validated `@statecraft/core` configuration contracts.
 
 ## Start here
 1. [Master prompt](codex/MASTER_PROMPT.md)
@@ -19,8 +19,8 @@ Phase 1 provides the pnpm and strict TypeScript foundation. Product behavior beg
 
 - Project guidance: [agent guide](AGENTS.md), [Claude guidance](CLAUDE.md), [phase checklist](codex/PHASE_CHECKLIST.md), [contributing](CONTRIBUTING.md), [security policy](SECURITY.md), and [changelog](CHANGELOG.md)
 - Product: [CLI and configuration](docs/product/CLI_AND_CONFIG_SPEC.md) and [report UX](docs/product/REPORT_UX_SPEC.md)
-- Engineering: [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
-- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), and [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md)
+- Engineering: [`@statecraft/core` API](docs/engineering/CORE_API.md) and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
+- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), and [core configuration validation](docs/decisions/0005-core-config-validation.md)
 - Open source: [contributing plan](docs/open-source/CONTRIBUTING_PLAN.md)
 
 ## Governing workflow
@@ -42,4 +42,4 @@ corepack pnpm test
 corepack pnpm build
 ```
 
-Phase 1 creates only `packages/core`. The CLI, Playwright runner, report, and example application packages are added when their implementation phases begin.
+The workspace currently contains only `packages/core`. The CLI, Playwright runner, report, and example application packages are added when their implementation phases begin.
