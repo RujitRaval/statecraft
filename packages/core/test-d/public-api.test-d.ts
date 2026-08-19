@@ -1,12 +1,16 @@
 import {
   ConfigValidationError,
   StatecraftError,
+  calculateCoverage,
   defineConfig,
   expandMatrix,
   parseConfig,
   screenshotArtifactPath,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
+  type CoverageMetric,
+  type CoverageObservation,
+  type CoverageSummary,
   type FailurePolicy,
   type MatrixCell,
   type MatrixFilter,
@@ -35,6 +39,25 @@ const config = defineConfig({
 const parsed: StatecraftConfig = parseConfig(config);
 const filter: MatrixFilter = { routeIds: ["dashboard"] };
 const matrix: readonly MatrixCell[] = expandMatrix(parsed, filter);
+const coverageObservation: CoverageObservation = {
+  passed: true,
+  routeId: matrix[0]!.route.id,
+  stateId: matrix[0]!.state.id,
+  theme: matrix[0]!.theme,
+  viewportId: matrix[0]!.viewportId,
+};
+const coverage: CoverageSummary = calculateCoverage(matrix, [
+  coverageObservation,
+]);
+const executionCoverage: CoverageMetric = coverage.execution;
+const invalidCoverageObservation: CoverageObservation = {
+  // @ts-expect-error Coverage observations require a boolean pass result.
+  passed: "yes",
+  routeId: "dashboard",
+  stateId: "success",
+  theme: "light",
+  viewportId: "desktop",
+};
 const screenshotPath: ScreenshotArtifactPath = screenshotArtifactPath(matrix[0]!);
 // @ts-expect-error Artifact paths must come from the safe encoder.
 const forgedScreenshotPath: ScreenshotArtifactPath =
@@ -42,12 +65,16 @@ const forgedScreenshotPath: ScreenshotArtifactPath =
 const validationError: StatecraftError = new ConfigValidationError([]);
 void parsed;
 void matrix;
+void coverage;
+void executionCoverage;
+void invalidCoverageObservation;
 void screenshotPath;
 void forgedScreenshotPath;
 void validationError;
 
 export type PublicTypeContract = {
   config: StatecraftConfig;
+  coverage: CoverageSummary;
   errorCode: StatecraftErrorCode;
   failurePolicy: FailurePolicy;
   issue: ConfigValidationIssue;

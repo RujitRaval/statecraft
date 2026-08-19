@@ -52,6 +52,7 @@ describe("@statecraft/core package boundary", () => {
     expect(Object.keys(builtModule).sort()).toEqual([
       "ConfigValidationError",
       "StatecraftError",
+      "calculateCoverage",
       "defineConfig",
       "expandMatrix",
       "parseConfig",
