@@ -2,10 +2,13 @@ import {
   ConfigValidationError,
   StatecraftError,
   defineConfig,
+  expandMatrix,
   parseConfig,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
   type FailurePolicy,
+  type MatrixCell,
+  type MatrixFilter,
   type RouteDefinition,
   type StateDefinition,
   type StatecraftConfig,
@@ -28,8 +31,11 @@ const config = defineConfig({
 });
 
 const parsed: StatecraftConfig = parseConfig(config);
+const filter: MatrixFilter = { routeIds: ["dashboard"] };
+const matrix: readonly MatrixCell[] = expandMatrix(parsed, filter);
 const validationError: StatecraftError = new ConfigValidationError([]);
 void parsed;
+void matrix;
 void validationError;
 
 export type PublicTypeContract = {

@@ -12,7 +12,7 @@
 - [x] Public config types
 - [x] Runtime config validation
 - [x] `defineConfig`
-- [ ] Matrix expansion
+- [x] Matrix expansion
 - [ ] Coverage calculations
 - [ ] Result/report contracts with schema version
 - [ ] Deterministic artifact paths
