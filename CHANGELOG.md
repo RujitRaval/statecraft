@@ -4,6 +4,21 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.1.0.0] - 2026-08-19
+
+### Added
+
+- Statecraft now has a reproducible pnpm workspace with strict TypeScript, ESLint, Vitest, and native ESM build tooling.
+- The initial private `@statecraft/core` package establishes a clean build and export boundary for Phase 2 contracts.
+- Local and hosted checks now verify dependency installation, linting, type safety, tests, documentation, package exports, and builds.
+
+### Changed
+
+- Development now targets Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x.
+- Dependency installs now use exact versions, an integrity-pinned package manager, strict engine and peer checks, and a one-day release quarantine.
+- Repository commands invoke the pinned package manager through Corepack, so fresh environments do not require a global pnpm shim.
+- Contributor documentation now describes the implemented Phase 1 foundation and keeps later packages out of scope until their development phases begin.
+
 ## [0.0.1.0] - 2026-08-19
 
 ### For contributors

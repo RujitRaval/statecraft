@@ -1,12 +1,12 @@
 # Codex Phase Checklist
 
 ## Phase 1
-- [ ] Workspace and packages created
-- [ ] Strict TypeScript configured
-- [ ] Build/test/lint commands work
-- [ ] License/README present
-- [ ] CI skeleton present
-- [ ] Clean install verified
+- [x] Workspace and packages created
+- [x] Strict TypeScript configured
+- [x] Build/test/lint commands work
+- [x] License/README present
+- [x] CI skeleton present
+- [x] Clean install verified
 
 ## Phase 2
 - [ ] Public config types

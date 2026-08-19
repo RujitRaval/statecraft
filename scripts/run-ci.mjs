@@ -6,10 +6,21 @@ import { pathToFileURL } from "node:url";
 const requiredScripts = ["lint", "typecheck", "test", "build"];
 
 function defaultRunCommand(script, root) {
-  return spawnSync("corepack", ["pnpm", "run", script], {
+  const { command, args } = corepackInvocation(process.platform, script);
+  return spawnSync(command, args, {
     cwd: root,
     stdio: "inherit",
   });
+}
+
+export function corepackInvocation(platform, script, comspec = "cmd.exe") {
+  if (!requiredScripts.includes(script)) {
+    throw new Error(`Unsupported repository check: ${script}`);
+  }
+
+  return platform === "win32"
+    ? { command: comspec, args: ["/d", "/s", "/c", `corepack pnpm run ${script}`] }
+    : { command: "corepack", args: ["pnpm", "run", script] };
 }
 
 export async function runCi({
