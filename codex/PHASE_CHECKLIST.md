@@ -14,10 +14,10 @@
 - [x] `defineConfig`
 - [x] Matrix expansion
 - [x] Coverage calculations
-- [ ] Result/report contracts with schema version
+- [x] Result/report contracts with schema version
 - [x] Deterministic artifact paths
 - [x] Stable error model
-- [ ] Unit tests cover edge cases
+- [x] Unit tests cover edge cases
 - [x] Public API documented
 
 Stop after Phase 2 and report findings before proceeding.

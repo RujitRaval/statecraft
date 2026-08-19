@@ -1,23 +1,39 @@
 import {
   ConfigValidationError,
+  REPORT_SCHEMA_VERSION,
+  ReportValidationError,
+  ResultValidationError,
   StatecraftError,
   calculateCoverage,
   defineConfig,
   expandMatrix,
   parseConfig,
+  parseExecutionResult,
+  parseReport,
   screenshotArtifactPath,
+  serializeReport,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
   type CoverageMetric,
   type CoverageObservation,
   type CoverageSummary,
   type FailurePolicy,
+  type ExecutionDiagnostics,
+  type ExecutionFailure,
+  type ExecutionFailureCode,
+  type ExecutionResult,
+  type ExecutionStatus,
+  type FailedRequestDiagnostic,
   type MatrixCell,
   type MatrixFilter,
   type RouteDefinition,
+  type ReportSummary,
+  type ReportValidationIssue,
+  type ResultValidationIssue,
   type ScreenshotArtifactPath,
   type StateDefinition,
   type StatecraftConfig,
+  type StatecraftReport,
   type StatecraftErrorCode,
   type ViewportDefinition,
 } from "@statecraft/core";
@@ -63,6 +79,63 @@ const screenshotPath: ScreenshotArtifactPath = screenshotArtifactPath(matrix[0]!
 const forgedScreenshotPath: ScreenshotArtifactPath =
   ".statecraft/artifacts/../../outside/screenshot.png";
 const validationError: StatecraftError = new ConfigValidationError([]);
+const executionFailureCode: ExecutionFailureCode = "ASSERTION_FAILED";
+const executionStatus: ExecutionStatus = "passed";
+const executionFailure: ExecutionFailure = {
+  code: executionFailureCode,
+  message: "Expected heading to be visible.",
+};
+const failedRequest: FailedRequestDiagnostic = {
+  errorText: "net::ERR_CONNECTION_RESET",
+  method: "GET",
+  url: "http://localhost:3000/api/dashboard",
+};
+const diagnostics: ExecutionDiagnostics = {
+  consoleErrors: [],
+  failedRequests: [failedRequest],
+  navigationStatus: 200,
+  pageErrors: [],
+};
+const execution: ExecutionResult = parseExecutionResult({
+  diagnostics,
+  durationMs: 120,
+  failures: [],
+  routeId: "dashboard",
+  routePath: "/dashboard",
+  scenarioSource: "./scenarios/dashboard/success.ts",
+  screenshotPath,
+  stateId: "success",
+  status: executionStatus,
+  theme: "light",
+  url: "http://localhost:3000/dashboard",
+  viewport: matrix[0]!.viewport,
+  viewportId: "desktop",
+});
+const reportSummary: ReportSummary = {
+  coverage,
+  durationMs: 120,
+  executions: 1,
+  failed: 0,
+  passed: 1,
+  routes: 1,
+  states: 1,
+};
+const report: StatecraftReport = parseReport({
+  executions: [execution],
+  generatedAt: "2026-08-19T14:30:00.000Z",
+  project: { baseURL: config.baseURL },
+  schemaVersion: REPORT_SCHEMA_VERSION,
+  summary: reportSummary,
+});
+const serializedReport: string = serializeReport(report);
+const resultValidationError: StatecraftError = new ResultValidationError([]);
+const reportValidationError: StatecraftError = new ReportValidationError([]);
+const resultIssue: ResultValidationIssue = {
+  code: "invalid_value",
+  message: "Invalid result.",
+  path: "$.status",
+};
+const reportIssue: ReportValidationIssue = resultIssue;
 void parsed;
 void matrix;
 void coverage;
@@ -71,6 +144,13 @@ void invalidCoverageObservation;
 void screenshotPath;
 void forgedScreenshotPath;
 void validationError;
+void executionFailure;
+void execution;
+void report;
+void serializedReport;
+void resultValidationError;
+void reportValidationError;
+void reportIssue;
 
 export type PublicTypeContract = {
   config: StatecraftConfig;
@@ -83,6 +163,25 @@ export type PublicTypeContract = {
   state: StateDefinition;
   viewport: ViewportDefinition;
 };
+
+const invalidReport: StatecraftReport = {
+  ...report,
+  // @ts-expect-error Only report schema version 1 is supported.
+  schemaVersion: 2,
+};
+const invalidFailure: ExecutionFailure = {
+  // @ts-expect-error Failure codes are a stable closed contract in schema v1.
+  code: "UNKNOWN",
+  message: "Unknown failure.",
+};
+const invalidExecution: ExecutionResult = {
+  ...execution,
+  // @ts-expect-error Serialized screenshot paths must be runtime-validated.
+  screenshotPath: ".statecraft/artifacts/dashboard/success/desktop-light.png",
+};
+void invalidReport;
+void invalidFailure;
+void invalidExecution;
 
 defineConfig({
   baseURL: "http://localhost:3000",

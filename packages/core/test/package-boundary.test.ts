@@ -51,12 +51,18 @@ describe("@statecraft/core package boundary", () => {
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule).sort()).toEqual([
       "ConfigValidationError",
+      "REPORT_SCHEMA_VERSION",
+      "ReportValidationError",
+      "ResultValidationError",
       "StatecraftError",
       "calculateCoverage",
       "defineConfig",
       "expandMatrix",
       "parseConfig",
+      "parseExecutionResult",
+      "parseReport",
       "screenshotArtifactPath",
+      "serializeReport",
     ]);
   });
 
