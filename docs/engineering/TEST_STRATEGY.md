@@ -1,0 +1,19 @@
+# Test Strategy
+
+## Unit
+Config validation; duplicate/invalid IDs; matrix expansion/filtering; coverage math; deterministic paths; serialization/schema; error classification; CLI parsing.
+
+## Integration
+Scenario loading; Playwright lifecycle; route interception; viewport/theme; readiness; screenshots; diagnostics; assertions; continuation after a failed cell.
+
+## End-to-end
+Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
+
+## CLI contracts
+Exit 0 all-pass; 1 completed with failures; 2 invalid config/internal setup. Verify `open` with/without report.
+
+## Determinism
+Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
+
+## Release smoke
+Clean install -> Chromium -> build -> tests -> example app -> scan -> offline report validation.

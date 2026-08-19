@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.pnpm-store/
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Statecraft reports can contain screenshots and application data.
+.statecraft/
+
+# Original project handoff artifacts are retained locally, not versioned.
+/statecraft-project-docs.zip
+/statecraft-project-docs/
