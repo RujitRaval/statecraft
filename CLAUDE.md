@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. The active implementation boundary is Phase 1 and Phase 2 unless the user explicitly advances it.
+Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. Phase 1 and Phase 2 are complete; the active implementation boundary is Phase 3 unless the user explicitly advances it.
 
 ## Skill routing
 

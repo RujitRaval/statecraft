@@ -20,4 +20,17 @@
 - [x] Unit tests cover edge cases
 - [x] Public API documented
 
-Stop after Phase 2 and report findings before proceeding.
+## Phase 3
+- [x] Playwright runner package and pinned browser dependency
+- [x] One browser reused across a programmatic cell run
+- [x] Fresh context and page per matrix cell
+- [x] Configured viewport applied at context creation
+- [x] Per-cell failures settle without aborting later cells
+- [x] Real Chromium lifecycle fixture
+- [ ] Scenario module loading and hooks
+- [ ] Navigation, theme, and deterministic readiness
+- [ ] Screenshots, diagnostics, and assertions
+- [ ] Execution-result construction and artifact persistence
+- [ ] Programmatic runner passes the complete Phase 3 fixture gate
+
+Stop after Phase 3 and report findings before proceeding.

@@ -4,7 +4,7 @@ Statecraft is an open-source UI product-state coverage tool: **find, render, and
 
 This folder is the implementation source of truth intended to be handed to Codex.
 
-Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes the browser-independent `@statecraft/core` contracts: typed runtime-validated configuration, deterministic matrix planning and artifact paths, configured-state coverage calculations, and a strict versioned result/report schema.
+Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes the browser-independent `@statecraft/core` contracts. Phase 3 is underway with `@statecraft/runner-playwright`: healthy Chromium reuse with quarantine after cleanup failure, isolated per-cell contexts, configured viewports, and settled outcomes that keep unrelated cells running.
 
 ## Start here
 1. [Master prompt](codex/MASTER_PROMPT.md)
@@ -19,8 +19,8 @@ Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes th
 
 - Project guidance: [agent guide](AGENTS.md), [Claude guidance](CLAUDE.md), [phase checklist](codex/PHASE_CHECKLIST.md), [contributing](CONTRIBUTING.md), [security policy](SECURITY.md), and [changelog](CHANGELOG.md)
 - Product: [CLI and configuration](docs/product/CLI_AND_CONFIG_SPEC.md) and [report UX](docs/product/REPORT_UX_SPEC.md)
-- Engineering: [`@statecraft/core` API](docs/engineering/CORE_API.md) and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
-- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), [configured-state coverage](docs/decisions/0008-configured-state-coverage.md), and [versioned result/report contracts](docs/decisions/0009-versioned-result-report-contracts.md)
+- Engineering: [`@statecraft/core` API](docs/engineering/CORE_API.md), [Playwright runner API](docs/engineering/RUNNER_API.md), and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
+- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), [configured-state coverage](docs/decisions/0008-configured-state-coverage.md), [versioned result/report contracts](docs/decisions/0009-versioned-result-report-contracts.md), and [runner execution lifecycle](docs/decisions/0010-runner-execution-lifecycle.md)
 - Open source: [contributing plan](docs/open-source/CONTRIBUTING_PLAN.md)
 
 ## Governing workflow
@@ -36,10 +36,11 @@ Statecraft requires Node.js 22.20 or newer within the Node 22 LTS line, or Node.
 
 ```bash
 corepack pnpm install --frozen-lockfile
+corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium
 corepack pnpm lint
 corepack pnpm typecheck
 corepack pnpm test
 corepack pnpm build
 ```
 
-The workspace currently contains only `packages/core`. The CLI, Playwright runner, report, and example application packages are added when their implementation phases begin.
+The workspace currently contains `packages/core` and `packages/runner-playwright`. The CLI, report, and example application packages are added when their implementation phases begin.
