@@ -133,6 +133,22 @@ describe("screenshotArtifactPath", () => {
     expect(new Set(normalizedPaths).size).toBe(variants.length);
   });
 
+  it("applies the segment bound immediately above 120 encoded characters", () => {
+    const [baseCell] = cells();
+    const atLimit = screenshotArtifactPath({
+      ...baseCell!,
+      route: { ...baseCell!.route, id: "a".repeat(120) },
+    }).split("/")[2]!;
+    const aboveLimit = screenshotArtifactPath({
+      ...baseCell!,
+      route: { ...baseCell!.route, id: "a".repeat(121) },
+    }).split("/")[2]!;
+
+    expect(atLimit).toBe("a".repeat(120));
+    expect(aboveLimit).toHaveLength(120);
+    expect(aboveLimit).toMatch(/^a{54}~~[a-f0-9]{64}$/);
+  });
+
   it("bounds long valid identifiers with stable collision-resistant digests", () => {
     const sharedPrefix = Array.from({ length: 80 }, () => "segment").join("-");
     const config = parseConfig({

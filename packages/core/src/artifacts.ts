@@ -46,11 +46,7 @@ function encodeSegment(value: string, encodeHyphen: boolean): string {
       continue;
     }
 
-    const codePoint = character.codePointAt(0);
-    if (codePoint === undefined) {
-      continue;
-    }
-    encoded += encodeCodePoint(codePoint);
+    encoded += encodeCodePoint(character.codePointAt(0)!);
   }
 
   if (!encodeHyphen && windowsReservedBasename.test(encoded)) {
