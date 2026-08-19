@@ -1,6 +1,6 @@
 # `@statecraft/core` API
 
-Phase 2 builds Statecraft's deterministic, browser-independent contracts. The package is still private while those contracts are completed.
+Phase 2 provides Statecraft's deterministic, browser-independent contracts. The package remains private until the later runner, CLI, and report packages validate its integration boundary.
 
 ## Configuration
 
@@ -124,6 +124,34 @@ Paths identify storage locations only. Later result contracts carry route, state
 
 Plain strings are not assignable to `ScreenshotArtifactPath`. Code that reads a serialized path must validate it against report metadata and the expected cell rather than asserting the opaque type.
 
+## Result and report contracts
+
+`ExecutionResult` is the browser-independent persisted outcome for one matrix cell. It carries explicit route, state, viewport, theme, URL, scenario source, duration, status, screenshot, failure, and diagnostic data. Metadata is never reconstructed from a screenshot filename.
+
+`parseExecutionResult(input)` strictly validates an unknown record. Passed executions require a screenshot and cannot contain failures. Failed executions require at least one failure and may have a screenshot. Failure codes are a stable schema-v1 union covering navigation, page, console, request, assertion, screenshot, and internal failures.
+
+Diagnostics contain console-error strings, page-error strings, optional navigation status, and failed requests with only `url`, `method`, and sanitized `errorText`. Strict validation rejects headers, cookies, request or response bodies, and every other unknown property. Parsing removes URL credentials and fragments and replaces every query value with `[REDACTED]` while preserving query keys. This applies to the project base URL, route path, execution URL, and failed-request URLs. The future runner is still responsible for sanitizing every free-form diagnostic string before constructing a result.
+
+When `screenshotPath` is present, parsing recomputes `screenshotArtifactPath` from the record's explicit coordinate and requires an exact match. The validated result therefore returns `ScreenshotArtifactPath | null` without trusting an arbitrary serialized string.
+
+`StatecraftReport` is the external JSON contract. Version 1 has this top-level shape:
+
+```ts
+interface StatecraftReport {
+  schemaVersion: 1;
+  generatedAt: string;
+  project: { baseURL: string };
+  summary: ReportSummary;
+  executions: readonly ExecutionResult[];
+}
+```
+
+Use `REPORT_SCHEMA_VERSION` when constructing the report, `parseReport(input)` when reading unknown data, and `serializeReport(report)` when writing `.statecraft/report/statecraft.json`. The serializer validates before producing deterministic two-space-indented JSON with a trailing newline; it does not read the clock or filesystem.
+
+Report validation rejects unsupported versions, malformed RFC 3339 generation times, unknown properties, duplicate execution coordinates, conflicting route/state/viewport metadata, inconsistent counts or duration, and coverage that differs from `calculateCoverage` over the execution records. Empty execution selections remain representable with zero-valued summary and coverage metrics.
+
+`ResultValidationError` and `ReportValidationError` use the stable `RESULT_INVALID` and `REPORT_INVALID` error codes. Their immutable issue arrays use the same Statecraft-owned issue categories and deterministic `$` paths as configuration validation. The underlying Zod schemas remain private.
+
 ## Exported types
 
 - `StatecraftConfig`
@@ -134,7 +162,9 @@ Plain strings are not assignable to `ScreenshotArtifactPath`. Code that reads a 
 - `MatrixCell` and `MatrixFilter`
 - `CoverageObservation`, `CoverageMetric`, and `CoverageSummary`
 - `ScreenshotArtifactPath`
+- `ExecutionResult`, `ExecutionStatus`, `ExecutionFailure`, `ExecutionFailureCode`, `ExecutionDiagnostics`, and `FailedRequestDiagnostic`
+- `StatecraftReport` and `ReportSummary`
 - `StatecraftErrorCode`
-- `ConfigValidationIssue` and `ConfigValidationIssueCode`
+- `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, and `ConfigValidationIssueCode`
 
-Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, `calculateCoverage`, and `screenshotArtifactPath`.
+Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. The `REPORT_SCHEMA_VERSION` constant is also exported.

@@ -9,10 +9,17 @@ export type {
   StatecraftConfig,
   ViewportDefinition,
 } from "./config.js";
-export { ConfigValidationError, StatecraftError } from "./errors.js";
+export {
+  ConfigValidationError,
+  ReportValidationError,
+  ResultValidationError,
+  StatecraftError,
+} from "./errors.js";
 export type {
   ConfigValidationIssue,
   ConfigValidationIssueCode,
+  ReportValidationIssue,
+  ResultValidationIssue,
   StatecraftErrorCode,
 } from "./errors.js";
 export { expandMatrix } from "./matrix.js";
@@ -25,3 +32,19 @@ export type {
   CoverageObservation,
   CoverageSummary,
 } from "./coverage.js";
+export {
+  REPORT_SCHEMA_VERSION,
+  parseExecutionResult,
+  parseReport,
+  serializeReport,
+} from "./results.js";
+export type {
+  ExecutionDiagnostics,
+  ExecutionFailure,
+  ExecutionFailureCode,
+  ExecutionResult,
+  ExecutionStatus,
+  FailedRequestDiagnostic,
+  ReportSummary,
+  StatecraftReport,
+} from "./results.js";
