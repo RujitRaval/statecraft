@@ -55,6 +55,7 @@ describe("@statecraft/core package boundary", () => {
       "defineConfig",
       "expandMatrix",
       "parseConfig",
+      "screenshotArtifactPath",
     ]);
   });
 

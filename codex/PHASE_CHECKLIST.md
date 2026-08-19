@@ -15,7 +15,7 @@
 - [x] Matrix expansion
 - [ ] Coverage calculations
 - [ ] Result/report contracts with schema version
-- [ ] Deterministic artifact paths
+- [x] Deterministic artifact paths
 - [x] Stable error model
 - [ ] Unit tests cover edge cases
 - [x] Public API documented
