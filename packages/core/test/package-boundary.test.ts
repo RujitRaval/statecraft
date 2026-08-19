@@ -42,6 +42,11 @@ describe("@statecraft/core package boundary", () => {
     const typesUrl = new URL(typesPath ?? "", packageRoot);
     await expect(access(typesUrl)).resolves.toBeUndefined();
     const builtModule = await import(importUrl.href);
-    expect(Object.keys(builtModule)).toEqual([]);
+    expect(Object.keys(builtModule).sort()).toEqual([
+      "ConfigValidationError",
+      "StatecraftError",
+      "defineConfig",
+      "parseConfig",
+    ]);
   });
 });
