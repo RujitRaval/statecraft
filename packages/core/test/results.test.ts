@@ -99,6 +99,17 @@ function validReport(): StatecraftReport {
   };
 }
 
+function withCredentials(
+  value: string,
+  username = "user",
+  password = "secret",
+): string {
+  const url = new URL(value);
+  url.username = username;
+  url.password = password;
+  return url.href;
+}
+
 function captureResultError(input: unknown): ResultValidationError {
   try {
     parseExecutionResult(input);
@@ -241,12 +252,18 @@ describe("parseExecutionResult", () => {
           {
             errorText: "net::ERR_FAILED",
             method: "GET",
-            url: "https://api-user:api-secret@example.com/data?token=secret&tab=orders#debug",
+            url: withCredentials(
+              "https://example.com/data?token=secret&tab=orders#debug",
+              "api-user",
+              "api-secret",
+            ),
           },
         ],
       },
       routePath: "/dashboard?access_token=secret&tab=orders#debug",
-      url: "https://user:secret@example.com/dashboard?access_token=secret&tab=orders#debug",
+      url: withCredentials(
+        "https://example.com/dashboard?access_token=secret&tab=orders#debug",
+      ),
     });
 
     expect(parsed.routePath).toBe(
@@ -263,7 +280,7 @@ describe("parseExecutionResult", () => {
   it("sanitizes a dirty URL that has no query string", () => {
     const parsed = parseExecutionResult({
       ...result(0, "passed"),
-      url: "https://user:secret@example.com/dashboard#debug",
+      url: withCredentials("https://example.com/dashboard#debug"),
     });
 
     expect(parsed.url).toBe("https://example.com/dashboard");
@@ -316,8 +333,9 @@ describe("parseReport", () => {
     const parsed = parseReport({
       ...report,
       project: {
-        baseURL:
-          "https://user:secret@example.com/app?access_token=secret#debug",
+        baseURL: withCredentials(
+          "https://example.com/app?access_token=secret#debug",
+        ),
       },
     });
 
@@ -563,12 +581,16 @@ describe("serializeReport", () => {
       executions: [
         {
           ...execution,
-          url: "https://user:secret@example.com/dashboard?token=secret#debug",
+          url: withCredentials(
+            "https://example.com/dashboard?token=secret#debug",
+          ),
         },
         report.executions[1]!,
       ],
       project: {
-        baseURL: "https://user:secret@example.com?token=secret#debug",
+        baseURL: withCredentials(
+          "https://example.com?token=secret#debug",
+        ),
       },
     } as StatecraftReport;
 
