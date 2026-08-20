@@ -35,6 +35,9 @@ importers:
       '@statecraft/core':
         specifier: workspace:*
         version: link:../core
+      '@statecraft/runner-playwright':
+        specifier: workspace:*
+        version: link:../runner-playwright
     devDependencies:
       '@types/node':
         specifier: 22.20.1

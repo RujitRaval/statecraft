@@ -16,7 +16,7 @@ Browser reuse + isolated contexts, scenarios/hooks, viewport/theme, readiness, s
 ## Phase 4 - CLI
 `init`, `scan`, `open`, config discovery, `--config`, `--route`, `--headed`, terminal summary, exit codes 0/1/2.
 **Gate:** fresh example goes init -> scan -> report.
-**Status:** underway; the CLI package, config discovery/loading, executable dispatch, and overwrite-safe `init` command are complete. `scan` orchestration/summary and `open` remain focused follow-up slices.
+**Status:** underway; config discovery/loading, overwrite-safe `init`, and `scan` orchestration with filtering, headed mode, private persistence, summaries, and stable exit codes are complete. `open` remains a focused follow-up slice; report UI generation remains Phase 5.
 
 ## Phase 5 - Report
 Offline HTML, summary, matrix, thumbnails, detail view, filters, responsive/keyboard UX.

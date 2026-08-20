@@ -7,7 +7,9 @@ import {
   initProject,
   loadConfig,
   runCli,
+  scanProject,
   InitError,
+  ScanError,
   type ConfigDiscoveryErrorCode,
   type ConfigDiscoveryOptions,
   type ConfigLoadErrorCode,
@@ -17,6 +19,9 @@ import {
   type InitOptions,
   type InitResult,
   type RunCliOptions,
+  type ScanErrorCode,
+  type ScanOptions,
+  type ScanResult,
 } from "@statecraft/cli";
 
 const options: ConfigDiscoveryOptions = {
@@ -46,6 +51,15 @@ const cliOptions: RunCliOptions = {
   stdout: (message) => void message,
 };
 const cliResult: Promise<CliExitCode> = runCli(cliOptions);
+const scanOptions: ScanOptions = {
+  configPath: "./config/statecraft.config.mjs",
+  cwd: "/tmp/example",
+  headed: false,
+  routeId: "home",
+};
+const scanResult: Promise<ScanResult> = scanProject(scanOptions);
+const scanCode: ScanErrorCode = "SCAN_ROUTE_NOT_FOUND";
+const scanError: Error = new ScanError(scanCode, "Route missing.", "missing");
 const typedConfig = defineConfig({
   baseURL: "http://localhost:3000",
   routes: [
@@ -63,6 +77,8 @@ void loadError;
 void initResult;
 void initError;
 void cliResult;
+void scanResult;
+void scanError;
 void typedConfig;
 
 discoverConfig({

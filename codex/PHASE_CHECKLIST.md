@@ -38,8 +38,8 @@
 - [x] Deterministic config discovery and trusted local module loading
 - [x] Command parser and dispatch
 - [x] `init` starter generation and overwrite protection
-- [ ] `scan` orchestration, filters, and headed mode
-- [ ] Terminal summary and exit codes 0/1/2
+- [x] `scan` orchestration, filters, and headed mode
+- [x] Terminal summary and exit codes 0/1/2
 - [ ] `open` latest-report behavior
 - [ ] Fresh example passes init -> scan -> report
 

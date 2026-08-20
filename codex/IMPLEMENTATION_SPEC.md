@@ -135,11 +135,11 @@ Dashboard
   ✓ success · mobile · light
   ✓ empty · desktop · light
   ✗ error · desktop · light
-      Uncaught TypeError: Cannot read properties of undefined
+      ASSERTION_FAILED: Expected error heading.
 
 Coverage: 87.5%
-Report: .statecraft/report/index.html
-1 state failed.
+Report: .statecraft/report/statecraft.json
+1 of 4 executions failed.
 ```
 
 Then `npx statecraft open`.
@@ -453,11 +453,11 @@ Treat this file as the product and architecture specification.
 ## 23. Current Codex task
 
 Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active. The CLI
-package, deterministic config discovery/loading, executable command
-foundation, and overwrite-safe `init` command are complete. Continue
-Phase 4 through focused `scan` and `open` slices. Do not begin the report
-UI, Phase 5, or another later phase until the user explicitly advances
-it.
+package, deterministic config discovery/loading, overwrite-safe `init`,
+and `scan` orchestration with exact route filtering, headed mode, private
+runner persistence, terminal summaries, and exit codes are complete.
+Continue Phase 4 through a focused `open` slice. Do not begin the report
+UI, Phase 5, or another later phase until the user explicitly advances it.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved
