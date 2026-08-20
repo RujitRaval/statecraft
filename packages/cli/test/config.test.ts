@@ -77,6 +77,18 @@ describe("discoverConfig", () => {
     ).resolves.toBe(await realpath(configPath));
   });
 
+  it("does not require cwd when the explicit config path is absolute", async () => {
+    const project = await temporaryProject();
+    const configPath = await writeConfig(project, "custom.mjs");
+
+    await expect(
+      discoverConfig({
+        configPath,
+        cwd: join(project, "missing-root"),
+      }),
+    ).resolves.toBe(await realpath(configPath));
+  });
+
   it.skipIf(process.platform === "win32")(
     "resolves explicit parent segments from the caller-supplied symlink path",
     async () => {

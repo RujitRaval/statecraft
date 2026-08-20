@@ -1,6 +1,6 @@
 import { constants } from "node:fs";
 import { access, open, realpath, stat } from "node:fs/promises";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { parseConfig, type StatecraftConfig } from "@statecraft/core";
@@ -145,6 +145,16 @@ async function canonicalRegularFile(
 export async function discoverConfig(
   options: ConfigDiscoveryOptions = {},
 ): Promise<string> {
+  if (
+    options.configPath !== undefined &&
+    isAbsolute(options.configPath)
+  ) {
+    return canonicalRegularFile(
+      resolve(options.configPath),
+      "Explicit config path",
+    );
+  }
+
   const lexicalRoot = resolve(options.cwd ?? process.cwd());
   const root = await canonicalDirectory(lexicalRoot);
 
