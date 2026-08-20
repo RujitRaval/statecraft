@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.14.0.0] - 2026-08-20
+
+### Added
+
+- Developers can run `statecraft scan` with optional `--config`, exact `--route`, and `--headed` controls to execute the deterministic core matrix through the completed Playwright runner.
+- The CLI exports typed `scanProject` and `ScanError` APIs and prints route-grouped results, execution coverage, the stable schema-v1 JSON path, and aggregate pass/fail totals.
+- Unit, orchestration, real-Chromium, built-executable, package-boundary, and compile-time tests cover option parsing, config-relative scenarios, filtering, continuation, persistence, summaries, and exit codes.
+
+### Changed
+
+- Phase 4 now connects config discovery, matrix expansion, browser execution, deterministic PNG persistence, and `.statecraft/report/statecraft.json`; `open` and report UI generation remain deferred.
+- CLI type checking now includes the Playwright runner build and its DOM declarations as an intentional runtime dependency.
+
+### Security
+
+- Scan snapshots its output root before trusted config execution, rejects unknown routes before creating output, preserves the runner's private filesystem boundaries, and escapes terminal control characters in dynamic errors and summaries.
+
 ## [0.13.0.0] - 2026-08-20
 
 ### Added
