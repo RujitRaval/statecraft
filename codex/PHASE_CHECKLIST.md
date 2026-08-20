@@ -27,7 +27,7 @@
 - [x] Configured viewport applied at context creation
 - [x] Per-cell failures settle without aborting later cells
 - [x] Real Chromium lifecycle fixture
-- [ ] Scenario module loading and hooks
+- [x] Scenario module loading and hooks
 - [ ] Navigation, theme, and deterministic readiness
 - [ ] Screenshots, diagnostics, and assertions
 - [ ] Execution-result construction and artifact persistence

@@ -54,7 +54,13 @@ describe("@statecraft/runner-playwright package boundary", () => {
     const typesUrl = new URL(typesPath ?? "", packageRoot);
     await expect(access(typesUrl)).resolves.toBeUndefined();
     const builtModule = await import(importUrl.href);
-    expect(Object.keys(builtModule)).toEqual(["runExecutionCells"]);
+    expect(Object.keys(builtModule)).toEqual([
+      "runExecutionCells",
+      "loadScenario",
+      "runScenarioCells",
+      "runScenarioLifecycle",
+      "ScenarioLoadError",
+    ]);
   });
 
   it("compiles the documented public API through the package export", async () => {

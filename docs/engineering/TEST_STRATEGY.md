@@ -8,6 +8,8 @@ Scenario loading; Playwright lifecycle; route interception; viewport/theme; read
 
 The initial runner fixture uses real headless Chromium with programmatically supplied HTML. It verifies one healthy browser is reused, contexts/pages and cookies are isolated, configured viewports are applied, resources close after success and failure, and a rejected cell does not prevent later cells from running. Mocked lifecycle tests force cleanup failure to verify browser quarantine, replacement, and run-level replacement failures.
 
+Scenario integration tests load real local ESM fixtures, validate module exports and hook types, verify `beforeNavigate`/caller/`afterNavigate` ordering, and prove module-load or hook failures settle without preventing later cells from running.
+
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
 

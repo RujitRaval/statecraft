@@ -1,11 +1,21 @@
 import {
+  loadScenario,
   runExecutionCells,
+  runScenarioCells,
+  runScenarioLifecycle,
+  ScenarioLoadError,
   type CellExecutionContext,
   type CellExecutionOutcome,
   type CellExecutor,
   type FulfilledCellExecution,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
+  type RunScenarioCellsOptions,
+  type ScenarioCellExecutor,
+  type ScenarioContext,
+  type ScenarioHook,
+  type ScenarioLoadErrorCode,
+  type StatecraftScenario,
 } from "@statecraft/runner-playwright";
 
 declare const execution: CellExecutionContext;
@@ -17,6 +27,34 @@ const options: RunExecutionCellsOptions = {
 };
 const outcomes: Promise<readonly CellExecutionOutcome<string>[]> =
   runExecutionCells([execution.cell], executor, options);
+declare const scenarioContext: ScenarioContext;
+declare const scenario: StatecraftScenario;
+const hook: ScenarioHook = async (context) => {
+  void context.page;
+};
+const scenarioExecutor: ScenarioCellExecutor<string> = async (context) =>
+  context.state.id;
+const scenarioOptions: RunScenarioCellsOptions = {
+  launchOptions: { headless: true },
+  scenarioBaseDirectory: process.cwd(),
+};
+const loadedScenario: Promise<StatecraftScenario> = loadScenario(
+  execution.cell.state.setup,
+  { baseDirectory: process.cwd() },
+);
+const scenarioValue: Promise<string> = runScenarioLifecycle(
+  scenario,
+  scenarioContext,
+  scenarioExecutor,
+);
+const scenarioOutcomes: Promise<readonly CellExecutionOutcome<string>[]> =
+  runScenarioCells([execution.cell], scenarioExecutor, scenarioOptions);
+const loadError = new ScenarioLoadError(
+  "invalid-module",
+  "./scenario.ts",
+  "invalid",
+);
+const loadErrorCode: ScenarioLoadErrorCode = loadError.code;
 
 declare const fulfilled: FulfilledCellExecution<string>;
 declare const rejected: RejectedCellExecution;
@@ -52,6 +90,11 @@ void outcomes.then((result) => {
 });
 
 void outcomes;
+void loadedScenario;
+void scenarioOutcomes;
+void scenarioValue;
+void hook;
+void loadErrorCode;
 void fulfilledValue;
 void rejectedReason;
 void inspectOutcome;
