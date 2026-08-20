@@ -56,6 +56,8 @@ describe("@statecraft/runner-playwright package boundary", () => {
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule)).toEqual([
       "runExecutionCells",
+      "runCapturedScenarioCells",
+      "ScenarioCaptureError",
       "loadScenario",
       "runScenarioCells",
       "runScenarioLifecycle",

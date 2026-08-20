@@ -122,9 +122,56 @@ The origin boundary is checked after built-in navigation, after `afterNavigate`,
 
 Arbitrary theme IDs are intentionally supported through `data-theme`; only the conventional `light` and `dark` IDs affect color-scheme media queries. Apps with different theme mechanisms can use direct Playwright access in `beforeNavigate`.
 
+## In-memory screenshots, diagnostics, and assertions
+
+`runCapturedScenarioCells(cells, options)` owns the complete capture lifecycle through assertion and diagnostic failure policy. It returns settled cell outcomes and deliberately has no output-directory or artifact-path option.
+
+```ts
+import { expandMatrix, parseConfig } from "@statecraft/core";
+import {
+  runCapturedScenarioCells,
+  ScenarioCaptureError,
+} from "@statecraft/runner-playwright";
+
+const config = parseConfig(unknownConfig);
+const outcomes = await runCapturedScenarioCells(expandMatrix(config), {
+  baseURL: config.baseURL,
+  failOn: config.failOn,
+  readiness: { selector: "main[data-ready]" },
+  scenarioBaseDirectory: process.cwd(),
+});
+
+for (const outcome of outcomes) {
+  if (outcome.status === "fulfilled") {
+    const { screenshot, diagnostics, assertionStatus, durationMs } = outcome.value;
+    // Persisting screenshot bytes and constructing ExecutionResult come next.
+    void screenshot;
+    void diagnostics;
+    void assertionStatus;
+    void durationMs;
+  } else if (outcome.reason instanceof ScenarioCaptureError) {
+    // Partial evidence retains diagnostics and any screenshot captured before failure.
+    console.error(outcome.reason.failures, outcome.reason.evidence);
+  }
+}
+```
+
+For every cell, duration starts before browser-context creation and diagnostic listeners attach before route validation, scenario loading, theme setup, and hooks. After navigation and deterministic readiness, the runner captures a viewport-sized PNG into an owned `Uint8Array`, runs the optional scenario `assert` hook, evaluates diagnostic failure policy, detaches its listeners, and closes the isolated context. Screenshots therefore represent the ready product state before assertion code can mutate it. An absent assertion produces `assertionStatus: "not-configured"`; a successful one produces `"passed"`.
+
+Diagnostics use the browser-independent core shape:
+
+- `consoleErrors`: sanitized text from Playwright console messages whose type is `error`.
+- `pageErrors`: sanitized messages from uncaught page exceptions.
+- `failedRequests`: HTTP(S) URL, method, and sanitized Playwright failure text only.
+- `navigationStatus`: the built-in navigation response status when available.
+
+The runner never reads diagnostic request/response headers, cookies, bodies, or console argument handles. It removes URL credentials and fragments, preserves query keys while replacing values with `[REDACTED]`, redacts authorization, cookie, bearer, and named-secret forms in free-form messages, pre-bounds and caps each diagnostic string at 2,000 characters, and bounds sanitized URLs. Each category retains its first 100 entries; `droppedDiagnostics` reports how many later entries were omitted. This is defense in depth, not a guarantee against novel secrets embedded by application code; captures remain sensitive local data. `ScenarioCaptureError.cause` is a new sanitized error rather than the original throwable so logging the structured error cannot bypass this boundary.
+
+`failOn` uses the core `FailurePolicy`. Defaults are `{ consoleError: false, failedRequest: false, pageError: true }`. Enabled categories generate `CONSOLE_ERROR`, `FAILED_REQUEST`, or `PAGE_ERROR` failures. Screenshot and assertion failures are always fatal and generate `SCREENSHOT_FAILED` and `ASSERTION_FAILED`. Multiple failures are retained in deterministic assertion/console/page/request order. `ScenarioCaptureError` exposes those stable failures plus `ScenarioCaptureEvidence`, whose screenshot and navigation fields are nullable when the lifecycle failed before they became available. Route and browser lifecycle failures use `NAVIGATION_FAILED`; scenario module loading/validation uses `INTERNAL_ERROR`. Once the built-in navigation receives a response, `navigationStatus` survives later failures. Same-origin responses also retain partial navigation metadata; a cross-origin redirect retains status only and exposes no external URL through evidence. As with every runner stage, a failed cell does not abort later cells.
+
 ## Current boundary
 
-The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, ordered hooks, same-origin navigation, theme application, and deterministic readiness. Screenshots, diagnostics, assertion execution, result construction, and artifact persistence remain later Phase 3 steps. CLI and report UI work remain out of scope.
+The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, ordered hooks, same-origin navigation, theme application, deterministic readiness, in-memory PNG capture, sanitized diagnostics, assertion execution, and failure policies. Execution-result construction and artifact persistence remain the final Phase 3 runner step. CLI and report UI work remain out of scope.
 
 ## Dependency decision
 

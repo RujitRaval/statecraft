@@ -7,6 +7,14 @@ export type {
   RejectedCellExecution,
   RunExecutionCellsOptions,
 } from "./lifecycle.js";
+export { runCapturedScenarioCells, ScenarioCaptureError } from "./capture.js";
+export type {
+  AssertionStatus,
+  CapturedScenarioCell,
+  DroppedDiagnosticCounts,
+  RunCapturedScenarioCellsOptions,
+  ScenarioCaptureEvidence,
+} from "./capture.js";
 export {
   loadScenario,
   runScenarioCells,

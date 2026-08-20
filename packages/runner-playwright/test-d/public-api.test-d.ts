@@ -1,14 +1,19 @@
 import {
   loadScenario,
+  runCapturedScenarioCells,
   runExecutionCells,
   runNavigatedScenarioCells,
   runScenarioCells,
   runScenarioLifecycle,
   ScenarioLoadError,
+  ScenarioCaptureError,
+  type AssertionStatus,
+  type CapturedScenarioCell,
   type CellExecutionContext,
   type CellExecutionOutcome,
   type CellExecutor,
   type DeterministicReadinessOptions,
+  type DroppedDiagnosticCounts,
   type FulfilledCellExecution,
   type LoadScenarioOptions,
   type NavigatedScenarioCellExecutor,
@@ -16,10 +21,12 @@ import {
   type NavigationMetadata,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
+  type RunCapturedScenarioCellsOptions,
   type RunNavigatedScenarioCellsOptions,
   type RunScenarioCellsOptions,
   type ScenarioCellExecutor,
   type ScenarioContext,
+  type ScenarioCaptureEvidence,
   type ScenarioHook,
   type ScenarioLoadErrorCode,
   type StatecraftScenario,
@@ -78,6 +85,24 @@ const navigationOutcomes: Promise<readonly CellExecutionOutcome<string>[]> =
     navigationExecutor,
     navigationOptions,
   );
+const captureOptions: RunCapturedScenarioCellsOptions = {
+  baseURL: "https://statecraft.invalid",
+  failOn: { consoleError: true, failedRequest: false, pageError: true },
+  scenarioBaseDirectory: process.cwd(),
+};
+const captureOutcomes: Promise<
+  readonly CellExecutionOutcome<CapturedScenarioCell>[]
+> = runCapturedScenarioCells([execution.cell], captureOptions);
+declare const capture: CapturedScenarioCell;
+const evidence: ScenarioCaptureEvidence = capture;
+const assertionStatus: AssertionStatus = capture.assertionStatus;
+const captureError = new ScenarioCaptureError(
+  [{ code: "ASSERTION_FAILED", message: "Expected main to be visible." }],
+  evidence,
+);
+const captureFailures = captureError.failures;
+const screenshotBytes: Uint8Array = capture.screenshot;
+const droppedDiagnostics: DroppedDiagnosticCounts = capture.droppedDiagnostics;
 declare const navigatedContext: NavigatedScenarioContext;
 const navigation: NavigationMetadata = navigatedContext.navigation;
 const loadError = new ScenarioLoadError(
@@ -121,6 +146,9 @@ void outcomes.then((result) => {
 });
 
 void outcomes;
+void assertionStatus;
+void captureFailures;
+void captureOutcomes;
 void loadedScenario;
 void navigation;
 void navigationOutcomes;
@@ -129,6 +157,8 @@ void scenarioValue;
 void hook;
 void loadErrorCode;
 void fulfilledValue;
+void droppedDiagnostics;
 void rejectedReason;
+void screenshotBytes;
 void inspectOutcome;
 void invalid;
