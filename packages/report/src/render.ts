@@ -274,7 +274,7 @@ const interactions = `
 
   function openDetail(id, trigger = null, updateHash = true) {
     const detail = document.getElementById(id);
-    if (!(detail instanceof HTMLElement) || detail.dataset.filterMatch !== "true") return;
+    if (!(detail instanceof HTMLElement) || detail.dataset.filterMatch !== "true") return false;
     closeDetail(false, false);
     detail.hidden = false;
     detail.classList.add("is-active");
@@ -290,6 +290,7 @@ const interactions = `
     if (updateHash) history.pushState(null, "", window.location.search + "#" + id);
     detail.focus({ preventScroll: true });
     detail.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    return true;
   }
 
   function applyFilters(updateUrl = true, updateDetailHistory = true) {
@@ -346,7 +347,7 @@ const interactions = `
     if (id.startsWith("execution-")) {
       if (activeDetail instanceof HTMLElement && activeDetail.id === id) return;
       if (activeDetail !== null) closeDetail(true, false);
-      openDetail(id, null, false);
+      if (!openDetail(id, null, false)) history.replaceState(null, "", window.location.search + "#matrix-title");
     } else if (activeDetail !== null) closeDetail(true, false);
   }
 

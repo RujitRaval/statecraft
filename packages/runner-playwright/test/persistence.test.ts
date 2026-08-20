@@ -443,6 +443,9 @@ describe("runPersistedScenarioCells", () => {
             await expect
               .poll(() => page.locator("[data-detail]:visible").count())
               .toBe(0);
+            await expect
+              .poll(() => page.evaluate(() => window.location.hash))
+              .toBe("#matrix-title");
             expect(await page.locator('[aria-current="true"]').count()).toBe(0);
 
             await page.goto(`${reportUrl}#execution-1`, { waitUntil: "load" });
