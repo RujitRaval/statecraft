@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1, Phase 2, and Phase 3 are complete. Do not begin the CLI, report UI, or other later phases until the user explicitly advances the phase.
+Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active and must be delivered through focused CLI steps. Do not begin the report UI or other later phases until the user explicitly advances the phase.
 
 ## Development workflow
 
@@ -40,7 +40,7 @@ node --test scripts/*.test.mjs
 node scripts/run-ci.mjs
 ```
 
-Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. For Phase 3 runner work, also install the pinned browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium` before running browser-backed tests.
+Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. Install the pinned browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium` before running browser-backed tests.
 
 ## Engineering constraints
 
