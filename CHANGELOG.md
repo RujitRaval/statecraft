@@ -4,6 +4,24 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.19.0.0] - 2026-08-20
+
+### Added
+
+- The polished `/orders` example route now demonstrates deterministic success, loading, empty, and recoverable error states backed by a runtime-validated fictional orders API.
+- Search, status filtering, URL-restored filter state, queue-derived summaries, and route-aware desktop and mobile navigation make the example a complete interactive workspace slice.
+- Unit and production-browser coverage verify malformed and overflowing payloads, every route state, filtering, App Router navigation, responsive table semantics, dark mode, and narrow-viewport containment.
+
+### Changed
+
+- The shared workspace shell now uses App Router links throughout so navigation preserves shared layout state.
+- Phase 6 now includes its first focused workflow route and documents the orders-state boundary; customer detail states, intentional defects, and the complete scenario matrix remain follow-up slices.
+
+### Fixed
+
+- Responsive order rows retain their column-header relationships in the accessibility tree while presenting a compact mobile layout.
+- Search, filter, brand, and navigation controls meet full interaction-target sizing, and empty and error states no longer reuse success-only copy.
+
 ## [0.18.0.0] - 2026-08-20
 
 ### Added

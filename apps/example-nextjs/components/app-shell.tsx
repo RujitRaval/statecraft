@@ -1,10 +1,7 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
-const navItems = [
-  { current: true, label: "Overview", mark: "01" },
-  { current: false, label: "Orders", mark: "02" },
-  { current: false, label: "Customers", mark: "03" },
-] as const;
+import { WorkspaceNav } from "./workspace-nav";
 
 function BrandMark() {
   return (
@@ -27,24 +24,11 @@ function SearchIcon() {
 function Sidebar() {
   return (
     <aside className="sidebar">
-      <a className="brand" href="/dashboard" aria-label="Northline operations home">
+      <Link className="brand" href="/dashboard" aria-label="Northline operations home">
         <BrandMark />
         <span><strong>Northline</strong><small>Operations</small></span>
-      </a>
-      <nav aria-label="Primary navigation" className="primary-nav">
-        <p className="nav-label">Workspace</p>
-        {navItems.map((item) =>
-          item.current ? (
-            <a aria-current="page" className="nav-item is-current" href="/dashboard" key={item.label}>
-              <span>{item.label}</span><small>{item.mark}</small>
-            </a>
-          ) : (
-            <span aria-disabled="true" className="nav-item is-disabled" key={item.label}>
-              <span>{item.label}</span><small>{item.mark}</small>
-            </span>
-          ),
-        )}
-      </nav>
+      </Link>
+      <WorkspaceNav />
       <div className="sidebar-note">
         <span className="status-light" />
         <div><strong>Systems nominal</strong><small>Updated 14:32 EDT</small></div>
@@ -74,6 +58,7 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
       <Sidebar />
       <div className="workspace">
         <Topbar />
+        <WorkspaceNav mobile />
         {children}
       </div>
     </div>

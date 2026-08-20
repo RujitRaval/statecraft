@@ -53,6 +53,8 @@ Phase 5 scan integration returns the runner's coordinated output directly. `Scan
 ### apps/example-nextjs
 The Phase 6 example is a real Next.js App Router application and a deterministic product-state fixture. It owns a self-hosted visual system, fixed commerce-operations data, a narrow `/api/dashboard` response contract, and a client-rendered `/dashboard` state boundary. The page begins in a deliberate loading state, validates the API payload before rendering, classifies a valid no-data payload as empty, and turns transport, HTTP, or contract failures into a recoverable error state. Statecraft scenarios can intercept the API without adding test-only behavior to production components. Theme styling follows the runner-owned `data-theme` attribute before application scripts execute.
 
+The orders slice extends the same boundary with a fixed `/api/orders` contract and `/orders` success, loading, empty, and recoverable error states. Runtime validation rejects malformed records and duplicate IDs before rendering. The success surface derives its summary from the validated queue and provides client-side search and status filters whose selections are reflected in the local URL; those presentation controls do not change the fixture contract. A route-aware shared navigation component marks the current workspace on desktop and mobile. Scenario interception remains the only mechanism for forcing product states.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {

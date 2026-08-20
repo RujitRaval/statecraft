@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 5 are complete. Phase 6 is active. Build the example application in focused slices, beginning with the design system, Next.js foundation, deterministic dashboard contract, and `/dashboard` success/loading/empty/error states. Keep the remaining example routes, intentional defects, and Phase 7 deferred until their focused follow-ups.
+Phase 1 through Phase 5 are complete. Phase 6 is active. The design system, Next.js foundation, deterministic dashboard and orders contracts, and `/dashboard` plus `/orders` success/loading/empty/error states are complete. Keep customer detail, intentional defects, the complete Statecraft scenario matrix, and Phase 7 deferred until their focused follow-ups.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

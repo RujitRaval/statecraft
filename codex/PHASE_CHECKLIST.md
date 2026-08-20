@@ -56,7 +56,7 @@ Phase 4 is complete. Phase 5 is complete. Phase 6 is active.
 - [x] Example application design system and Next.js foundation
 - [x] Deterministic dashboard data contract and API
 - [x] `/dashboard` success, loading, empty, and error states
-- [ ] `/orders` meaningful states
+- [x] `/orders` meaningful states
 - [ ] `/customers/[id]` meaningful states and long-content coverage
 - [ ] Intentional responsive/theme defects
 - [ ] Complete Statecraft scenario matrix and example-app E2E gate
