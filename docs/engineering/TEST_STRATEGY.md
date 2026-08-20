@@ -10,6 +10,8 @@ The initial runner fixture uses real headless Chromium with programmatically sup
 
 Scenario integration tests load real local ESM fixtures, validate module exports and hook types, verify `beforeNavigate`/caller/`afterNavigate` ordering, and prove module-load or hook failures settle without preventing later cells from running.
 
+Navigation integration tests use real Chromium and intercepted HTTP fixtures to verify same-origin URL resolution, rejection of cross-origin redirects and hook-driven navigation, theme state before application scripts, light/dark media emulation, arbitrary named themes, reduced motion, load/selector/font readiness, animation and caret suppression, immutable navigation metadata, and post-readiness execution. Invalid scenarios, hook failures, cross-origin routes, aborted navigation, readiness timeouts, invalid run options, and launch failures cover the failure boundary and continuation contract.
+
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
 

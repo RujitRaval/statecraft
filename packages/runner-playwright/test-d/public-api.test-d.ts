@@ -1,16 +1,22 @@
 import {
   loadScenario,
   runExecutionCells,
+  runNavigatedScenarioCells,
   runScenarioCells,
   runScenarioLifecycle,
   ScenarioLoadError,
   type CellExecutionContext,
   type CellExecutionOutcome,
   type CellExecutor,
+  type DeterministicReadinessOptions,
   type FulfilledCellExecution,
   type LoadScenarioOptions,
+  type NavigatedScenarioCellExecutor,
+  type NavigatedScenarioContext,
+  type NavigationMetadata,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
+  type RunNavigatedScenarioCellsOptions,
   type RunScenarioCellsOptions,
   type ScenarioCellExecutor,
   type ScenarioContext,
@@ -53,6 +59,27 @@ const scenarioValue: Promise<string> = runScenarioLifecycle(
 );
 const scenarioOutcomes: Promise<readonly CellExecutionOutcome<string>[]> =
   runScenarioCells([execution.cell], scenarioExecutor, scenarioOptions);
+const readiness: DeterministicReadinessOptions = {
+  selector: "#ready",
+  timeoutMs: 10_000,
+};
+const navigationOptions: RunNavigatedScenarioCellsOptions = {
+  baseURL: "https://statecraft.invalid",
+  navigationTimeoutMs: 30_000,
+  readiness,
+  scenarioBaseDirectory: process.cwd(),
+};
+const navigationExecutor: NavigatedScenarioCellExecutor<string> = async (
+  context,
+) => `${context.navigation.status}:${context.navigation.url}`;
+const navigationOutcomes: Promise<readonly CellExecutionOutcome<string>[]> =
+  runNavigatedScenarioCells(
+    [execution.cell],
+    navigationExecutor,
+    navigationOptions,
+  );
+declare const navigatedContext: NavigatedScenarioContext;
+const navigation: NavigationMetadata = navigatedContext.navigation;
 const loadError = new ScenarioLoadError(
   "invalid-module",
   "./scenario.ts",
@@ -95,6 +122,8 @@ void outcomes.then((result) => {
 
 void outcomes;
 void loadedScenario;
+void navigation;
+void navigationOutcomes;
 void scenarioOutcomes;
 void scenarioValue;
 void hook;

@@ -60,6 +60,7 @@ describe("@statecraft/runner-playwright package boundary", () => {
       "runScenarioCells",
       "runScenarioLifecycle",
       "ScenarioLoadError",
+      "runNavigatedScenarioCells",
     ]);
   });
 

@@ -22,3 +22,11 @@ export type {
   ScenarioLoadErrorCode,
   StatecraftScenario,
 } from "./scenario.js";
+export { runNavigatedScenarioCells } from "./navigation.js";
+export type {
+  DeterministicReadinessOptions,
+  NavigatedScenarioCellExecutor,
+  NavigatedScenarioContext,
+  NavigationMetadata,
+  RunNavigatedScenarioCellsOptions,
+} from "./navigation.js";

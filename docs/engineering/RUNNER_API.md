@@ -52,7 +52,7 @@ const cells = expandMatrix(parseConfig(unknownConfig));
 const outcomes = await runScenarioCells(
   cells,
   async ({ page, route, state, viewport, theme }) => {
-    // The next Phase 3 slice will provide built-in navigation here.
+    // Low-level callers may continue to own the middle lifecycle step.
     await page.goto(new URL(route.path, "http://127.0.0.1:3000").href);
     return { stateId: state.id, theme, width: viewport.width };
   },
@@ -83,9 +83,48 @@ The runner runtime-checks the default export and the optional `beforeNavigate`, 
 
 `loadScenario(path, options?)` and `runScenarioLifecycle(scenario, context, execute)` expose the two smaller primitives for orchestration and focused testing. Dynamic imports follow normal Node ESM caching semantics. Scenario/config modules are trusted local code with the user's privileges and are not sandboxed.
 
+## Built-in navigation, themes, and readiness
+
+`runNavigatedScenarioCells(cells, execute, options)` owns the normal Phase 3 path through theme setup, hooks, navigation, and deterministic readiness. Its callback runs after readiness, which gives the following screenshot/diagnostics slice a stable capture seam without changing lifecycle order.
+
+```ts
+import { expandMatrix, parseConfig } from "@statecraft/core";
+import { runNavigatedScenarioCells } from "@statecraft/runner-playwright";
+
+const config = parseConfig(unknownConfig);
+const outcomes = await runNavigatedScenarioCells(
+  expandMatrix(config),
+  async ({ navigation, page, state, theme }) => ({
+    stateId: state.id,
+    status: navigation.status,
+    theme,
+    title: await page.title(),
+    url: navigation.url,
+  }),
+  {
+    baseURL: config.baseURL,
+    readiness: { selector: "main[data-ready]", timeoutMs: 10_000 },
+    scenarioBaseDirectory: process.cwd(),
+  },
+);
+```
+
+The order for every cell is:
+
+1. Validate that the configured route stays on the base URL's origin and load its scenario.
+2. Apply the theme before application scripts: every theme becomes `data-theme` on `<html>`; `light` and `dark` also set the matching `prefers-color-scheme`; all themes request `prefers-reduced-motion: reduce`.
+3. Run `beforeNavigate`, then navigate with `waitUntil: "domcontentloaded"`.
+4. Run `afterNavigate`, which remains the scenario-controlled readiness escape hatch.
+5. Suppress CSS animations, transitions, smooth scrolling, and carets; wait for the normal load event, an optional visible selector, and `document.fonts` to finish loading.
+6. Recheck the origin, then invoke the post-readiness callback with a frozen `NavigatedScenarioContext` and frozen `NavigationMetadata` containing the requested URL, final same-origin page URL, and the built-in navigation's HTTP response status when available.
+
+The origin boundary is checked after built-in navigation, after `afterNavigate`, and after readiness; cross-origin redirects, hook-driven navigation, and navigation scheduled while readiness settles reject the cell before caller-owned work. Same-origin hook navigation remains supported: `navigation.url` reports the final page while `navigation.status` reports the response to `navigation.requestedUrl`. The runner never waits for `networkidle`, so persistent connections cannot stall a cell. Navigation defaults to 30 seconds; readiness defaults to 10 seconds. Both accept positive safe-integer overrides. Invalid run-level options reject before Chromium starts. Scenario, hook, route, navigation, readiness, and post-readiness callback failures reject only their cell; context cleanup still runs and later cells continue.
+
+Arbitrary theme IDs are intentionally supported through `data-theme`; only the conventional `light` and `dark` IDs affect color-scheme media queries. Apps with different theme mechanisms can use direct Playwright access in `beforeNavigate`.
+
 ## Current boundary
 
-The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, and ordered pre/post-navigation hooks. Built-in navigation, theme application, readiness, screenshots, diagnostics, assertion execution, result construction, and artifact persistence remain later Phase 3 steps. CLI and report UI work remain out of scope.
+The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, ordered hooks, same-origin navigation, theme application, and deterministic readiness. Screenshots, diagnostics, assertion execution, result construction, and artifact persistence remain later Phase 3 steps. CLI and report UI work remain out of scope.
 
 ## Dependency decision
 

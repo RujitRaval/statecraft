@@ -4,7 +4,7 @@ Statecraft is an open-source UI product-state coverage tool: **find, render, and
 
 This folder is the implementation source of truth intended to be handed to Codex.
 
-Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes the browser-independent `@statecraft/core` contracts. Phase 3 is underway with `@statecraft/runner-playwright`: isolated browser lifecycles plus typed local scenario loading and ordered `beforeNavigate`/`afterNavigate` hooks that keep unrelated cells running after failures.
+Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes the browser-independent `@statecraft/core` contracts. Phase 3 is underway with `@statecraft/runner-playwright`: isolated browser lifecycles, typed scenarios, built-in same-origin navigation, pre-script theme application, and bounded deterministic readiness that keep unrelated cells running after failures.
 
 ## Start here
 1. [Master prompt](codex/MASTER_PROMPT.md)
@@ -20,7 +20,7 @@ Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes th
 - Project guidance: [agent guide](AGENTS.md), [Claude guidance](CLAUDE.md), [phase checklist](codex/PHASE_CHECKLIST.md), [contributing](CONTRIBUTING.md), [security policy](SECURITY.md), and [changelog](CHANGELOG.md)
 - Product: [CLI and configuration](docs/product/CLI_AND_CONFIG_SPEC.md) and [report UX](docs/product/REPORT_UX_SPEC.md)
 - Engineering: [`@statecraft/core` API](docs/engineering/CORE_API.md), [Playwright runner API](docs/engineering/RUNNER_API.md), and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
-- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), [configured-state coverage](docs/decisions/0008-configured-state-coverage.md), [versioned result/report contracts](docs/decisions/0009-versioned-result-report-contracts.md), [runner execution lifecycle](docs/decisions/0010-runner-execution-lifecycle.md), and [runner scenario loading and hooks](docs/decisions/0011-runner-scenario-loading-hooks.md)
+- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), [configured-state coverage](docs/decisions/0008-configured-state-coverage.md), [versioned result/report contracts](docs/decisions/0009-versioned-result-report-contracts.md), [runner execution lifecycle](docs/decisions/0010-runner-execution-lifecycle.md), [runner scenario loading and hooks](docs/decisions/0011-runner-scenario-loading-hooks.md), and [runner navigation and readiness](docs/decisions/0012-runner-navigation-readiness.md)
 - Open source: [contributing plan](docs/open-source/CONTRIBUTING_PLAN.md)
 
 ## Governing workflow
