@@ -244,8 +244,8 @@ a:focus-visible {
 }
 
 .icon-button {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border: 0;
   background: transparent;
   color: var(--sidebar-muted);
@@ -276,7 +276,7 @@ a:focus-visible {
 .search {
   display: flex;
   min-width: min(340px, 36vw);
-  min-height: 42px;
+  min-height: 44px;
   align-items: center;
   gap: 10px;
   padding: 0 12px;
@@ -888,7 +888,7 @@ a:focus-visible {
   .topbar { min-height: 68px; }
   .mobile-brand { display: flex; gap: 9px; }
   .mobile-brand .brand-mark { width: 24px; height: 24px; fill: var(--ink); }
-  .search { min-width: 42px; width: 42px; padding: 0; justify-content: center; }
+  .search { min-width: 44px; width: 44px; padding: 0; justify-content: center; }
   .search span, .search kbd { display: none; }
   .topbar-meta > span:not(.live-pill) { display: none; }
   .dashboard { padding-top: 40px; }
