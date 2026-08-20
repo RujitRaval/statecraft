@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.12.0.0] - 2026-08-20
+
+### Added
+
+- Developers can discover and load a Statecraft configuration through the new `@statecraft/cli` programmatic API, with explicit-path support and canonical source paths.
+- Default discovery recognizes TypeScript and JavaScript module variants in one project directory, rejects ambiguous matches, and exposes stable typed discovery and loading errors.
+- Tests cover missing, ambiguous, unreadable, non-file, symlinked, and explicit config paths; ESM and CommonJS loading; core validation; import failures; and public package contracts.
+
+### Changed
+
+- Phase 4 is now underway with its CLI package and configuration boundary documented, while command parsing, `init`, `scan`, `open`, runner orchestration, terminal UX, and report UI remain deferred.
+
+### Security
+
+- Config discovery verifies project-root traversal and file read access before importing a trusted local module, and never silently chooses between distinct default configs.
+
 ## [0.11.0.0] - 2026-08-20
 
 ### Added
