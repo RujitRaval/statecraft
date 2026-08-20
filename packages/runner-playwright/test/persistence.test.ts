@@ -361,9 +361,23 @@ describe("runPersistedScenarioCells", () => {
               "secondary",
             );
             expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+            expect(
+              await page
+                .locator('select[name="route"]')
+                .evaluate((select) => select === document.activeElement),
+            ).toBe(true);
 
             await page.goto(`${reportUrl}#execution-1`, { waitUntil: "load" });
             expect(await page.locator("#execution-1").isVisible()).toBe(true);
+            await page.evaluate(() => {
+              window.location.hash = "execution-999";
+            });
+            await expect
+              .poll(() => page.locator("[data-detail]:visible").count())
+              .toBe(0);
+            expect(await page.locator('[aria-current="true"]').count()).toBe(0);
+
+            await page.goto(`${reportUrl}#execution-1`, { waitUntil: "load" });
             await page.keyboard.press("Escape");
             expect(
               await page
@@ -372,6 +386,16 @@ describe("runPersistedScenarioCells", () => {
             ).toBe(true);
 
             await page.locator('select[name="status"]').selectOption("failed");
+            const failedCell = page.locator("[data-detail-target]:visible").first();
+            await failedCell.click();
+            await page.evaluate(() => {
+              window.location.hash = "execution-1";
+            });
+            await expect
+              .poll(() => page.locator("[data-detail]:visible").count())
+              .toBe(0);
+            expect(await page.locator('[aria-current="true"]').count()).toBe(0);
+
             await page.locator('select[name="route"]').selectOption("capture");
             await page.reload({ waitUntil: "load" });
             expect(await page.locator('select[name="route"]').inputValue()).toBe(

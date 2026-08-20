@@ -212,6 +212,7 @@ const interactions = `
   const result = document.querySelector("#filter-results");
   const noResults = document.querySelector("#no-results");
   const reset = form.querySelector("[type=reset]");
+  const matrixScroll = document.querySelector(".matrix-scroll");
   let activeDetail = null;
   let activeTrigger = null;
   let lastTrigger = null;
@@ -249,6 +250,16 @@ const interactions = `
     history.replaceState(null, "", query + window.location.hash);
   }
 
+  function returnDetailFocus(trigger = lastTrigger) {
+    if (trigger instanceof HTMLElement && trigger.closest("[hidden]") === null) {
+      trigger.focus();
+    } else if (selects[0] instanceof HTMLSelectElement) {
+      selects[0].focus();
+    } else if (matrixScroll instanceof HTMLElement) {
+      matrixScroll.focus();
+    }
+  }
+
   function closeDetail(returnFocus = false, updateHash = false) {
     if (activeDetail instanceof HTMLElement) {
       activeDetail.hidden = true;
@@ -258,7 +269,7 @@ const interactions = `
     activeDetail = null;
     activeTrigger = null;
     if (updateHash) history.pushState(null, "", window.location.search + "#matrix-title");
-    if (returnFocus && lastTrigger instanceof HTMLElement) lastTrigger.focus();
+    if (returnFocus) returnDetailFocus();
   }
 
   function openDetail(id, trigger = null, updateHash = true) {
@@ -333,14 +344,20 @@ const interactions = `
   function syncDetailFromHash() {
     const id = window.location.hash.slice(1);
     if (id.startsWith("execution-")) {
-      if (!(activeDetail instanceof HTMLElement) || activeDetail.id !== id) openDetail(id, null, false);
+      if (activeDetail instanceof HTMLElement && activeDetail.id === id) return;
+      if (activeDetail !== null) closeDetail(true, false);
+      openDetail(id, null, false);
     } else if (activeDetail !== null) closeDetail(true, false);
   }
 
   function syncStateFromUrl() {
+    const detailTrigger = activeTrigger ?? lastTrigger;
+    const hadDetailFocus = activeDetail instanceof HTMLElement && activeDetail.contains(document.activeElement);
+    const hadTriggerFocus = detailTrigger instanceof HTMLElement && document.activeElement === detailTrigger;
     restoreFiltersFromUrl();
     applyFilters(false, false);
     syncDetailFromHash();
+    if (activeDetail === null && (hadDetailFocus || hadTriggerFocus)) returnDetailFocus(detailTrigger);
   }
 
   form.addEventListener("change", () => applyFilters());
