@@ -6,6 +6,8 @@ import { dirname, resolve } from "node:path";
 import { chromium, type Browser } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { dashboardData } from "../lib/dashboard";
+
 const appDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 let baseURL = "";
 let browser: Browser;
@@ -46,6 +48,7 @@ beforeAll(async () => {
   const nextBinary = fileURLToPath(import.meta.resolve("next/dist/bin/next"));
   server = spawn(process.execPath, [nextBinary, "start", "--hostname", "127.0.0.1", "--port", String(port)], {
     cwd: appDirectory,
+    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
     stdio: "ignore",
   });
   await waitForServer(`${baseURL}/api/dashboard`);
@@ -99,15 +102,45 @@ describe("example dashboard states", () => {
     await emptyPage.close();
 
     const errorPage = await browser.newPage();
-    await errorPage.route("**/api/dashboard", (route) => route.fulfill({
-      body: JSON.stringify({ message: "Unavailable" }),
-      contentType: "application/json",
-      status: 503,
-    }));
+    const errors: string[] = [];
+    let releaseSuccess = (): void => undefined;
+    const successGate = new Promise<void>((resolveSuccess) => {
+      releaseSuccess = resolveSuccess;
+    });
+    let requestCount = 0;
+    errorPage.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    errorPage.on("pageerror", (error) => errors.push(error.message));
+    await errorPage.route("**/api/dashboard", async (route) => {
+      requestCount += 1;
+      if (requestCount === 1) {
+        await route.fulfill({
+          body: JSON.stringify({ message: "Unavailable" }),
+          contentType: "application/json",
+          status: 503,
+        });
+        return;
+      }
+      await successGate;
+      await route.fulfill({
+        body: JSON.stringify(dashboardData),
+        contentType: "application/json",
+        status: 200,
+      });
+    });
     await errorPage.goto(`${baseURL}/dashboard`, { waitUntil: "domcontentloaded" });
     await errorPage.locator('[data-dashboard-state="error"]').waitFor();
     expect(await errorPage.getByRole("heading", { name: "Operations data is out of reach." }).isVisible()).toBe(true);
-    expect(await errorPage.getByRole("button", { name: /Try again/ }).isVisible()).toBe(true);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain("503");
+    const expectedErrorCount = errors.length;
+    await errorPage.getByRole("button", { name: /Try again/ }).click();
+    await errorPage.locator('[data-dashboard-state="loading"]').waitFor();
+    releaseSuccess();
+    await errorPage.locator('[data-dashboard-state="success"]').waitFor();
+    expect(requestCount).toBe(2);
+    expect(errors).toHaveLength(expectedErrorCount);
     await errorPage.close();
   });
 

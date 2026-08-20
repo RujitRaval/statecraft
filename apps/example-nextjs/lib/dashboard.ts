@@ -130,6 +130,10 @@ function isOrder(value: unknown): value is DashboardOrder {
   );
 }
 
+function hasUniqueIds(values: readonly { readonly id: string }[]): boolean {
+  return new Set(values.map((value) => value.id)).size === values.length;
+}
+
 export function parseDashboardData(value: unknown): DashboardData {
   if (!isRecord(value)) throw new Error("Dashboard response must be an object.");
   const metrics = value["metrics"];
@@ -147,6 +151,14 @@ export function parseDashboardData(value: unknown): DashboardData {
     typeof summary["atRisk"] !== "number" ||
     typeof summary["fulfilledToday"] !== "number" ||
     typeof summary["nextDispatch"] !== "string"
+  ) {
+    throw new Error("Dashboard response does not match the expected contract.");
+  }
+  const hasNoContent = metrics.length === 0 && orders.length === 0;
+  if (
+    !hasUniqueIds(metrics) ||
+    !hasUniqueIds(orders) ||
+    (pulse.length !== 12 && !(hasNoContent && pulse.length === 0))
   ) {
     throw new Error("Dashboard response does not match the expected contract.");
   }

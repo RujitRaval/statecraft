@@ -5,10 +5,10 @@
   "description": "Polished deterministic Next.js fixture for Statecraft.",
   "type": "module",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "build": "node scripts/next.mjs build",
+    "dev": "node scripts/next.mjs dev",
+    "start": "node scripts/next.mjs start",
+    "typecheck": "node scripts/next.mjs typegen && tsc --noEmit"
   },
   "dependencies": {
     "@fontsource-variable/ibm-plex-sans": "5.3.0",

@@ -29,6 +29,9 @@ describe("dashboard fixture contract", () => {
     null,
     {},
     { ...dashboardData, pulse: [42, Number.NaN] },
+    { ...dashboardData, pulse: dashboardData.pulse.slice(0, 11) },
+    { ...dashboardData, metrics: [dashboardData.metrics[0], dashboardData.metrics[0]] },
+    { ...dashboardData, orders: [dashboardData.orders[0], dashboardData.orders[0]] },
     { ...dashboardData, orders: [{ status: "Unknown" }] },
     { ...dashboardData, summary: { atRisk: "12" } },
   ])("rejects malformed API payload %#", (payload) => {
