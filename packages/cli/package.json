@@ -1,0 +1,31 @@
+{
+  "name": "@statecraft/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Command-line foundations and configuration loading for Statecraft.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
+    "pretypecheck": "corepack pnpm --filter @statecraft/core build",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@statecraft/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}

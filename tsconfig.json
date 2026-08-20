@@ -6,6 +6,9 @@
     },
     {
       "path": "./packages/runner-playwright"
+    },
+    {
+      "path": "./packages/cli"
     }
   ]
 }
