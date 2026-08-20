@@ -452,10 +452,10 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 4 are complete. Phase 5 is active. The current
-focused slice implements deterministic report transformation, offline
-HTML generation, and the scan-to-report handoff. Keep interactive
-filters and final report polish in later Phase 5 slices; do not begin the
+Phase 1 through Phase 5 are complete. The report now includes
+deterministic transformation, self-contained offline HTML,
+route/state/viewport/theme/status filters, URL-restorable filter state,
+and an accessible single-execution detail inspector. Do not begin the
 example app or another later phase until the user explicitly advances
 it.
 

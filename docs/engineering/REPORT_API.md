@@ -22,9 +22,11 @@ import { renderReportHtml } from "@statecraft/report";
 const html = renderReportHtml(schemaV1Report);
 ```
 
-`renderReportHtml(input)` emits one deterministic HTML document with inline CSS and no script, CDN, font request, server dependency, or other network asset. The baseline Phase 5 document includes the product header, execution coverage, summary metrics, responsive route/state matrix, screenshot thumbnails, linked full evidence, execution metadata, failures, console/page diagnostics, and failed requests. Every report-controlled string is HTML-escaped. A restrictive document Content Security Policy permits only same-origin/data images and inline styles.
+`renderReportHtml(input)` emits one deterministic HTML document with inline CSS and no CDN, font request, server dependency, or other network asset. The Phase 5 document includes the product header, execution coverage, summary metrics, responsive route/state matrix, screenshot thumbnails, execution metadata, failures, console/page diagnostics, and failed requests. Every report-controlled string is HTML-escaped.
 
-The current no-script details use ordinary anchors and visible focus states. Interactive route/state/viewport/theme/status filters and a denser detail interaction remain the next Phase 5 slice.
+Native route/state/viewport/theme/status selects filter with AND semantics. Options follow validated first-seen execution order, valid non-default selections are restored from and written to the local document query string, hidden viewport/theme columns retain matrix alignment, and an `aria-live` summary reports matching executions and rows. Selecting a cell opens one inline detail inspector, focuses its heading region, marks its trigger, and supports Close, Escape, URL hashes, and browser history. Diagnostic groups use native disclosure elements with counts. A no-match state and one-click reset keep recovery obvious.
+
+The interaction script is constant and contains no report values. Its exact SHA-256 is calculated during rendering and is the only script authorized by the document Content Security Policy; external scripts and assets remain blocked. If script execution is unavailable, ordinary cell anchors and the complete detail list remain usable as a progressive fallback.
 
 ## Publication boundary
 

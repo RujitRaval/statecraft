@@ -59,6 +59,31 @@ function persistenceCells(states: readonly string[]): readonly MatrixCell[] {
   );
 }
 
+function interactiveReportCells(): readonly MatrixCell[] {
+  return expandMatrix(
+    parseConfig({
+      baseURL,
+      routes: [
+        {
+          id: "capture",
+          path: "/capture",
+          states: [{ id: "clean-after", setup: "./capture.mjs" }],
+        },
+        {
+          id: "secondary",
+          path: "/capture",
+          states: [{ id: "page-error", setup: "./capture.mjs" }],
+        },
+      ],
+      themes: ["light", "dark"],
+      viewports: {
+        compact: { height: 240, width: 320 },
+        wide: { height: 480, width: 720 },
+      },
+    }),
+  );
+}
+
 async function temporaryProject(): Promise<{
   readonly cleanup: () => Promise<void>;
   readonly path: string;
@@ -198,9 +223,11 @@ describe("runPersistedScenarioCells", () => {
   it("loads the generated report from disk without network access", async () => {
     const project = await temporaryProject();
     const browser = await chromium.launch({ headless: true });
+    const eventKey = Symbol.for("statecraft.test.capture-events");
+    Reflect.set(globalThis, eventKey, []);
     try {
       const run = await runPersistedScenarioCells(
-        persistenceCells(["clean-after"]),
+        interactiveReportCells(),
         {
           baseURL,
           generatedAt: new Date("2026-08-20T15:00:30.000Z"),
@@ -232,6 +259,9 @@ describe("runPersistedScenarioCells", () => {
           expect(imageWidths.length).toBeGreaterThan(0);
           expect(imageWidths.every((width) => width > 0)).toBe(true);
           expect(networkRequests).toEqual([]);
+          expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+          expect(await page.locator("[data-detail-target]:visible").count()).toBe(8);
+          expect(await page.locator("[data-matrix-row]:visible").count()).toBe(2);
 
           const heroColumns = await page.locator(".hero").evaluate((hero) =>
             getComputedStyle(hero).gridTemplateColumns.split(" ").length,
@@ -240,21 +270,84 @@ describe("runPersistedScenarioCells", () => {
 
           if (viewport.width > 1_000) {
             await page.keyboard.press("Tab");
-            await page.keyboard.press("Tab");
             expect(
-              await page
-                .locator(".matrix-cell")
-                .first()
-                .evaluate((cell) => cell === document.activeElement),
+              await page.locator(".skip-link").evaluate(
+                (link) => link === document.activeElement,
+              ),
             ).toBe(true);
+
+            await page.locator('select[name="route"]').selectOption("secondary");
+            await expect
+              .poll(() => page.locator("#filter-results").textContent())
+              .toBe("Showing 4 of 8 executions across 1 matrix row.");
+            expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
+            expect(new URL(page.url()).searchParams.get("route")).toBe(
+              "secondary",
+            );
+
+            await page.locator('select[name="state"]').selectOption("clean-after");
+            expect(await page.locator("#no-results").isVisible()).toBe(true);
+            await page.locator(".reset-filters").click();
+            await expect
+              .poll(() => page.locator("#filter-results").textContent())
+              .toBe("Showing 8 of 8 executions across 2 matrix rows.");
+
+            await page.locator('select[name="viewport"]').selectOption("wide");
+            expect(await page.locator("[data-column]:visible").count()).toBe(2);
+            await page.locator('select[name="theme"]').selectOption("dark");
+            expect(await page.locator("[data-column]:visible").count()).toBe(1);
+            await page.locator('select[name="status"]').selectOption("failed");
+            expect(await page.locator("[data-detail-target]:visible").count()).toBe(1);
+            expect(await page.locator(".matrix-cell--passed:visible").count()).toBe(0);
+
+            await page.locator(".reset-filters").click();
+            await page.locator('select[name="status"]').selectOption("failed");
+            expect(await page.locator(".matrix-cell--failed:visible").count()).toBe(4);
+            expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
+
+            const firstCell = page.locator("[data-detail-target]:visible").first();
+            await firstCell.focus();
             await page.keyboard.press("Enter");
-            expect(new URL(page.url()).hash).toBe("#execution-1");
+            expect(new URL(page.url()).hash).toMatch(/^#execution-/);
+            expect(await page.locator("[data-detail]:visible").count()).toBe(1);
+            expect(
+              await page.locator("[data-detail]:visible").evaluate(
+                (detail) => detail === document.activeElement,
+              ),
+            ).toBe(true);
+            await page.keyboard.press("Escape");
+            expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+            expect(await firstCell.evaluate((cell) => cell === document.activeElement)).toBe(
+              true,
+            );
+
+            await page.locator('select[name="route"]').selectOption("secondary");
+            await page.reload({ waitUntil: "load" });
+            expect(await page.locator('select[name="route"]').inputValue()).toBe(
+              "secondary",
+            );
+            expect(await page.locator('select[name="status"]').inputValue()).toBe(
+              "failed",
+            );
+            expect(await page.locator("[data-detail-target]:visible").count()).toBe(4);
+          } else {
+            const horizontalOverflow = await page.evaluate(
+              () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+            );
+            expect(horizontalOverflow).toBe(false);
+            const controlHeights = await page
+              .locator("#report-filters select, #report-filters button")
+              .evaluateAll((controls) =>
+                controls.map((control) => control.getBoundingClientRect().height),
+              );
+            expect(controlHeights.every((height) => height >= 44)).toBe(true);
           }
         } finally {
           await context.close();
         }
       }
     } finally {
+      Reflect.deleteProperty(globalThis, eventKey);
       await browser.close();
       await project.cleanup();
     }

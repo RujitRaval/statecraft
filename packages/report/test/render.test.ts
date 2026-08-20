@@ -1,8 +1,10 @@
+import { createHash } from "node:crypto";
+
 import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "@statecraft/core";
 import { describe, expect, it } from "vitest";
 
 import { renderReportHtml } from "../src/render.js";
-import { reportFixture } from "./fixture.js";
+import { interactiveReportFixture, reportFixture } from "./fixture.js";
 
 describe("renderReportHtml", () => {
   it("renders a polished offline matrix and execution details", () => {
@@ -14,10 +16,32 @@ describe("renderReportHtml", () => {
     expect(html).toContain("../artifacts/dashboard/success/desktop-light.png");
     expect(html).toContain('href="#execution-1"');
     expect(html).toContain('id="execution-2"');
-    expect(html).toMatch(/<tbody>[\s\S]*scope="rowgroup"[\s\S]*<\/tbody>/);
+    expect(html).toMatch(/<tbody\b[\s\S]*scope="rowgroup"[\s\S]*<\/tbody>/);
     expect(html).toContain("No network or server required");
     expect(html).toContain("default-src 'none'");
-    expect(html).not.toMatch(/<(script|link)\b/i);
+    expect(html).not.toMatch(/<link\b/i);
+    expect(html).not.toMatch(/<script[^>]+src=/i);
+  });
+
+  it("renders every interactive filter and pins its embedded script in CSP", () => {
+    const html = renderReportHtml(interactiveReportFixture());
+    const script = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
+    const cspHash = html.match(/script-src 'sha256-([^']+)'/)?.[1];
+
+    expect(html).toContain('id="report-filters"');
+    expect(html).toContain('select name="route"');
+    expect(html).toContain('select name="state"');
+    expect(html).toContain('select name="viewport"');
+    expect(html).toContain('select name="theme"');
+    expect(html).toContain('select name="status"');
+    expect(html).toContain('data-route="settings"');
+    expect(html).toContain('data-viewport="mobile"');
+    expect(html).toContain('data-theme="dark"');
+    expect(html).toContain('data-status="failed"');
+    expect(script).toBeDefined();
+    expect(cspHash).toBe(
+      createHash("sha256").update(script ?? "").digest("base64"),
+    );
   });
 
   it("escapes report-controlled strings in every rendered detail", () => {
@@ -49,6 +73,7 @@ describe("renderReportHtml", () => {
 
     expect(html).toContain("No executions were selected for this report.");
     expect(html).not.toContain('class="matrix-cell matrix-cell--passed"');
+    expect(html).not.toContain('id="report-filters"');
   });
 
   it("renders missing evidence and every diagnostic metadata branch", () => {

@@ -23,6 +23,25 @@ function cell(
   };
 }
 
+function namedCell(
+  routeId: string,
+  routePath: string,
+  stateId: string,
+  viewportId: string,
+  theme: string,
+  width: number,
+  height: number,
+): MatrixCell {
+  const state = { id: stateId, setup: `./scenarios/${stateId}.mjs` };
+  return {
+    route: { id: routeId, path: routePath, states: [state] },
+    state,
+    theme,
+    viewport: { height, width },
+    viewportId,
+  };
+}
+
 function execution(
   matrixCell: MatrixCell,
   status: "failed" | "passed",
@@ -79,6 +98,45 @@ export function reportFixture(): StatecraftReport {
       passed,
       routes: 1,
       states: 2,
+    },
+  });
+}
+
+export function interactiveReportFixture(): StatecraftReport {
+  const cells = [
+    namedCell("dashboard", "/dashboard", "success", "desktop", "light", 1_200, 800),
+    namedCell("dashboard", "/dashboard", "error", "mobile", "dark", 390, 844),
+    namedCell("settings", "/settings", "empty", "desktop", "dark", 1_200, 800),
+    namedCell("settings", "/settings", "unauthorized", "mobile", "light", 390, 844),
+  ];
+  const executions = cells.map((matrixCell, index) =>
+    execution(matrixCell, index % 2 === 0 ? "passed" : "failed"),
+  );
+  return parseReport({
+    executions,
+    generatedAt: "2026-08-20T18:00:00.000Z",
+    project: { baseURL: "https://statecraft.invalid" },
+    schemaVersion: REPORT_SCHEMA_VERSION,
+    summary: {
+      coverage: calculateCoverage(
+        cells,
+        executions.map((result) => ({
+          passed: result.status === "passed",
+          routeId: result.routeId,
+          stateId: result.stateId,
+          theme: result.theme,
+          viewportId: result.viewportId,
+        })),
+      ),
+      durationMs: executions.reduce(
+        (total, result) => total + result.durationMs,
+        0,
+      ),
+      executions: executions.length,
+      failed: 2,
+      passed: 2,
+      routes: 2,
+      states: 4,
     },
   });
 }

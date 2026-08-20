@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft has completed Phase 1 through Phase 4. Phase 5 is active with report transformation and offline HTML generation as its first slice. Keep report interaction and polish in focused Phase 5 changes, and do not begin the example app or another later phase until the user explicitly advances the phase. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed Phase 1 through Phase 5, including the self-contained interactive report. Do not begin the example app or another later phase until the user explicitly advances the phase. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 

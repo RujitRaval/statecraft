@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 4 are complete. Phase 5 is active. Its first approved slice owns deterministic report transformation, offline HTML generation, and the scan-to-report handoff. Keep interactive filters and final report polish in focused Phase 5 follow-ups; do not begin the example app or later phases until the user explicitly advances the phase.
+Phase 1 through Phase 5 are complete. The report includes deterministic transformation, offline HTML generation, route/state/viewport/theme/status filters, and the final accessible detail interaction. Do not begin the example app or another later phase until the user explicitly advances the phase.
 
 ## Development workflow
 
