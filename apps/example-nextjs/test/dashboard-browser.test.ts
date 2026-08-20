@@ -42,13 +42,25 @@ async function waitForServer(url: string): Promise<void> {
   throw new Error(`Example application did not start at ${url}.`);
 }
 
+async function waitForServerShutdown(url: string): Promise<void> {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    try {
+      await fetch(url);
+    } catch {
+      return;
+    }
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 50));
+  }
+  throw new Error(`Example application remained available at ${url} after termination.`);
+}
+
 beforeAll(async () => {
   const port = await availablePort();
   baseURL = `http://127.0.0.1:${port}`;
-  const nextBinary = fileURLToPath(import.meta.resolve("next/dist/bin/next"));
-  server = spawn(process.execPath, [nextBinary, "start", "--hostname", "127.0.0.1", "--port", String(port)], {
+  const nextWrapper = resolve(appDirectory, "scripts", "next.mjs");
+  server = spawn(process.execPath, [nextWrapper, "start", "--hostname", "127.0.0.1", "--port", String(port)], {
     cwd: appDirectory,
-    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" },
     stdio: "ignore",
   });
   await waitForServer(`${baseURL}/api/dashboard`);
@@ -57,7 +69,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await browser?.close();
-  server?.kill("SIGTERM");
+  if (server !== undefined) {
+    const serverExit = new Promise<void>((resolveExit) => server.once("exit", () => resolveExit()));
+    server.kill("SIGTERM");
+    await serverExit;
+    await waitForServerShutdown(`${baseURL}/api/dashboard`);
+  }
 });
 
 describe("example dashboard states", () => {
