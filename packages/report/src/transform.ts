@@ -62,6 +62,38 @@ interface RouteBuilder {
   readonly rows: RowBuilder[];
 }
 
+function freezeExecution(execution: ExecutionResult): ExecutionResult {
+  return Object.freeze({
+    ...execution,
+    diagnostics: Object.freeze({
+      ...execution.diagnostics,
+      consoleErrors: Object.freeze([...execution.diagnostics.consoleErrors]),
+      failedRequests: Object.freeze(
+        execution.diagnostics.failedRequests.map((request) =>
+          Object.freeze({ ...request }),
+        ),
+      ),
+      pageErrors: Object.freeze([...execution.diagnostics.pageErrors]),
+    }),
+    failures: Object.freeze(
+      execution.failures.map((failure) => Object.freeze({ ...failure })),
+    ),
+    viewport: Object.freeze({ ...execution.viewport }),
+  });
+}
+
+function freezeSummary(summary: ReportSummary): ReportSummary {
+  return Object.freeze({
+    ...summary,
+    coverage: Object.freeze({
+      execution: Object.freeze({ ...summary.coverage.execution }),
+      responsive: Object.freeze({ ...summary.coverage.responsive }),
+      state: Object.freeze({ ...summary.coverage.state }),
+      theme: Object.freeze({ ...summary.coverage.theme }),
+    }),
+  });
+}
+
 function coordinateKey(viewportId: string, theme: string): string {
   return JSON.stringify([viewportId, theme]);
 }
@@ -92,6 +124,7 @@ export function transformReport(input: unknown): ReportViewModel {
   const rowById = new Map<string, RowBuilder>();
 
   report.executions.forEach((execution, index) => {
+    const frozenExecution = freezeExecution(execution);
     const columnKey = coordinateKey(execution.viewportId, execution.theme);
     if (!columnKeys.has(columnKey)) {
       columnKeys.add(columnKey);
@@ -108,8 +141,8 @@ export function transformReport(input: unknown): ReportViewModel {
 
     const cell = Object.freeze({
       detailId: `execution-${index + 1}`,
-      execution,
-      screenshotHref: screenshotHref(execution),
+      execution: frozenExecution,
+      screenshotHref: screenshotHref(frozenExecution),
     });
     cells.push(cell);
 
@@ -173,6 +206,6 @@ export function transformReport(input: unknown): ReportViewModel {
     generatedAt: report.generatedAt,
     routes: frozenRoutes,
     schemaVersion: report.schemaVersion,
-    summary: report.summary,
+    summary: freezeSummary(report.summary),
   });
 }

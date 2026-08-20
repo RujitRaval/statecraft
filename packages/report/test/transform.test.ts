@@ -41,6 +41,11 @@ describe("transformReport", () => {
       detailId: "execution-2",
       screenshotHref: "../artifacts/dashboard/error/desktop-dark.png",
     });
+    expect(Object.isFrozen(view.summary.coverage.execution)).toBe(true);
+    expect(Object.isFrozen(view.executions[0]!.execution.diagnostics)).toBe(
+      true,
+    );
+    expect(Object.isFrozen(view.executions[1]!.execution.failures)).toBe(true);
   });
 
   it("validates unknown report data before transformation", () => {
