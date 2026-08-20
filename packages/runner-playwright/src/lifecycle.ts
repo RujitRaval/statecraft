@@ -1,3 +1,5 @@
+import { performance } from "node:perf_hooks";
+
 import type { MatrixCell } from "@statecraft/core";
 import {
   chromium,
@@ -48,6 +50,13 @@ interface CellRun<Value> {
   readonly outcome: CellExecutionOutcome<Value>;
 }
 
+const executionStartTimes = new WeakMap<CellExecutionContext, number>();
+
+/** @internal Returns the monotonic start of one cell's context lifecycle. */
+export function executionStartedAt(execution: CellExecutionContext): number {
+  return executionStartTimes.get(execution) ?? performance.now();
+}
+
 function rejected<Value>(
   cell: MatrixCell,
   reason: unknown,
@@ -60,6 +69,7 @@ async function runCell<Value>(
   cell: MatrixCell,
   execute: CellExecutor<Value>,
 ): Promise<CellRun<Value>> {
+  const startedAt = performance.now();
   let context: BrowserContext | undefined;
   let contextCleanupFailed = false;
   let outcome: CellExecutionOutcome<Value>;
@@ -72,7 +82,14 @@ async function runCell<Value>(
       },
     });
     const page = await context.newPage();
-    const value = await execute(Object.freeze({ cell, context, page }));
+    const execution = Object.freeze({ cell, context, page });
+    executionStartTimes.set(execution, startedAt);
+    let value: Value;
+    try {
+      value = await execute(execution);
+    } finally {
+      executionStartTimes.delete(execution);
+    }
     outcome = Object.freeze({ cell, status: "fulfilled", value });
   } catch (reason: unknown) {
     outcome = rejected(cell, reason);

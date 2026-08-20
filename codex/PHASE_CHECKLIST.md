@@ -29,7 +29,7 @@
 - [x] Real Chromium lifecycle fixture
 - [x] Scenario module loading and hooks
 - [x] Navigation, theme, and deterministic readiness
-- [ ] Screenshots, diagnostics, and assertions
+- [x] Screenshots, sanitized diagnostics, assertions, and failure policies
 - [ ] Execution-result construction and artifact persistence
 - [ ] Programmatic runner passes the complete Phase 3 fixture gate
 

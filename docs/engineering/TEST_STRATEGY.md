@@ -12,6 +12,8 @@ Scenario integration tests load real local ESM fixtures, validate module exports
 
 Navigation integration tests use real Chromium and intercepted HTTP fixtures to verify same-origin URL resolution, rejection of cross-origin redirects and hook-driven navigation, rejection of replacement-document navigation during readiness, theme state before application scripts, light/dark media emulation, arbitrary named themes, reduced motion, load/selector/font readiness, animation and caret suppression, immutable navigation metadata, and post-readiness execution. Invalid scenarios, hook failures, cross-origin routes, aborted navigation, readiness timeouts, invalid run options, and launch failures cover the failure boundary and continuation contract.
 
+Capture integration tests verify viewport-sized PNG signatures and dimensions, screenshot-before-assertion ordering, assertion execution, absent assertions, sanitized console/page/request diagnostics, default and overridden diagnostic failure policies, screenshot failures, partial evidence on rejection, and continuation into later cells. Fixtures use intercepted HTTP responses and deliberately failed subrequests; no screenshot or report is written to disk.
+
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
 

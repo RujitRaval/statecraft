@@ -2,6 +2,7 @@ import type { MatrixCell } from "@statecraft/core";
 import type { Page, Request } from "playwright";
 
 import {
+  executionStartedAt,
   runExecutionCells,
   type CellExecutionOutcome,
   type RunExecutionCellsOptions,
@@ -11,6 +12,7 @@ import {
   scenarioContextForExecution,
   type RunScenarioCellsOptions,
   type ScenarioContext,
+  type StatecraftScenario,
 } from "./scenario.js";
 
 const defaultNavigationTimeoutMs = 30_000;
@@ -45,7 +47,7 @@ export interface NavigationMetadata {
   readonly requestedUrl: string;
   /** HTTP status returned by the built-in navigation to requestedUrl. */
   readonly status: number | null;
-  /** Final same-origin page URL after hooks and deterministic readiness. */
+  /** Final URL on success; last validated same-origin URL in failure evidence. */
   readonly url: string;
 }
 
@@ -65,6 +67,26 @@ interface NavigationSettings {
   readonly readinessSelector?: string | undefined;
   readonly readinessTimeoutMs: number;
 }
+
+/** @internal Lets higher-level runner stages surround the navigation lifecycle. */
+export interface NavigatedScenarioLifecycle {
+  readonly context: ScenarioContext;
+  readonly navigate: () => Promise<NavigatedScenarioLifecycleResult>;
+  readonly navigationSnapshot: () => NavigationMetadata | null;
+  readonly navigationStatusSnapshot: () => number | null;
+  readonly startedAt: number;
+}
+
+/** @internal Successful navigation state needed by higher-level stages. */
+export interface NavigatedScenarioLifecycleResult {
+  readonly context: NavigatedScenarioContext;
+  readonly scenario: StatecraftScenario;
+}
+
+/** @internal Executes one higher-level stage around the navigation lifecycle. */
+export type NavigatedScenarioLifecycleExecutor<Value> = (
+  lifecycle: NavigatedScenarioLifecycle,
+) => Promise<Value>;
 
 function positiveTimeout(
   value: number | undefined,
@@ -232,6 +254,81 @@ function lifecycleOptions(
 }
 
 /**
+ * @internal Shared orchestration seam for stages that must observe browser
+ * events before theme setup and scenario hooks begin.
+ */
+export async function runNavigatedScenarioLifecycleCells<Value>(
+  cells: readonly MatrixCell[],
+  execute: NavigatedScenarioLifecycleExecutor<Value>,
+  options: RunNavigatedScenarioCellsOptions,
+): Promise<readonly CellExecutionOutcome<Value>[]> {
+  const settings = navigationSettings(options);
+
+  return runExecutionCells(
+    cells,
+    async (execution) => {
+      const context = scenarioContextForExecution(execution);
+      let navigationStarted = false;
+      let navigationSnapshot: NavigationMetadata | null = null;
+      let navigationStatusSnapshot: number | null = null;
+
+      const navigate = async (): Promise<NavigatedScenarioLifecycleResult> => {
+        if (navigationStarted) {
+          throw new TypeError("The navigation lifecycle can only run once per cell.");
+        }
+        navigationStarted = true;
+
+        const requestedUrl = routeUrl(
+          settings.baseURL,
+          execution.cell.route.path,
+        );
+        const scenario = await loadScenario(execution.cell.state.setup, {
+          baseDirectory: options.scenarioBaseDirectory,
+        });
+        await applyTheme(context.page, context.theme);
+        await scenario.beforeNavigate?.(context);
+        const response = await context.page.goto(requestedUrl.href, {
+          timeout: settings.navigationTimeoutMs,
+          waitUntil: "domcontentloaded",
+        });
+        navigationStatusSnapshot = response?.status() ?? null;
+        assertPageOrigin(context.page, settings.baseURL);
+        navigationSnapshot = Object.freeze({
+          requestedUrl: requestedUrl.href,
+          status: navigationStatusSnapshot,
+          url: context.page.url(),
+        });
+        await scenario.afterNavigate?.(context);
+        assertPageOrigin(context.page, settings.baseURL);
+        await settleReadiness(context.page, settings);
+        assertPageOrigin(context.page, settings.baseURL);
+
+        navigationSnapshot = Object.freeze({
+          requestedUrl: requestedUrl.href,
+          status: navigationStatusSnapshot,
+          url: context.page.url(),
+        });
+        return Object.freeze({
+          context: Object.freeze({ ...context, navigation: navigationSnapshot }),
+          scenario,
+        });
+      };
+
+      return execute(
+        Object.freeze({
+          context,
+          navigate,
+          navigationSnapshot: () => navigationSnapshot,
+          navigationStatusSnapshot: () => navigationStatusSnapshot,
+          startedAt: executionStartedAt(execution),
+        }),
+      );
+    },
+    lifecycleOptions(options),
+  );
+}
+
+/**
  * Runs configured cells through theme setup, hooks, navigation, and bounded
  * readiness before invoking caller-owned post-readiness work.
  */
@@ -240,36 +337,9 @@ export async function runNavigatedScenarioCells<Value>(
   execute: NavigatedScenarioCellExecutor<Value>,
   options: RunNavigatedScenarioCellsOptions,
 ): Promise<readonly CellExecutionOutcome<Value>[]> {
-  const settings = navigationSettings(options);
-
-  return runExecutionCells(
+  return runNavigatedScenarioLifecycleCells(
     cells,
-    async (execution) => {
-      const requestedUrl = routeUrl(settings.baseURL, execution.cell.route.path);
-      const scenario = await loadScenario(execution.cell.state.setup, {
-        baseDirectory: options.scenarioBaseDirectory,
-      });
-      const context = scenarioContextForExecution(execution);
-
-      await applyTheme(context.page, context.theme);
-      await scenario.beforeNavigate?.(context);
-      const response = await context.page.goto(requestedUrl.href, {
-        timeout: settings.navigationTimeoutMs,
-        waitUntil: "domcontentloaded",
-      });
-      assertPageOrigin(context.page, settings.baseURL);
-      await scenario.afterNavigate?.(context);
-      assertPageOrigin(context.page, settings.baseURL);
-      await settleReadiness(context.page, settings);
-      assertPageOrigin(context.page, settings.baseURL);
-
-      const navigation = Object.freeze({
-        requestedUrl: requestedUrl.href,
-        status: response?.status() ?? null,
-        url: context.page.url(),
-      });
-      return execute(Object.freeze({ ...context, navigation }));
-    },
-    lifecycleOptions(options),
+    async ({ navigate }) => execute((await navigate()).context),
+    options,
   );
 }
