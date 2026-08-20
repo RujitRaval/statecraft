@@ -128,7 +128,7 @@ a:focus-visible {
 .brand small {
   margin-top: 2px;
   color: var(--sidebar-muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -141,7 +141,7 @@ a:focus-visible {
 .nav-label,
 .eyebrow {
   margin: 0;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 720;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -167,7 +167,7 @@ a:focus-visible {
 }
 
 .nav-item small {
-  font-size: 0.63rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
 }
 
@@ -219,7 +219,7 @@ a:focus-visible {
 .profile small {
   margin-top: 3px;
   color: var(--sidebar-muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .profile {
@@ -239,7 +239,7 @@ a:focus-visible {
   border-radius: 50%;
   background: #eef0e8;
   color: #1b1e19;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 760;
 }
 
@@ -307,7 +307,7 @@ a:focus-visible {
   background: var(--paper);
   color: var(--muted);
   font-family: inherit;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
 }
 
 .topbar-meta {
@@ -315,7 +315,7 @@ a:focus-visible {
   align-items: center;
   gap: 18px;
   color: var(--muted);
-  font-size: 0.69rem;
+  font-size: 0.75rem;
   font-weight: 650;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -417,7 +417,7 @@ a:focus-visible {
   justify-content: space-between;
   gap: 16px;
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 690;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -429,7 +429,7 @@ a:focus-visible {
 
 .metric-card__top span {
   color: var(--line-strong);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
 }
 
 .metric-card > strong {
@@ -447,7 +447,7 @@ a:focus-visible {
   align-items: center;
   gap: 8px;
   color: var(--muted);
-  font-size: 0.69rem;
+  font-size: 0.75rem;
 }
 
 .trend {
@@ -517,7 +517,7 @@ a:focus-visible {
 .chart-total small {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
 }
 
 .chart {
@@ -556,7 +556,7 @@ a:focus-visible {
   flex-direction: column;
   justify-content: space-between;
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .chart-labels {
@@ -567,7 +567,7 @@ a:focus-visible {
   display: flex;
   justify-content: space-between;
   color: var(--muted);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .queue-panel {
@@ -640,7 +640,7 @@ a:focus-visible {
   margin-top: auto;
   padding-top: 20px;
   border-top: 1px solid color-mix(in srgb, var(--paper) 18%, transparent);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .dispatch-strip span {
@@ -683,13 +683,13 @@ a:focus-visible {
 .orders-row small {
   margin-top: 3px;
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
 }
 
 .orders-row--head {
   min-height: 42px;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 720;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -702,7 +702,7 @@ a:focus-visible {
   padding: 0 8px;
   border: 1px solid currentColor;
   border-radius: 99px;
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-style: normal;
   font-weight: 680;
 }
@@ -725,7 +725,7 @@ a:focus-visible {
   gap: 24px;
   padding: 24px 0 0;
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 640;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -826,7 +826,7 @@ a:focus-visible {
   position: absolute;
   right: 16px;
   bottom: 12px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-style: normal;
   font-weight: 760;
   letter-spacing: 0.14em;
@@ -840,7 +840,7 @@ a:focus-visible {
 
 .error-actions span {
   color: var(--muted);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
