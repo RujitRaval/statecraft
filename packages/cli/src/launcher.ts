@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { win32 } from "node:path";
 
 interface ReportOpenCommand {
   readonly args: readonly string[];
@@ -31,17 +32,27 @@ const spawnReportProcess: SpawnReportProcess = (file, args, options) =>
 export function reportOpenCommand(
   platform: string,
   reportPath: string,
+  windowsDirectory: string = process.env["SystemRoot"] ?? "C:\\Windows",
 ): ReportOpenCommand {
   if (platform === "darwin") {
-    return Object.freeze({ args: Object.freeze([reportPath]), file: "open" });
-  }
-  if (platform === "win32") {
     return Object.freeze({
       args: Object.freeze([reportPath]),
-      file: "explorer.exe",
+      file: "/usr/bin/open",
     });
   }
-  return Object.freeze({ args: Object.freeze([reportPath]), file: "xdg-open" });
+  if (platform === "win32") {
+    const systemDirectory = win32.isAbsolute(windowsDirectory)
+      ? windowsDirectory
+      : "C:\\Windows";
+    return Object.freeze({
+      args: Object.freeze([reportPath]),
+      file: win32.join(systemDirectory, "explorer.exe"),
+    });
+  }
+  return Object.freeze({
+    args: Object.freeze([reportPath]),
+    file: platform === "freebsd" ? "/usr/local/bin/xdg-open" : "/usr/bin/xdg-open",
+  });
 }
 
 /** Resolves once the OS accepts the detached launcher process. */

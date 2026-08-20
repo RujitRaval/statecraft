@@ -185,16 +185,29 @@ describe("openReport", () => {
 
 describe("reportOpenCommand", () => {
   it.each([
-    ["darwin", "open"],
-    ["win32", "explorer.exe"],
-    ["linux", "xdg-open"],
-    ["freebsd", "xdg-open"],
+    ["darwin", "/usr/bin/open"],
+    ["win32", "C:\\Windows\\explorer.exe"],
+    ["linux", "/usr/bin/xdg-open"],
+    ["freebsd", "/usr/local/bin/xdg-open"],
   ] as const)("uses a shell-free %s launcher", (platform, file) => {
     const reportPath = "/project with spaces/.statecraft/report/index.html";
 
-    expect(reportOpenCommand(platform, reportPath)).toEqual({
+    expect(reportOpenCommand(platform, reportPath, "C:\\Windows")).toEqual({
       args: [reportPath],
       file,
+    });
+  });
+
+  it("uses the absolute Windows system launcher instead of project lookup", () => {
+    expect(
+      reportOpenCommand(
+        "win32",
+        "C:\\project\\.statecraft\\report\\index.html",
+        "D:\\Windows",
+      ),
+    ).toEqual({
+      args: ["C:\\project\\.statecraft\\report\\index.html"],
+      file: "D:\\Windows\\explorer.exe",
     });
   });
 
@@ -214,7 +227,7 @@ describe("reportOpenCommand", () => {
 
     expect(unref).toHaveBeenCalledOnce();
     expect(spawnProcess).toHaveBeenCalledWith(
-      "explorer.exe",
+      "C:\\Windows\\explorer.exe",
       ["/project/.statecraft/report/index.html"],
       {
         detached: true,

@@ -19,7 +19,7 @@ This project uses the four-part version format required by the GStack ship workf
 
 ### Security
 
-- Report opening rejects observed symbolic-link and non-regular boundaries, passes the absolute report path as one shell-free argument, never creates or modifies HTML, and explicitly treats concurrent same-user project-directory mutation during the pathname handoff as trusted local state.
+- Report opening rejects observed symbolic-link and non-regular boundaries, passes the absolute report path as one shell-free argument to an absolute system-launcher path, never creates or modifies HTML, and explicitly treats concurrent same-user project-directory mutation during the pathname handoff as trusted local state.
 
 ## [0.14.0.0] - 2026-08-20
 
