@@ -29,7 +29,7 @@ describe("renderReportHtml", () => {
 
   it("renders every interactive filter and pins its embedded script in CSP", () => {
     const html = renderReportHtml(interactiveReportFixture());
-    const script = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
+    const script = html.match(/<script>([\s\S]*)<\/script>/i)?.[1];
     const cspHash = html.match(/script-src 'sha256-([^']+)'/)?.[1];
 
     expect(html).toContain('id="report-filters"');
