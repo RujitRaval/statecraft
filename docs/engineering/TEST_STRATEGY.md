@@ -22,6 +22,8 @@ Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, kno
 ## CLI contracts
 Exit 0 all-pass; 1 completed with failures; 2 invalid config/internal setup. Verify `open` with/without report.
 
+Config foundation tests cover default and explicit path discovery, canonical paths, absent and ambiguous configs, invalid roots and non-file paths, trusted module import failures, missing default exports, delegation to core validation, and the built package/type boundary. Discovery tests use isolated temporary projects and do not walk parent directories or access the network.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. Phase 1, Phase 2, and Phase 3 are complete; do not begin a later phase unless the user explicitly advances it.
+Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. Phase 1, Phase 2, and Phase 3 are complete, and Phase 4 is active through focused CLI steps. Do not begin the report UI or another later phase unless the user explicitly advances it.
 
 ## Skill routing
 

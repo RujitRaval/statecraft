@@ -33,4 +33,14 @@
 - [x] Execution-result construction and artifact persistence
 - [x] Programmatic runner passes the complete Phase 3 fixture gate
 
-Stop after Phase 3 and report findings before proceeding.
+## Phase 4
+- [x] CLI package foundation and public package boundary
+- [x] Deterministic config discovery and trusted local module loading
+- [ ] Command parser and dispatch
+- [ ] `init` starter generation and overwrite protection
+- [ ] `scan` orchestration, filters, and headed mode
+- [ ] Terminal summary and exit codes 0/1/2
+- [ ] `open` latest-report behavior
+- [ ] Fresh example passes init -> scan -> report
+
+Stop after Phase 4 and report findings before proceeding. The report UI remains deferred to Phase 5.
