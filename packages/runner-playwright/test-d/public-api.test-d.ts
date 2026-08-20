@@ -103,6 +103,9 @@ const persistenceOptions: RunPersistedScenarioCellsOptions = {
 };
 const persistedRun: Promise<PersistedScenarioRun> =
   runPersistedScenarioCells([execution.cell], persistenceOptions);
+const htmlReportPath: Promise<".statecraft/report/index.html"> = persistedRun.then(
+  (run) => run.htmlReportPath,
+);
 declare const capture: CapturedScenarioCell;
 const evidence: ScenarioCaptureEvidence = capture;
 const assertionStatus: AssertionStatus = capture.assertionStatus;
@@ -167,6 +170,7 @@ void scenarioOutcomes;
 void scenarioValue;
 void hook;
 void loadErrorCode;
+void htmlReportPath;
 void fulfilledValue;
 void droppedDiagnostics;
 void rejectedReason;

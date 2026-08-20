@@ -35,9 +35,6 @@ importers:
       '@statecraft/core':
         specifier: workspace:*
         version: link:../core
-      '@statecraft/report':
-        specifier: workspace:*
-        version: link:../report
       '@statecraft/runner-playwright':
         specifier: workspace:*
         version: link:../runner-playwright
@@ -89,6 +86,9 @@ importers:
       '@statecraft/core':
         specifier: workspace:*
         version: link:../core
+      '@statecraft/report':
+        specifier: workspace:*
+        version: link:../report
       playwright:
         specifier: 1.62.1
         version: 1.62.1

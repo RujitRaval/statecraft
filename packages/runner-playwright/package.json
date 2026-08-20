@@ -17,11 +17,12 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build",
+    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/report build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@statecraft/core": "workspace:*",
+    "@statecraft/report": "workspace:*",
     "playwright": "1.62.1"
   },
   "devDependencies": {

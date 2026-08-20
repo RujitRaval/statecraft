@@ -31,6 +31,7 @@ describe("@statecraft/runner-playwright package boundary", () => {
     expect(manifest).toMatchObject({
       dependencies: {
         "@statecraft/core": "workspace:*",
+        "@statecraft/report": "workspace:*",
         playwright: "1.62.1",
       },
       name: "@statecraft/runner-playwright",

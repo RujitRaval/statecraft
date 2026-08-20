@@ -20,12 +20,11 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/runner-playwright build && corepack pnpm --filter @statecraft/report build",
+    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/report build && corepack pnpm --filter @statecraft/runner-playwright build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@statecraft/core": "workspace:*",
-    "@statecraft/report": "workspace:*",
     "@statecraft/runner-playwright": "workspace:*"
   },
   "devDependencies": {

@@ -100,21 +100,23 @@ function matrix(view: ReportViewModel): string {
         `<th scope="col"><span>${escapeHtml(columnLabel(column))}</span><small>${column.width} × ${column.height}</small></th>`,
     )
     .join("");
-  const rows = view.routes
-    .flatMap((route) =>
-      route.rows.map(
+  const bodies = view.routes
+    .map(
+      (route) => `<tbody>${route.rows
+        .map(
         (row, rowIndex) => `<tr>
           ${rowIndex === 0 ? `<th class="route-heading" scope="rowgroup" rowspan="${route.rows.length}"><span>${escapeHtml(words(route.id))}</span><small>${escapeHtml(route.path)}</small></th>` : ""}
           <th class="state-heading" scope="row"><span>${escapeHtml(words(row.stateId))}</span><small>${escapeHtml(row.scenarioSource)}</small></th>
           ${row.cells.map((cell, index) => `<td>${matrixCell(cell, view.columns[index]!, row.routeId, row.stateId)}</td>`).join("")}
         </tr>`,
-      ),
+        )
+        .join("")}</tbody>`,
     )
     .join("");
   return `<section class="panel matrix-panel" aria-labelledby="matrix-title">
     <div class="section-heading"><div><p class="eyebrow">Configured product states</p><h2 id="matrix-title">Coverage matrix</h2></div><p>Open a cell to inspect its evidence and diagnostics.</p></div>
     <div class="matrix-scroll" tabindex="0" aria-label="Scrollable coverage matrix">
-      <table><thead><tr><th scope="col">Route</th><th scope="col">State</th>${heading}</tr></thead><tbody>${rows}</tbody></table>
+      <table><thead><tr><th scope="col">Route</th><th scope="col">State</th>${heading}</tr></thead>${bodies}</table>
     </div>
   </section>`;
 }

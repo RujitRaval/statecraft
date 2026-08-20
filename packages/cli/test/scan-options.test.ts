@@ -12,26 +12,16 @@ import { parseReport } from "@statecraft/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const runPersistedScenarioCellsMock = vi.hoisted(() => vi.fn());
-const writeReportHtmlMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@statecraft/runner-playwright", () => ({
   runPersistedScenarioCells: runPersistedScenarioCellsMock,
 }));
-vi.mock("@statecraft/report", () => ({
-  REPORT_HTML_PATH: ".statecraft/report/index.html",
-  writeReportHtml: writeReportHtmlMock,
-}));
-
 import { scanProject } from "../src/scan.js";
 
 const projects: string[] = [];
 
 beforeEach(() => {
   runPersistedScenarioCellsMock.mockReset();
-  writeReportHtmlMock.mockReset();
-  writeReportHtmlMock.mockResolvedValue({
-    reportPath: ".statecraft/report/index.html",
-  });
 });
 
 afterEach(async () => {
@@ -81,6 +71,7 @@ describe("scanProject options", () => {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
+      htmlReportPath: ".statecraft/report/index.html",
       report,
       reportPath: ".statecraft/report/statecraft.json",
     });
@@ -98,9 +89,6 @@ describe("scanProject options", () => {
       launchOptions: { headless: false },
       projectDirectory: project,
       scenarioBaseDirectory: project,
-    });
-    expect(writeReportHtmlMock).toHaveBeenCalledWith(report, {
-      projectDirectory: project,
     });
   });
 
@@ -144,6 +132,7 @@ export default {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
+      htmlReportPath: ".statecraft/report/index.html",
       report,
       reportPath: ".statecraft/report/statecraft.json",
     });

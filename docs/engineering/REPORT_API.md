@@ -26,19 +26,8 @@ const html = renderReportHtml(schemaV1Report);
 
 The current no-script details use ordinary anchors and visible focus states. Interactive route/state/viewport/theme/status filters and a denser detail interaction remain the next Phase 5 slice.
 
-## Persistence
+## Publication boundary
 
-```ts
-import { writeReportHtml } from "@statecraft/report";
+`@statecraft/report` deliberately owns no filesystem mutation. `REPORT_HTML_PATH` exposes the stable `.statecraft/report/index.html` project-relative contract, while the Playwright runner stages rendered HTML beside its JSON and PNG output. All three outputs publish under the runner's existing owned project lock and recovery transaction, preventing concurrent scans from mixing report generations. Existing HTML targets must be regular files, staged files use owner-only mode where supported, and a failed final HTML rename restores the previous screenshot, JSON, and HTML set.
 
-const output = await writeReportHtml(schemaV1Report, {
-  projectDirectory: process.cwd(),
-});
-// .statecraft/report/index.html
-```
-
-`writeReportHtml` validates the report before filesystem mutation, canonicalizes an existing project root, requires real `.statecraft/` and `report/` directory boundaries, and refuses an existing symbolic-link or non-file HTML target. It writes a uniquely named owner-private temporary file, flushes it, atomically renames it to `.statecraft/report/index.html`, and normalizes owner-only mode where supported. A failed temporary publication is cleaned up without deleting the previous HTML report.
-
-Expected publication failures use `ReportWriteError` and stable `REPORT_ROOT_INVALID`, `REPORT_OUTPUT_INVALID`, or `REPORT_WRITE_FAILED` codes. `REPORT_HTML_PATH` is the stable project-relative output contract.
-
-`statecraft scan` invokes this writer only after the runner has safely published screenshots and schema-v1 JSON. The terminal summary points to the HTML document, while `ScanResult` retains both `htmlReportPath` and the machine-readable JSON `reportPath`.
+`statecraft scan` returns both `htmlReportPath` and the machine-readable JSON `reportPath`, and its terminal summary points to the HTML document.

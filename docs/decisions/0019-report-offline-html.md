@@ -14,8 +14,9 @@ Phase 5 must turn the existing schema-v1 JSON and deterministic screenshots into
 - Validate unknown report input through `parseReport`, then derive ordered matrix columns, route/state rows, cells, and detail records only from explicit execution metadata.
 - Render a responsive, keyboard-reachable baseline report as one HTML document with inline CSS, no JavaScript, and relative references to the already-persisted PNG artifacts.
 - Escape every report-controlled string and set a restrictive document Content Security Policy. Do not load external fonts, styles, scripts, images, or telemetry.
-- Publish `.statecraft/report/index.html` through a validated real-directory boundary and an owner-private temporary file followed by atomic rename.
-- Have CLI scan invoke report publication after runner persistence, return both HTML and JSON paths, and point terminal users to the HTML report.
+- Keep report transformation and rendering free of filesystem behavior; expose the stable `.statecraft/report/index.html` contract from the report package.
+- Stage HTML, JSON, and screenshots inside the runner's existing owned lock and recovery transaction so concurrent scans cannot mix generations and a failed final HTML publication restores the prior set.
+- Have CLI scan return both HTML and JSON paths and point terminal users to the HTML report.
 - Defer interactive filters and the final detail-view polish to the next Phase 5 slice.
 
 ## Consequences

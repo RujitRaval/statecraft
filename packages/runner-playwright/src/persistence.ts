@@ -27,6 +27,7 @@ import {
   type MatrixCell,
   type StatecraftReport,
 } from "@statecraft/core";
+import { REPORT_HTML_PATH, renderReportHtml } from "@statecraft/report";
 
 import {
   diagnosticErrorMessage,
@@ -42,6 +43,7 @@ const statecraftDirectoryName = ".statecraft";
 const artifactsDirectoryName = "artifacts";
 const reportDirectoryName = "report";
 const reportFileName = "statecraft.json";
+const reportHtmlFileName = "index.html";
 const reportProjectPath = ".statecraft/report/statecraft.json" as const;
 const lockDirectoryName = ".runner-persistence-lock";
 const lockOwnerFileName = "owner.json";
@@ -63,6 +65,7 @@ export interface RunPersistedScenarioCellsOptions
 
 /** The validated report and its stable project-relative JSON location. */
 export interface PersistedScenarioRun {
+  readonly htmlReportPath: typeof REPORT_HTML_PATH;
   readonly report: StatecraftReport;
   readonly reportPath: typeof reportProjectPath;
 }
@@ -79,15 +82,20 @@ interface PublicationOperations {
 
 interface PublicationPaths {
   readonly existingArtifacts: string;
+  readonly existingHtml: string;
   readonly existingReport: string;
   readonly previousArtifacts: string;
+  readonly previousHtml: string;
   readonly previousReport: string;
 }
 
 interface PublicationState {
   readonly movedPreviousArtifacts: boolean;
+  readonly movedPreviousHtml: boolean;
   readonly movedPreviousReport: boolean;
   readonly publishedArtifacts: boolean;
+  readonly publishedHtml: boolean;
+  readonly publishedReport: boolean;
 }
 
 interface PersistenceLock {
@@ -399,6 +407,22 @@ export async function recoverPublication(
     }
   };
 
+  if (state.publishedHtml) {
+    const htmlRemoved = await attempt(() =>
+      operations.remove(paths.existingHtml, { force: true }),
+    );
+    if (!htmlRemoved) {
+      return Object.freeze(errors);
+    }
+  }
+  if (state.publishedReport) {
+    const reportRemoved = await attempt(() =>
+      operations.remove(paths.existingReport, { force: true }),
+    );
+    if (!reportRemoved) {
+      return Object.freeze(errors);
+    }
+  }
   if (state.publishedArtifacts) {
     const artifactsRemoved = await attempt(() =>
       operations.remove(paths.existingArtifacts, {
@@ -419,8 +443,16 @@ export async function recoverPublication(
     }
   }
   if (state.movedPreviousReport) {
-    await attempt(() =>
+    const reportRestored = await attempt(() =>
       operations.rename(paths.previousReport, paths.existingReport),
+    );
+    if (!reportRestored) {
+      return Object.freeze(errors);
+    }
+  }
+  if (state.movedPreviousHtml) {
+    await attempt(() =>
+      operations.rename(paths.previousHtml, paths.existingHtml),
     );
   }
   return Object.freeze(errors);
@@ -708,8 +740,10 @@ export async function persistReport(
   try {
     const existingArtifacts = join(statecraftRoot, artifactsDirectoryName);
     const existingReport = join(reportDirectory, reportFileName);
+    const existingHtml = join(reportDirectory, reportHtmlFileName);
     const artifactsType = await existingType(existingArtifacts);
     const reportType = await existingType(existingReport);
+    const htmlType = await existingType(existingHtml);
     if (artifactsType !== "missing" && artifactsType !== "directory") {
       throw new TypeError(
         ".statecraft/artifacts must be a real directory, not a symbolic link.",
@@ -718,6 +752,11 @@ export async function persistReport(
     if (reportType !== "missing" && reportType !== "file") {
       throw new TypeError(
         ".statecraft/report/statecraft.json must be a regular file, not a symbolic link.",
+      );
+    }
+    if (htmlType !== "missing" && htmlType !== "file") {
+      throw new TypeError(
+        ".statecraft/report/index.html must be a regular file, not a symbolic link.",
       );
     }
 
@@ -758,17 +797,28 @@ export async function persistReport(
     const stagedReport = join(stagingRoot, reportFileName);
     assertContained(stagingRoot, stagedReport);
     await writePrivateFile(stagedReport, serializeReport(report));
+    const stagedHtml = join(stagingRoot, reportHtmlFileName);
+    assertContained(stagingRoot, stagedHtml);
+    await writePrivateFile(stagedHtml, renderReportHtml(report));
     await updateLockPhase(lock, "publishing");
 
     const previousArtifacts = join(stagingRoot, "previous-artifacts");
     const previousReport = join(stagingRoot, "previous-statecraft.json");
+    const previousHtml = join(stagingRoot, "previous-index.html");
     let movedPreviousArtifacts = false;
     let movedPreviousReport = false;
+    let movedPreviousHtml = false;
     let publishedArtifacts = false;
+    let publishedReport = false;
+    let publishedHtml = false;
     try {
       if (reportType === "file") {
         await operations.rename(existingReport, previousReport);
         movedPreviousReport = true;
+      }
+      if (htmlType === "file") {
+        await operations.rename(existingHtml, previousHtml);
+        movedPreviousHtml = true;
       }
       if (artifactsType === "directory") {
         await operations.rename(existingArtifacts, previousArtifacts);
@@ -777,19 +827,27 @@ export async function persistReport(
       await operations.rename(stagedArtifacts, existingArtifacts);
       publishedArtifacts = true;
       await operations.rename(stagedReport, existingReport);
+      publishedReport = true;
+      await operations.rename(stagedHtml, existingHtml);
+      publishedHtml = true;
     } catch (error: unknown) {
       const recoveryErrors = [
         ...(await recoverPublication(
           {
             existingArtifacts,
+            existingHtml,
             existingReport,
             previousArtifacts,
+            previousHtml,
             previousReport,
           },
           {
             movedPreviousArtifacts,
+            movedPreviousHtml,
             movedPreviousReport,
             publishedArtifacts,
+            publishedHtml,
+            publishedReport,
           },
           operations,
         )),
@@ -846,8 +904,8 @@ export async function persistReport(
 }
 
 /**
- * Runs the complete Phase 3 browser lifecycle, persists deterministic PNGs,
- * and writes the validated schema-v1 JSON report without generating report UI.
+ * Runs the complete browser lifecycle and transactionally publishes deterministic
+ * PNGs, schema-v1 JSON, and the offline HTML report under one owned run lock.
  */
 export async function runPersistedScenarioCells(
   cells: readonly MatrixCell[],
@@ -871,7 +929,11 @@ export async function runPersistedScenarioCells(
       configuredTimestamp ?? new Date().toISOString(),
     );
     await persistReport(root, lock, report, artifacts);
-    run = Object.freeze({ report, reportPath: reportProjectPath });
+    run = Object.freeze({
+      htmlReportPath: REPORT_HTML_PATH,
+      report,
+      reportPath: reportProjectPath,
+    });
   } catch (error: unknown) {
     runError = error;
   }

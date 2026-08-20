@@ -40,10 +40,8 @@ describe("@statecraft/report package boundary", () => {
     const module = await import(importUrl.href);
     expect(Object.keys(module).sort()).toEqual([
       "REPORT_HTML_PATH",
-      "ReportWriteError",
       "renderReportHtml",
       "transformReport",
-      "writeReportHtml",
     ]);
   });
 });

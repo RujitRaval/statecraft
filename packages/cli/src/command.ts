@@ -1,7 +1,6 @@
 import { relative } from "node:path";
 
 import { ConfigValidationError } from "@statecraft/core";
-import { ReportWriteError } from "@statecraft/report";
 
 import {
   ConfigDiscoveryError,
@@ -157,7 +156,6 @@ function expectedScanError(error: unknown): string | undefined {
   if (
     error instanceof ConfigDiscoveryError ||
     error instanceof ConfigLoadError ||
-    error instanceof ReportWriteError ||
     error instanceof ScanError
   ) {
     return terminalText(error.message);

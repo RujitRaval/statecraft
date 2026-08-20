@@ -1,7 +1,7 @@
 # Architecture
 
 ## Flow
-`CLI -> config validator -> matrix planner -> Playwright runner -> artifacts/results -> report generator -> HTML + JSON`
+`CLI -> core validation/matrix -> Playwright runner -> report renderer -> coordinated PNG + JSON + HTML publication`
 
 ## Monorepo
 ```text
@@ -30,12 +30,12 @@ The navigated runner resolves local route paths against one validated HTTP(S) ba
 
 The capture runner attaches diagnostics before theme setup and hooks, follows the same navigation lifecycle, captures viewport-sized PNG bytes after readiness, and then executes the scenario assertion. Console errors, uncaught page errors, failed-request metadata, navigation status, and duration remain in memory. Free-form diagnostic text is capped and redacted; failed requests never expose headers or bodies. Page errors fail by default, while console errors and failed requests are nonfatal unless `failOn` enables them. Screenshot and assertion failures are always fatal. A structured cell error retains partial evidence, and no capture artifact is persisted until the following Phase 3 slice.
 
-The persisted runner prevalidates individual cells and cross-cell report invariants, translates every settled capture into the schema-v1 core `ExecutionResult` contract, including failures that retain a successfully captured screenshot, and calculates summary coverage from the configured cells. It validates the complete `StatecraftReport` and writes deterministic PNG paths plus `.statecraft/report/statecraft.json`. A process-owned, phase-aware run lock covers capture and publication and safely recovers abandoned capture-only locks. Writes stage a complete replacement artifact tree, reject symbolic-link output roots, normalize private filesystem modes, preserve unrelated report UI files, hide the old JSON before artifact replacement, and publish the new JSON last. Incomplete recovery preserves its staging data and lock. The runner does not generate HTML or expose CLI behavior.
+The persisted runner prevalidates individual cells and cross-cell report invariants, translates every settled capture into the schema-v1 core `ExecutionResult` contract, including failures that retain a successfully captured screenshot, and calculates summary coverage from the configured cells. It validates the complete `StatecraftReport`, delegates pure HTML rendering to `@statecraft/report`, and coordinates deterministic PNG, JSON, and HTML persistence. A process-owned, phase-aware run lock covers capture and publication and safely recovers abandoned capture-only locks. Writes stage a complete replacement output set, reject symbolic-link output targets, normalize private filesystem modes, hide the old report files before artifact replacement, and make HTML visible only after JSON. Failed publication restores the previous set; incomplete recovery preserves its staging data and lock. The runner does not expose CLI behavior.
 
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 
-The initial Phase 5 slice validates schema-v1 reports through the core parser and projects them into deterministic first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution details. It renders a responsive HTML document with inline CSS, no runtime script or external asset, relative references to validated screenshots, escaped report-controlled text, and a restrictive document Content Security Policy. Publication validates real `.statecraft/report/` boundaries, rejects symbolic-link/non-file HTML targets, and atomically replaces `index.html` through an owner-private temporary file. Interactive filters and final report polish remain later Phase 5 slices.
+The initial Phase 5 slice validates schema-v1 reports through the core parser and projects them into deterministic first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution details. It renders a responsive HTML document with inline CSS, no runtime script or external asset, relative references to validated screenshots, escaped report-controlled text, and a restrictive document Content Security Policy. The runner stages HTML, JSON, and screenshots under one owned project lock and recovery transaction, rejecting symbolic-link/non-file targets and restoring the previous coherent set if publication fails. Interactive filters and final report polish remain later Phase 5 slices.
 
 ### @statecraft/cli
 Config discovery, commands, orchestration, terminal UX, exit codes.
@@ -48,7 +48,7 @@ The scan-orchestration slice composes config loading, exact route selection, det
 
 The latest-report slice adds `statecraft open` and the programmatic `openReport` boundary. It canonicalizes the invocation root, validates a readable regular `.statecraft/report/index.html` reached through real directory boundaries, and invokes the platform launcher from an absolute system path with a shell-free argument array. The pathname-based OS handoff trusts the local project directory against concurrent same-user mutation. Missing, invalid, and launcher-failure cases retain stable error codes and CLI exit code `2`. The command never creates or modifies report files.
 
-Phase 5 scan integration calls `@statecraft/report` only after the runner safely publishes PNG and JSON output. `ScanResult` exposes both the HTML and JSON project-relative paths, and terminal output points developers to the HTML report that `statecraft open` consumes. The CLI does not duplicate transformation or rendering behavior.
+Phase 5 scan integration returns the runner's coordinated output directly. `ScanResult` exposes both the HTML and JSON project-relative paths, and terminal output points developers to the HTML report that `statecraft open` consumes. The CLI does not duplicate transformation, rendering, or persistence behavior.
 
 ## Scenario API
 ```ts

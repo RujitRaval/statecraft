@@ -14,6 +14,7 @@ describe("renderReportHtml", () => {
     expect(html).toContain("../artifacts/dashboard/success/desktop-light.png");
     expect(html).toContain('href="#execution-1"');
     expect(html).toContain('id="execution-2"');
+    expect(html).toMatch(/<tbody>[\s\S]*scope="rowgroup"[\s\S]*<\/tbody>/);
     expect(html).toContain("No network or server required");
     expect(html).toContain("default-src 'none'");
     expect(html).not.toMatch(/<(script|link)\b/i);

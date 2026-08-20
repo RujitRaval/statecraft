@@ -1,4 +1,6 @@
 export { renderReportHtml } from "./render.js";
+/** Stable project-relative location of the generated offline report. */
+export const REPORT_HTML_PATH = ".statecraft/report/index.html" as const;
 export { transformReport } from "./transform.js";
 export type {
   ReportCellView,
@@ -7,13 +9,3 @@ export type {
   ReportRowView,
   ReportViewModel,
 } from "./transform.js";
-export {
-  REPORT_HTML_PATH,
-  ReportWriteError,
-  writeReportHtml,
-} from "./write.js";
-export type {
-  ReportWriteErrorCode,
-  WriteReportHtmlOptions,
-  WrittenReportHtml,
-} from "./write.js";
