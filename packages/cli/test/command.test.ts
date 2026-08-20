@@ -13,6 +13,14 @@ import { parseReport } from "@statecraft/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ScanOptions, ScanResult } from "../src/scan.js";
+import type {
+  OpenReportOptions,
+  OpenReportResult,
+} from "../src/open.js";
+
+const openReportMock = vi.hoisted(() =>
+  vi.fn<(options?: OpenReportOptions) => Promise<OpenReportResult>>(),
+);
 
 const scanProjectMock = vi.hoisted(() =>
   vi.fn<(options?: ScanOptions) => Promise<ScanResult>>(),
@@ -40,6 +48,11 @@ vi.mock("../src/scan.js", async (importOriginal) => {
   return { ...original, scanProject: scanProjectMock };
 });
 
+vi.mock("../src/open.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/open.js")>();
+  return { ...original, openReport: openReportMock };
+});
+
 import { runCli } from "../src/command.js";
 
 const temporaryProjects: string[] = [];
@@ -53,6 +66,7 @@ async function temporaryProject(): Promise<string> {
 }
 
 afterEach(async () => {
+  openReportMock.mockReset();
   scanProjectMock.mockReset();
   await Promise.all(
     temporaryProjects.splice(0).map((project) =>
@@ -148,6 +162,7 @@ describe("runCli", () => {
       }),
     ).resolves.toBe(0);
     expect(stdout.messages.join("")).toContain("statecraft init");
+    expect(stdout.messages.join("")).toContain("statecraft open");
     expect(stderr.messages).toEqual([]);
     await expect(
       lstat(join(project, "statecraft.config.ts")),
@@ -160,10 +175,75 @@ describe("runCli", () => {
 
     await expect(runCli({ args: [], stderr: stderr.write })).resolves.toBe(2);
     await expect(
-      runCli({ args: ["open"], stderr: stderr.write }),
+      runCli({ args: ["unknown"], stderr: stderr.write }),
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toContain("Missing command.");
-    expect(stderr.messages.join("")).toContain("Unknown command: open");
+    expect(stderr.messages.join("")).toContain("Unknown command: unknown");
+  });
+
+  it("opens the latest report and prints its stable relative path", async () => {
+    const stdout = outputCapture();
+    const stderr = outputCapture();
+    openReportMock.mockResolvedValue({
+      projectRoot: "/project",
+      reportPath: "/project/.statecraft/report/index.html",
+      reportRelativePath: ".statecraft/report/index.html",
+    });
+
+    await expect(
+      runCli({
+        args: ["open"],
+        cwd: "/project",
+        stderr: stderr.write,
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(0);
+    expect(openReportMock).toHaveBeenCalledWith({ cwd: "/project" });
+    expect(stdout.messages.join("")).toBe(
+      "Opened .statecraft/report/index.html.\n",
+    );
+    expect(stderr.messages).toEqual([]);
+  });
+
+  it("prints expected open failures and returns setup exit code 2", async () => {
+    const stderr = outputCapture();
+    const { OpenReportError } = await import("../src/open.js");
+    openReportMock.mockRejectedValue(
+      new OpenReportError(
+        "OPEN_REPORT_NOT_FOUND",
+        "No report\nfound.",
+        "/project/.statecraft/report/index.html",
+      ),
+    );
+
+    await expect(
+      runCli({ args: ["open"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe("No report\\nfound.\n");
+  });
+
+  it("rejects open arguments before locating a report", async () => {
+    const stderr = outputCapture();
+
+    await expect(
+      runCli({ args: ["open", "--latest"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toContain(
+      "The open command does not accept arguments: --latest",
+    );
+    expect(openReportMock).not.toHaveBeenCalled();
+  });
+
+  it("does not expose unexpected open failures", async () => {
+    const stderr = outputCapture();
+    openReportMock.mockRejectedValue(new Error("secret internal detail"));
+
+    await expect(
+      runCli({ args: ["open"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "Statecraft could not open the latest report unexpectedly.\n",
+    );
   });
 
   it("rejects init arguments before touching the filesystem", async () => {

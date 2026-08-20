@@ -44,6 +44,8 @@ The next Phase 4 slice adds an executable dispatcher without a third-party parse
 
 The scan-orchestration slice composes config loading, exact route selection, deterministic matrix expansion, and the complete persisted runner without duplicating those package contracts. Scenario paths resolve from the config directory; `.statecraft/` is rooted at the invocation working directory. `--headed` changes only the Playwright launch mode. The CLI formats terminal output from the validated schema-v1 report and returns `0` when all cells pass, `1` when execution completes with failed cells, and `2` for usage, setup, config, or run-level errors. Unknown routes fail before browser launch or output creation. `open`, HTML generation, and report UI remain outside this slice.
 
+The latest-report slice adds `statecraft open` and the programmatic `openReport` boundary. It canonicalizes the invocation root, validates a readable regular `.statecraft/report/index.html` reached through real directory boundaries, and invokes `open`, `explorer.exe`, or `xdg-open` with a shell-free argument array. The pathname-based OS handoff trusts the local project directory against concurrent same-user mutation. Missing, invalid, and launcher-failure cases retain stable error codes and CLI exit code `2`. The command never creates or modifies report files; HTML generation and all report UI behavior remain owned by Phase 5.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {

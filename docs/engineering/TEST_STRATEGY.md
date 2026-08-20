@@ -28,6 +28,8 @@ CLI initialization tests cover generated config/scenario content, canonical proj
 
 CLI scan tests cover deterministic option parsing, exact route selection, unknown-route setup failures before output creation, config-relative scenario resolution, headed-mode forwarding, all-pass and completed-with-failure summaries, stable exit codes, continuation after a failed cell, schema-v1 report persistence, deterministic screenshot paths, and the public programmatic/type boundary. Browser-backed cases use the pinned Chromium build and isolated temporary projects.
 
+CLI open tests cover canonical latest-report selection, absent reports, invalid roots, non-file targets, symbolic-link boundaries, shell-free platform command mapping, launcher failures, argument rejection, terminal sanitization, exit codes, and public package/type boundaries. Fixture launchers are injected internally so tests never open a real browser or create report UI.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

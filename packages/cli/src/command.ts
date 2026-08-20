@@ -7,6 +7,7 @@ import {
   ConfigLoadError,
 } from "./config.js";
 import { InitError, initProject } from "./init.js";
+import { OpenReportError, openReport } from "./open.js";
 import { ScanError, scanProject, type ScanResult } from "./scan.js";
 
 const HELP = `Statecraft
@@ -14,11 +15,13 @@ const HELP = `Statecraft
 Usage:
   statecraft init
   statecraft scan [--config <path>] [--route <id>] [--headed]
+  statecraft open
   statecraft --help
 
 Commands:
   init  Create a starter config and scenario without overwriting files
   scan  Execute configured UI states and persist screenshots plus JSON
+  open  Open the latest generated offline HTML report
 `;
 
 /** Stable process outcomes exposed by the current command foundation. */
@@ -190,7 +193,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
     return 2;
   }
 
-  if (args[0] !== "init" && args[0] !== "scan") {
+  if (args[0] !== "init" && args[0] !== "scan" && args[0] !== "open") {
     stderr(`Unknown command: ${terminalText(args[0]!)}\n\n${HELP}`);
     return 2;
   }
@@ -207,6 +210,32 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
       return result.report.summary.failed === 0 ? 0 : 1;
     } catch (error: unknown) {
       stderr(`${expectedScanError(error) ?? "Statecraft scan failed unexpectedly."}\n`);
+      return 2;
+    }
+  }
+
+  if (args[0] === "open") {
+    if (args.length > 1) {
+      stderr(
+        `The open command does not accept arguments: ${args
+          .slice(1)
+          .map(terminalText)
+          .join(" ")}\n`,
+      );
+      return 2;
+    }
+    try {
+      const result = await openReport({ cwd: options.cwd });
+      stdout(`Opened ${result.reportRelativePath}.\n`);
+      return 0;
+    } catch (error: unknown) {
+      stderr(
+        `${
+          error instanceof OpenReportError
+            ? terminalText(error.message)
+            : "Statecraft could not open the latest report unexpectedly."
+        }\n`,
+      );
       return 2;
     }
   }
