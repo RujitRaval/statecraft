@@ -4,7 +4,6 @@ import {
   expandMatrix,
   type StatecraftReport,
 } from "@statecraft/core";
-import { runPersistedScenarioCells } from "@statecraft/runner-playwright";
 
 import { loadConfig } from "./config.js";
 
@@ -70,6 +69,9 @@ export async function scanProject(
     routeIds:
       options.routeId === undefined ? undefined : [options.routeId],
   });
+  const { runPersistedScenarioCells } = await import(
+    "@statecraft/runner-playwright"
+  );
   const run = await runPersistedScenarioCells(cells, {
     baseURL: loaded.config.baseURL,
     ...(loaded.config.failOn === undefined
