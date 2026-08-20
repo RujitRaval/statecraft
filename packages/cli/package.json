@@ -2,7 +2,7 @@
   "name": "@statecraft/cli",
   "version": "0.0.0",
   "private": true,
-  "description": "Command-line foundations and configuration loading for Statecraft.",
+  "description": "Local command-line initialization and scan orchestration for Statecraft.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -20,11 +20,12 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build",
+    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/runner-playwright build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@statecraft/core": "workspace:*"
+    "@statecraft/core": "workspace:*",
+    "@statecraft/runner-playwright": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

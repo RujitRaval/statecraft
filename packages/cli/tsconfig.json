@@ -2,6 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "noEmit": true,
     "types": [
       "node"

@@ -26,6 +26,8 @@ Config foundation tests cover default and explicit path discovery, canonical pat
 
 CLI initialization tests cover generated config/scenario content, canonical project roots, existing-directory preservation, every supported config-name conflict, scenario conflicts, repeated initialization, symbolic-link directory refusal, invalid/unwritable roots, help and usage errors, exact next-step output, exit codes, the public type boundary, the built executable entrypoint, and isolated-consumer compilation/loading from a one-package CLI install. All filesystem cases use isolated temporary projects.
 
+CLI scan tests cover deterministic option parsing, exact route selection, unknown-route setup failures before output creation, config-relative scenario resolution, headed-mode forwarding, all-pass and completed-with-failure summaries, stable exit codes, continuation after a failed cell, schema-v1 report persistence, deterministic screenshot paths, and the public programmatic/type boundary. Browser-backed cases use the pinned Chromium build and isolated temporary projects.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

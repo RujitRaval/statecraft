@@ -78,11 +78,13 @@ describe("@statecraft/cli package boundary", () => {
       "ConfigLoadError",
       "DEFAULT_CONFIG_FILENAMES",
       "InitError",
+      "ScanError",
       "defineConfig",
       "discoverConfig",
       "initProject",
       "loadConfig",
       "runCli",
+      "scanProject",
     ]);
   });
 
@@ -169,6 +171,43 @@ describe("@statecraft/cli package boundary", () => {
       );
       expect(scenarioModule.default).toEqual({});
 
+      await writeFile(
+        join(project, "scan-scenario.mjs"),
+        `export default {
+  async beforeNavigate({ page }) {
+    await page.route("**/*", async (route) => route.fulfill({
+      body: "<!doctype html><title>Ready</title><h1>Ready</h1>",
+      contentType: "text/html",
+      status: 200,
+    }));
+  },
+};\n`,
+        "utf8",
+      );
+      await writeFile(
+        join(project, "scan.config.mjs"),
+        `export default {
+  baseURL: "https://statecraft.invalid",
+  routes: [{ id: "home", path: "/", states: [{ id: "success", setup: "./scan-scenario.mjs" }] }],
+  themes: ["light"],
+  viewports: { compact: { height: 240, width: 320 } },
+};\n`,
+        "utf8",
+      );
+      await expect(
+        execFileAsync(
+          process.execPath,
+          [binPath, "scan", "--config", "scan.config.mjs", "--route", "home"],
+          { cwd: project },
+        ),
+      ).resolves.toMatchObject({
+        stderr: "",
+        stdout: expect.stringContaining("All 1 execution passed."),
+      });
+      await expect(
+        access(join(project, ".statecraft", "report", "statecraft.json")),
+      ).resolves.toBeUndefined();
+
       await expect(
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
       ).rejects.toMatchObject({
@@ -180,5 +219,5 @@ describe("@statecraft/cli package boundary", () => {
     } finally {
       await rm(project, { force: true, recursive: true });
     }
-  });
+  }, 20_000);
 });

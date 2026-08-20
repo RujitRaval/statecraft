@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active and must be delivered through focused CLI steps. Do not begin the report UI or other later phases until the user explicitly advances the phase.
+Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active and must be delivered through focused CLI steps. Config discovery/loading, `init`, and `scan` orchestration are complete. Do not begin the report UI or other later phases until the user explicitly advances the phase.
 
 ## Development workflow
 

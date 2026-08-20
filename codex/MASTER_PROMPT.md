@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active. The CLI package, deterministic config discovery/loading, executable command foundation, and overwrite-safe `init` command are complete. Continue Phase 4 through focused `scan` and `open` slices, and do not start the report UI or another later phase until the user explicitly advances the phase.
+Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active. The CLI package now provides deterministic config discovery/loading, overwrite-safe `init`, and `scan` orchestration with exact route filtering, headed mode, private runner persistence, terminal summaries, and exit codes. Continue Phase 4 through a focused `open` slice, and do not start the report UI or another later phase until the user explicitly advances the phase.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step inside Phase 4.

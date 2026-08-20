@@ -25,6 +25,8 @@ statecraft scan --route dashboard
 statecraft scan --headed
 ```
 
+`--route` matches one configured route ID exactly and rejects an unknown ID before creating output. Scenario paths resolve from the selected config's directory, while `.statecraft/` belongs to the invocation working directory. The summary groups executions by route, reports pass/fail status and coverage from schema-v1 metadata, and prints `.statecraft/report/statecraft.json`. This phase writes PNG and JSON only; it does not generate HTML.
+
 ### `statecraft open`
 Open latest `.statecraft/report/index.html`; useful error if absent.
 
