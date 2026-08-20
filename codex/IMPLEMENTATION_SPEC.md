@@ -452,12 +452,12 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1, Phase 2, and Phase 3 are complete. Phase 4's CLI command scope
-is implemented: deterministic config discovery/loading, overwrite-safe
-`init`, `scan` orchestration, and safe latest-report `open` behavior. The
-fresh-example report gate remains pending on Phase 5 HTML generation. Do
-not begin the report UI, Phase 5, or another later phase until the user
-explicitly advances it.
+Phase 1 through Phase 4 are complete. Phase 5 is active. The current
+focused slice implements deterministic report transformation, offline
+HTML generation, and the scan-to-report handoff. Keep interactive
+filters and final report polish in later Phase 5 slices; do not begin the
+example app or another later phase until the user explicitly advances
+it.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

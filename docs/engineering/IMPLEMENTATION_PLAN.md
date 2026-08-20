@@ -16,11 +16,12 @@ Browser reuse + isolated contexts, scenarios/hooks, viewport/theme, readiness, s
 ## Phase 4 - CLI
 `init`, `scan`, `open`, config discovery, `--config`, `--route`, `--headed`, terminal summary, exit codes 0/1/2.
 **Gate:** fresh example goes init -> scan -> report.
-**Status:** command implementation complete; config discovery/loading, overwrite-safe `init`, `scan` orchestration, summaries, stable exit codes, and safe latest-report `open` behavior are implemented. The fresh-example report gate remains pending on Phase 5 HTML generation.
+**Status:** complete; config discovery/loading, overwrite-safe `init`, scan orchestration, summaries, stable exit codes, safe latest-report `open`, and the Phase 5 scan-to-HTML handoff are implemented.
 
 ## Phase 5 - Report
 Offline HTML, summary, matrix, thumbnails, detail view, filters, responsive/keyboard UX.
 **Gate:** no network/server dependency and launch-quality visual output.
+**Status:** underway; validated transformation, responsive no-script HTML with summary/matrix/evidence/details, private atomic publication, and CLI scan integration are implemented. Interactive filters and final launch-quality interaction/polish remain.
 
 ## Phase 6 - Example
 Polished Next.js dashboard with `/dashboard`, `/orders`, `/customers/[id]`; meaningful states and intentional defects.

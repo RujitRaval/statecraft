@@ -41,6 +41,13 @@
 - [x] `scan` orchestration, filters, and headed mode
 - [x] Terminal summary and exit codes 0/1/2
 - [x] `open` latest-report behavior
-- [ ] Fresh example passes init -> scan -> report
+- [x] Scan publishes offline HTML consumable by `open`
 
-Phase 4's command implementation is complete. Its final fresh-example gate depends on the Phase 5 HTML generator. Stop and report findings before proceeding; the report UI remains deferred to Phase 5.
+Phase 4 is complete. Phase 5 is active.
+
+## Phase 5
+- [x] Report package and validated transformation boundary
+- [x] Offline HTML packaging with summary, matrix, thumbnails, and details
+- [x] Scan-to-HTML integration
+- [ ] Route/state/viewport/theme/status filters
+- [ ] Final responsive, keyboard, and launch-visual polish

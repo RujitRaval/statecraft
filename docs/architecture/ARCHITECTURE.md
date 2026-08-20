@@ -35,6 +35,8 @@ The persisted runner prevalidates individual cells and cross-cell report invaria
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 
+The initial Phase 5 slice validates schema-v1 reports through the core parser and projects them into deterministic first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution details. It renders a responsive HTML document with inline CSS, no runtime script or external asset, relative references to validated screenshots, escaped report-controlled text, and a restrictive document Content Security Policy. Publication validates real `.statecraft/report/` boundaries, rejects symbolic-link/non-file HTML targets, and atomically replaces `index.html` through an owner-private temporary file. Interactive filters and final report polish remain later Phase 5 slices.
+
 ### @statecraft/cli
 Config discovery, commands, orchestration, terminal UX, exit codes.
 
@@ -42,9 +44,11 @@ The initial Phase 4 slice exposes deterministic project-root config discovery an
 
 The next Phase 4 slice adds an executable dispatcher without a third-party parser and an `init` command. Initialization creates one typed config that imports its helper from the installed CLI package plus one valid empty scenario, accepts no force/overwrite flag, preflights every target, rejects symbolic-link directory boundaries, writes files with exclusive creation, and publishes the config last. It never deletes paths during failure recovery because concurrent filesystem changes could replace a file after creation.
 
-The scan-orchestration slice composes config loading, exact route selection, deterministic matrix expansion, and the complete persisted runner without duplicating those package contracts. Scenario paths resolve from the config directory; `.statecraft/` is rooted at the invocation working directory. `--headed` changes only the Playwright launch mode. The CLI formats terminal output from the validated schema-v1 report and returns `0` when all cells pass, `1` when execution completes with failed cells, and `2` for usage, setup, config, or run-level errors. Unknown routes fail before browser launch or output creation. `open`, HTML generation, and report UI remain outside this slice.
+The scan-orchestration slice composes config loading, exact route selection, deterministic matrix expansion, and the complete persisted runner without duplicating those package contracts. Scenario paths resolve from the config directory; `.statecraft/` is rooted at the invocation working directory. `--headed` changes only the Playwright launch mode. The CLI formats terminal output from the validated schema-v1 report and returns `0` when all cells pass, `1` when execution completes with failed cells, and `2` for usage, setup, config, or run-level errors. Unknown routes fail before browser launch or output creation.
 
-The latest-report slice adds `statecraft open` and the programmatic `openReport` boundary. It canonicalizes the invocation root, validates a readable regular `.statecraft/report/index.html` reached through real directory boundaries, and invokes `open`, `explorer.exe`, or `xdg-open` with a shell-free argument array. The pathname-based OS handoff trusts the local project directory against concurrent same-user mutation. Missing, invalid, and launcher-failure cases retain stable error codes and CLI exit code `2`. The command never creates or modifies report files; HTML generation and all report UI behavior remain owned by Phase 5.
+The latest-report slice adds `statecraft open` and the programmatic `openReport` boundary. It canonicalizes the invocation root, validates a readable regular `.statecraft/report/index.html` reached through real directory boundaries, and invokes the platform launcher from an absolute system path with a shell-free argument array. The pathname-based OS handoff trusts the local project directory against concurrent same-user mutation. Missing, invalid, and launcher-failure cases retain stable error codes and CLI exit code `2`. The command never creates or modifies report files.
+
+Phase 5 scan integration calls `@statecraft/report` only after the runner safely publishes PNG and JSON output. `ScanResult` exposes both the HTML and JSON project-relative paths, and terminal output points developers to the HTML report that `statecraft open` consumes. The CLI does not duplicate transformation or rendering behavior.
 
 ## Scenario API
 ```ts

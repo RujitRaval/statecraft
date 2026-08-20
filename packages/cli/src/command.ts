@@ -1,6 +1,7 @@
 import { relative } from "node:path";
 
 import { ConfigValidationError } from "@statecraft/core";
+import { ReportWriteError } from "@statecraft/report";
 
 import {
   ConfigDiscoveryError,
@@ -144,7 +145,7 @@ export function formatScanSummary(result: ScanResult): string {
   lines.push(
     "",
     `Coverage: ${result.report.summary.coverage.execution.percentage}%`,
-    `Report: ${result.reportPath}`,
+    `Report: ${result.htmlReportPath}`,
     failed === 0
       ? `All ${executions} execution${executions === 1 ? "" : "s"} passed.`
       : `${failed} of ${executions} execution${executions === 1 ? "" : "s"} failed.`,
@@ -156,6 +157,7 @@ function expectedScanError(error: unknown): string | undefined {
   if (
     error instanceof ConfigDiscoveryError ||
     error instanceof ConfigLoadError ||
+    error instanceof ReportWriteError ||
     error instanceof ScanError
   ) {
     return terminalText(error.message);

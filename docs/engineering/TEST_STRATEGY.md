@@ -30,6 +30,10 @@ CLI scan tests cover deterministic option parsing, exact route selection, unknow
 
 CLI open tests cover canonical latest-report selection, absent reports, invalid roots, non-file targets, symbolic-link boundaries, shell-free platform command mapping, launcher failures, argument rejection, terminal sanitization, exit codes, and public package/type boundaries. Fixture launchers are injected internally so tests never open a real browser or create report UI.
 
+## Report contracts
+
+Report transformation tests verify deterministic first-seen column and route/state ordering, aligned missing cells, report-relative screenshot references, and rejection of invalid schema input. Renderer tests cover summary/matrix/detail content, empty selections, HTML escaping for report-controlled diagnostics, no script or external assets, and the restrictive offline Content Security Policy. Publication tests cover replacement, owner-private file mode, every symbolic-link output boundary, stable errors, and the built package boundary. Browser-backed CLI scan tests prove PNG, JSON, and HTML are produced together and that terminal output points to the offline document.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

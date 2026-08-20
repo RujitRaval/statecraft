@@ -93,6 +93,7 @@ describe("scanProject", () => {
     });
 
     expect(run.configPath).toBe(await realpath(fixture.configPath));
+    expect(run.htmlReportPath).toBe(".statecraft/report/index.html");
     expect(run.reportPath).toBe(".statecraft/report/statecraft.json");
     expect(run.report.summary).toMatchObject({
       executions: 1,
@@ -110,6 +111,9 @@ describe("scanProject", () => {
     await expect(readFile(reportPath, "utf8")).resolves.toContain(
       '"schemaVersion": 1',
     );
+    await expect(
+      readFile(join(fixture.project, ...run.htmlReportPath.split("/")), "utf8"),
+    ).resolves.toContain("UI State Coverage Report");
     const screenshotPath = run.report.executions[0]!.screenshotPath;
     expect(screenshotPath).not.toBeNull();
     await expect(

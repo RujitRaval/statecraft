@@ -1,14 +1,11 @@
 {
-  "name": "@statecraft/cli",
+  "name": "@statecraft/report",
   "version": "0.0.0",
   "private": true,
-  "description": "Local initialization, scan orchestration, and report opening for Statecraft.",
+  "description": "Deterministic report transformation and offline HTML generation for Statecraft.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
-  "bin": {
-    "statecraft": "./dist/bin.js"
-  },
   "files": [
     "dist"
   ],
@@ -20,13 +17,11 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/runner-playwright build && corepack pnpm --filter @statecraft/report build",
+    "pretypecheck": "corepack pnpm --filter @statecraft/core build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@statecraft/core": "workspace:*",
-    "@statecraft/report": "workspace:*",
-    "@statecraft/runner-playwright": "workspace:*"
+    "@statecraft/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

@@ -4,6 +4,7 @@ import {
   expandMatrix,
   type StatecraftReport,
 } from "@statecraft/core";
+import { REPORT_HTML_PATH, writeReportHtml } from "@statecraft/report";
 
 import { loadConfig } from "./config.js";
 
@@ -38,6 +39,7 @@ export interface ScanOptions {
 /** Validated persisted output from one completed scan. */
 export interface ScanResult {
   readonly configPath: string;
+  readonly htmlReportPath: typeof REPORT_HTML_PATH;
   readonly report: StatecraftReport;
   readonly reportPath: ".statecraft/report/statecraft.json";
 }
@@ -83,9 +85,11 @@ export async function scanProject(
     projectDirectory,
     scenarioBaseDirectory: dirname(loaded.path),
   });
+  const html = await writeReportHtml(run.report, { projectDirectory });
 
   return Object.freeze({
     configPath: loaded.path,
+    htmlReportPath: html.reportPath,
     report: run.report,
     reportPath: run.reportPath,
   });

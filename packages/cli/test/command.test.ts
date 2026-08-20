@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { parseReport } from "@statecraft/core";
+import { ReportWriteError } from "@statecraft/report";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ScanOptions, ScanResult } from "../src/scan.js";
@@ -128,6 +129,7 @@ function completedScan(
         states: 1,
       },
     }),
+    htmlReportPath: ".statecraft/report/index.html",
     reportPath: ".statecraft/report/statecraft.json",
   });
 }
@@ -361,7 +363,7 @@ Dashboard
   ✓ success · desktop · light
 
 Coverage: 100%
-Report: .statecraft/report/statecraft.json
+Report: .statecraft/report/index.html
 All 1 execution passed.
 `);
     expect(stderr.messages).toEqual([]);
@@ -413,6 +415,24 @@ All 1 execution passed.
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toBe(
       "Configured route not found: missing\n",
+    );
+  });
+
+  it("classifies offline report publication failures", async () => {
+    const stderr = outputCapture();
+    scanProjectMock.mockRejectedValue(
+      new ReportWriteError(
+        "REPORT_WRITE_FAILED",
+        "Statecraft could not write .statecraft/report/index.html.",
+        "/project/.statecraft/report/index.html",
+      ),
+    );
+
+    await expect(
+      runCli({ args: ["scan"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "Statecraft could not write .statecraft/report/index.html.\n",
     );
   });
 

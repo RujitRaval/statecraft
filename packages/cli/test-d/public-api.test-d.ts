@@ -71,6 +71,9 @@ const scanOptions: ScanOptions = {
   routeId: "home",
 };
 const scanResult: Promise<ScanResult> = scanProject(scanOptions);
+const htmlReportPath: Promise<".statecraft/report/index.html"> = scanResult.then(
+  (result) => result.htmlReportPath,
+);
 const scanCode: ScanErrorCode = "SCAN_ROUTE_NOT_FOUND";
 const scanError: Error = new ScanError(scanCode, "Route missing.", "missing");
 const typedConfig = defineConfig({
@@ -93,6 +96,7 @@ void openResult;
 void openError;
 void cliResult;
 void scanResult;
+void htmlReportPath;
 void scanError;
 void typedConfig;
 
