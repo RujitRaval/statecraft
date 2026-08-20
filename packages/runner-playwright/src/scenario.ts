@@ -144,7 +144,8 @@ export async function loadScenario(
   return normalizeScenario(moduleNamespace, scenarioPath);
 }
 
-function toScenarioContext(
+/** @internal Builds the public hook context from one isolated execution cell. */
+export function scenarioContextForExecution(
   execution: CellExecutionContext,
 ): ScenarioContext {
   return Object.freeze({
@@ -186,7 +187,7 @@ export async function runScenarioCells<Value>(
       const scenario = await loadScenario(execution.cell.state.setup, {
         baseDirectory: options.scenarioBaseDirectory,
       });
-      const context = toScenarioContext(execution);
+      const context = scenarioContextForExecution(execution);
       return runScenarioLifecycle(scenario, context, execute);
     },
     lifecycleOptions,

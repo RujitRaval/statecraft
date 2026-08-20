@@ -26,6 +26,8 @@ The initial lifecycle slice runs matrix cells sequentially in configured order. 
 
 Scenario modules are trusted local ESM code resolved from each state's configured `setup` path and an explicit base directory. The runner validates the default export and hook fields at runtime, then executes `beforeNavigate`, caller-owned work, and `afterNavigate` inside the cell's isolated context. Module and hook failures settle as cell failures. Assertion execution remains part of the later diagnostics/assertions slice.
 
+The navigated runner resolves local route paths against one validated HTTP(S) base URL and refuses cross-origin paths, redirects, or hook-driven navigation before post-readiness work. Before application scripts run, it sets `data-theme`, maps `light`/`dark` to the matching color-scheme media feature, and requests reduced motion. After `beforeNavigate`, DOM-content-loaded navigation, and `afterNavigate`, bounded readiness waits for the normal load event, an optional visible selector, and loaded fonts while suppressing animations, transitions, smooth scrolling, and carets. Main-frame document navigation that starts during readiness is rejected because a replacement document has not passed those stability gates. Readiness never waits for `networkidle`. Caller-owned post-readiness work is the seam for later screenshots, diagnostics, and assertions.
+
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 

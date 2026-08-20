@@ -28,7 +28,7 @@
 - [x] Per-cell failures settle without aborting later cells
 - [x] Real Chromium lifecycle fixture
 - [x] Scenario module loading and hooks
-- [ ] Navigation, theme, and deterministic readiness
+- [x] Navigation, theme, and deterministic readiness
 - [ ] Screenshots, diagnostics, and assertions
 - [ ] Execution-result construction and artifact persistence
 - [ ] Programmatic runner passes the complete Phase 3 fixture gate
