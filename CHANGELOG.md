@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.13.0.0] - 2026-08-20
+
+### Added
+
+- Developers can run the new `statecraft init` executable command to create a minimal typed config and editable starter scenario with exact next steps.
+- The CLI now exports `defineConfig`, `initProject`, and injectable `runCli` APIs with stable initialization errors and process exit codes.
+- Tests cover the built executable, one-package consumer compilation and loading, generated content, help and usage behavior, config/scenario conflicts, repeated initialization, invalid roots, and symbolic-link boundaries.
+
+### Changed
+
+- Phase 4 now includes command dispatch and initialization while `scan`, `open`, runner orchestration, and report UI remain deferred.
+
+### Security
+
+- Initialization has no force mode, checks every supported config filename before writing, creates target files exclusively, refuses symbolic-link starter directories, and never deletes paths during failure recovery.
+
 ## [0.12.0.0] - 2026-08-20
 
 ### Added

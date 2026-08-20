@@ -1,6 +1,6 @@
 {
   "name": "statecraft",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "private": true,
   "description": "Find, render, and report the UI states your product forgot.",
   "license": "MIT",
