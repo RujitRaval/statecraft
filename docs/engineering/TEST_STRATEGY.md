@@ -19,7 +19,7 @@ Persistence integration tests run the complete programmatic lifecycle and verify
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
 
-The example-app foundation adds unit coverage for its fixed data payload, no-data classification, and malformed response rejection. Browser-backed route/state coverage begins with the dashboard slice and expands with the Phase 6 scenario matrix; the final Phase 6 gate still requires the full application scan and a known intentional failure.
+The example-app foundation adds unit coverage for its fixed data payloads, no-data classification, malformed response rejection, duplicate IDs, order summaries, and currency formatting. Browser-backed coverage exercises dashboard and orders success/loading/empty/error behavior, recovery, route-aware navigation, working order filters with URL state, dark theme, and mobile overflow. The final Phase 6 gate still requires customer detail, the full application scan, and a known intentional failure.
 
 ## CLI contracts
 Exit 0 all-pass; 1 completed with failures; 2 invalid config/internal setup. Verify `open` with/without report.
