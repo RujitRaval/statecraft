@@ -4,6 +4,28 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.17.0.0] - 2026-08-20
+
+### Added
+
+- Offline reports now provide route, state, viewport, theme, and status filters with deterministic AND semantics, URL-backed selections, reset controls, and a clear no-results state.
+- Every matrix cell can open one keyboard-accessible inline detail view with screenshot evidence, metadata, failure information, and expandable console, page, and request diagnostics.
+- Real-Chromium coverage now verifies offline loading, filtering, sparse matrices, responsive layouts, keyboard focus, direct links, and browser Back/Forward restoration.
+
+### Changed
+
+- Mobile reports present the coverage matrix as evidence-first two-column cards, while tablet and desktop layouts preserve aligned route, state, viewport, and theme columns.
+- Phase 5 is complete. The example application and all Phase 6 work remain deferred until that phase is explicitly initiated.
+
+### Fixed
+
+- Valid identifiers named `all` remain filterable, filtered route headings keep correct row spans, and missing matrix cells remain aligned after every filter combination.
+- Detail URLs now close stale or filtered-out selections, restore valid filter state on history traversal, and return focus to the source cell or a deterministic filter fallback.
+
+### Security
+
+- The self-contained report keeps all report data out of executable script, permits only the exact constant interaction script through its Content Security Policy hash, and continues to block network and external asset loading.
+
 ## [0.16.0.0] - 2026-08-20
 
 ### Added

@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. Phase 1 through Phase 4 are complete, and Phase 5 is active with deterministic report transformation and offline HTML generation as its first slice. Keep later report interaction in focused Phase 5 follow-ups, and do not begin the example app or another later phase unless the user explicitly advances it.
+Follow `AGENTS.md` and the specification files under `codex/` and `docs/`. Phase 1 through Phase 5 are complete, including the self-contained interactive report. Do not begin the example app or another later phase unless the user explicitly advances it.
 
 ## Skill routing
 

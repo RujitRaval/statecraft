@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 4 are complete. Phase 5 is active. Implement deterministic report transformation, offline HTML generation, and the scan-to-report handoff in the current focused slice. Keep interactive filters and final report polish in later Phase 5 slices; do not start the example app or another later phase until the user explicitly advances the phase.
+Phase 1 through Phase 5 are complete. The report includes deterministic transformation, offline HTML generation, route/state/viewport/theme/status filters, and the final accessible detail interaction. Do not start the example app or another later phase until the user explicitly advances the phase.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

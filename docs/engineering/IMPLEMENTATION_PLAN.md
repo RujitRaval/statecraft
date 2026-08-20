@@ -21,7 +21,7 @@ Browser reuse + isolated contexts, scenarios/hooks, viewport/theme, readiness, s
 ## Phase 5 - Report
 Offline HTML, summary, matrix, thumbnails, detail view, filters, responsive/keyboard UX.
 **Gate:** no network/server dependency and launch-quality visual output.
-**Status:** underway; validated transformation, responsive no-script HTML with summary/matrix/evidence/details, private atomic publication, and CLI scan integration are implemented. Interactive filters and final launch-quality interaction/polish remain.
+**Status:** complete; validated transformation, responsive offline HTML, summary/matrix/evidence, route/state/viewport/theme/status filters, URL-restorable selections, accessible single-execution details, private atomic publication, and CLI scan integration are implemented.
 
 ## Phase 6 - Example
 Polished Next.js dashboard with `/dashboard`, `/orders`, `/customers/[id]`; meaningful states and intentional defects.

@@ -43,11 +43,11 @@
 - [x] `open` latest-report behavior
 - [x] Scan publishes offline HTML consumable by `open`
 
-Phase 4 is complete. Phase 5 is active.
+Phase 4 is complete. Phase 5 is complete.
 
 ## Phase 5
 - [x] Report package and validated transformation boundary
 - [x] Offline HTML packaging with summary, matrix, thumbnails, and details
 - [x] Scan-to-HTML integration
-- [ ] Route/state/viewport/theme/status filters
-- [ ] Final responsive, keyboard, and launch-visual polish
+- [x] Route/state/viewport/theme/status filters
+- [x] Final responsive, keyboard, and launch-visual polish
