@@ -335,6 +335,15 @@ describe("runPersistedScenarioCells", () => {
               () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
             );
             expect(horizontalOverflow).toBe(false);
+            const firstCell = await page
+              .locator("[data-detail-target]:visible")
+              .first()
+              .boundingBox();
+            expect(firstCell).not.toBeNull();
+            expect(firstCell?.x).toBeGreaterThanOrEqual(0);
+            expect((firstCell?.x ?? viewport.width) + (firstCell?.width ?? 0)).toBeLessThanOrEqual(
+              viewport.width,
+            );
             const controlHeights = await page
               .locator("#report-filters select, #report-filters button")
               .evaluateAll((controls) =>
