@@ -201,7 +201,7 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the active Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots.
 
 ## Dependency decision
 
