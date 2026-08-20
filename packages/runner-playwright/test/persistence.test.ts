@@ -67,12 +67,15 @@ function interactiveReportCells(): readonly MatrixCell[] {
         {
           id: "capture",
           path: "/capture",
-          states: [{ id: "clean-after", setup: "./capture.mjs" }],
+          states: [
+            { id: "clean-after", setup: "./capture.mjs" },
+            { id: "page-error", setup: "./capture.mjs" },
+          ],
         },
         {
           id: "secondary",
           path: "/capture",
-          states: [{ id: "page-error", setup: "./capture.mjs" }],
+          states: [{ id: "nonfatal", setup: "./capture.mjs" }],
         },
       ],
       themes: ["light", "dark"],
@@ -81,6 +84,11 @@ function interactiveReportCells(): readonly MatrixCell[] {
         wide: { height: 480, width: 720 },
       },
     }),
+  ).filter(
+    (cell) =>
+      cell.state.id !== "page-error" ||
+      (cell.viewportId === "compact" && cell.theme === "light") ||
+      (cell.viewportId === "wide" && cell.theme === "dark"),
   );
 }
 
@@ -260,8 +268,8 @@ describe("runPersistedScenarioCells", () => {
           expect(imageWidths.every((width) => width > 0)).toBe(true);
           expect(networkRequests).toEqual([]);
           expect(await page.locator("[data-detail]:visible").count()).toBe(0);
-          expect(await page.locator("[data-detail-target]:visible").count()).toBe(8);
-          expect(await page.locator("[data-matrix-row]:visible").count()).toBe(2);
+          expect(await page.locator("[data-detail-target]:visible").count()).toBe(10);
+          expect(await page.locator("[data-matrix-row]:visible").count()).toBe(3);
 
           const heroColumns = await page.locator(".hero").evaluate((hero) =>
             getComputedStyle(hero).gridTemplateColumns.split(" ").length,
@@ -279,7 +287,7 @@ describe("runPersistedScenarioCells", () => {
             await page.locator('select[name="route"]').selectOption("secondary");
             await expect
               .poll(() => page.locator("#filter-results").textContent())
-              .toBe("Showing 4 of 8 executions across 1 matrix row.");
+              .toBe("Showing 4 of 10 executions across 1 matrix row.");
             expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
             expect(new URL(page.url()).searchParams.get("route")).toBe(
               "secondary",
@@ -290,10 +298,27 @@ describe("runPersistedScenarioCells", () => {
             await page.locator(".reset-filters").click();
             await expect
               .poll(() => page.locator("#filter-results").textContent())
-              .toBe("Showing 8 of 8 executions across 2 matrix rows.");
+              .toBe("Showing 10 of 10 executions across 3 matrix rows.");
+
+            const captureGroup = page.locator('[data-route-group="capture"]');
+            expect(
+              await captureGroup.locator(".route-heading:visible").getAttribute("rowspan"),
+            ).toBe("2");
+            await page.locator('select[name="state"]').selectOption("page-error");
+            expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
+            expect(await page.locator(".matrix-cell--missing:visible").count()).toBe(2);
+            const filteredRouteHeading = page.locator(
+              '[data-state="page-error"] .route-heading',
+            );
+            expect(await filteredRouteHeading.isVisible()).toBe(true);
+            expect(await filteredRouteHeading.getAttribute("rowspan")).toBe("1");
+            await page.locator(".reset-filters").click();
 
             await page.locator('select[name="viewport"]').selectOption("wide");
             expect(await page.locator("[data-column]:visible").count()).toBe(2);
+            for (const row of await page.locator("[data-matrix-row]:visible").all()) {
+              expect(await row.locator("[data-matrix-slot]:visible").count()).toBe(2);
+            }
             await page.locator('select[name="theme"]').selectOption("dark");
             expect(await page.locator("[data-column]:visible").count()).toBe(1);
             await page.locator('select[name="status"]').selectOption("failed");
@@ -302,7 +327,7 @@ describe("runPersistedScenarioCells", () => {
 
             await page.locator(".reset-filters").click();
             await page.locator('select[name="status"]').selectOption("failed");
-            expect(await page.locator(".matrix-cell--failed:visible").count()).toBe(4);
+            expect(await page.locator(".matrix-cell--failed:visible").count()).toBe(2);
             expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
 
             const firstCell = page.locator("[data-detail-target]:visible").first();
@@ -321,15 +346,41 @@ describe("runPersistedScenarioCells", () => {
               true,
             );
 
+            await page.locator(".reset-filters").click();
+            await page.locator('select[name="route"]').selectOption("capture");
+            const historyCell = page.locator("[data-detail-target]:visible").first();
+            await historyCell.click();
             await page.locator('select[name="route"]').selectOption("secondary");
-            await page.reload({ waitUntil: "load" });
+            await page.goBack();
+            expect(await page.locator('select[name="route"]').inputValue()).toBe(
+              "capture",
+            );
+            expect(await page.locator("[data-detail]:visible").count()).toBe(1);
+            await page.goForward();
             expect(await page.locator('select[name="route"]').inputValue()).toBe(
               "secondary",
+            );
+            expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+
+            await page.goto(`${reportUrl}#execution-1`, { waitUntil: "load" });
+            expect(await page.locator("#execution-1").isVisible()).toBe(true);
+            await page.keyboard.press("Escape");
+            expect(
+              await page
+                .locator('[data-detail-target="execution-1"]')
+                .evaluate((cell) => cell === document.activeElement),
+            ).toBe(true);
+
+            await page.locator('select[name="status"]').selectOption("failed");
+            await page.locator('select[name="route"]').selectOption("capture");
+            await page.reload({ waitUntil: "load" });
+            expect(await page.locator('select[name="route"]').inputValue()).toBe(
+              "capture",
             );
             expect(await page.locator('select[name="status"]').inputValue()).toBe(
               "failed",
             );
-            expect(await page.locator("[data-detail-target]:visible").count()).toBe(4);
+            expect(await page.locator("[data-detail-target]:visible").count()).toBe(2);
           } else {
             const horizontalOverflow = await page.evaluate(
               () => document.documentElement.scrollWidth > document.documentElement.clientWidth,

@@ -10,7 +10,7 @@ The final Phase 5 slice must make large reports searchable by route, state, view
 
 ## Decision
 
-- Derive native select options only from validated execution metadata in deterministic first-seen order. Combine active route, state, viewport, theme, and status selections with AND semantics.
+- Derive native select options only from validated execution metadata in deterministic first-seen order. Combine active route, state, viewport, theme, and status selections with AND semantics. Use the empty option value as the wildcard so every valid identifier, including `all`, remains filterable.
 - Store valid non-default selections in the local document query string and ignore unknown values when restoring a report. Keep summary metrics unchanged while an `aria-live` line reports the filtered execution and row counts.
 - Filter matrix headers, slots, rows, and route row-group headings in place so viewport/theme columns stay aligned and the first visible route heading receives the correct row span. Show a direct no-match message and one reset action.
 - Keep report values in escaped HTML attributes and text. Embed one constant interaction script that queries those attributes; compute its SHA-256 during rendering and authorize only that exact hash in Content Security Policy. Load no external script, stylesheet, image, font, or network resource.

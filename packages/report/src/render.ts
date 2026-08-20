@@ -44,7 +44,7 @@ function selectOptions(
   allLabel: string,
   values: readonly string[],
 ): string {
-  return `<option value="all">${escapeHtml(allLabel)}</option>${values
+  return `<option value="">${escapeHtml(allLabel)}</option>${values
     .map(
       (value) =>
         `<option value="${escapeHtml(value)}">${escapeHtml(words(value))}</option>`,
@@ -123,7 +123,7 @@ function filters(view: ReportViewModel): string {
       <label class="filter-control"><span>State</span><select name="state">${selectOptions("All states", unique(executions.map((execution) => execution.stateId)))}</select></label>
       <label class="filter-control"><span>Viewport</span><select name="viewport">${selectOptions("All viewports", unique(executions.map((execution) => execution.viewportId)))}</select></label>
       <label class="filter-control"><span>Theme</span><select name="theme">${selectOptions("All themes", unique(executions.map((execution) => execution.theme)))}</select></label>
-      <label class="filter-control"><span>Status</span><select name="status"><option value="all">All statuses</option><option value="passed">Passed</option><option value="failed">Failed</option></select></label>
+      <label class="filter-control"><span>Status</span><select name="status"><option value="">All statuses</option><option value="passed">Passed</option><option value="failed">Failed</option></select></label>
       <button class="reset-filters" type="reset" disabled>Reset filters</button>
     </form>
   </section>`;
@@ -207,14 +207,17 @@ const interactions = `
   const rows = Array.from(document.querySelectorAll("[data-matrix-row]"));
   const columns = Array.from(document.querySelectorAll("[data-column]"));
   const details = Array.from(document.querySelectorAll("[data-detail]"));
+  const triggers = Array.from(document.querySelectorAll("[data-detail-target]"));
+  const triggerById = new Map(triggers.map((trigger) => [trigger.dataset.detailTarget, trigger]));
   const result = document.querySelector("#filter-results");
   const noResults = document.querySelector("#no-results");
   const reset = form.querySelector("[type=reset]");
   let activeDetail = null;
+  let activeTrigger = null;
   let lastTrigger = null;
 
   const values = () => Object.fromEntries(selects.map((select) => [select.name, select.value]));
-  const matches = (actual, selected) => selected === "all" || actual === selected;
+  const matches = (actual, selected) => selected === "" || actual === selected;
   const detailMatches = (detail, filters) =>
     matches(detail.dataset.route, filters.route) &&
     matches(detail.dataset.state, filters.state) &&
@@ -240,19 +243,20 @@ const interactions = `
   function writeFilterUrl(filters) {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
-      if (value !== "all") params.set(key, value);
+      if (value !== "") params.set(key, value);
     });
     const query = params.size > 0 ? "?" + params.toString() : "";
     history.replaceState(null, "", query + window.location.hash);
   }
 
   function closeDetail(returnFocus = false, updateHash = false) {
-    details.forEach((detail) => {
-      detail.hidden = true;
-      detail.classList.remove("is-active");
-    });
-    document.querySelectorAll("[data-detail-target]").forEach((trigger) => trigger.removeAttribute("aria-current"));
+    if (activeDetail instanceof HTMLElement) {
+      activeDetail.hidden = true;
+      activeDetail.classList.remove("is-active");
+    }
+    if (activeTrigger instanceof HTMLElement) activeTrigger.removeAttribute("aria-current");
     activeDetail = null;
+    activeTrigger = null;
     if (updateHash) history.pushState(null, "", window.location.search + "#matrix-title");
     if (returnFocus && lastTrigger instanceof HTMLElement) lastTrigger.focus();
   }
@@ -263,16 +267,21 @@ const interactions = `
     closeDetail(false, false);
     detail.hidden = false;
     detail.classList.add("is-active");
-    activeDetail = id;
-    if (trigger instanceof HTMLElement) lastTrigger = trigger;
-    const currentTrigger = document.querySelector('[data-detail-target="' + CSS.escape(id) + '"]');
-    if (currentTrigger instanceof HTMLElement) currentTrigger.setAttribute("aria-current", "true");
+    activeDetail = detail;
+    const currentTrigger = triggerById.get(id);
+    if (currentTrigger instanceof HTMLElement) {
+      currentTrigger.setAttribute("aria-current", "true");
+      activeTrigger = currentTrigger;
+      lastTrigger = currentTrigger;
+    } else if (trigger instanceof HTMLElement) {
+      lastTrigger = trigger;
+    }
     if (updateHash) history.pushState(null, "", window.location.search + "#" + id);
     detail.focus({ preventScroll: true });
     detail.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   }
 
-  function applyFilters(updateUrl = true) {
+  function applyFilters(updateUrl = true, updateDetailHistory = true) {
     const filters = values();
     columns.forEach((column) => {
       column.hidden = !matches(column.dataset.viewport, filters.viewport) || !matches(column.dataset.theme, filters.theme);
@@ -295,7 +304,7 @@ const interactions = `
         if (placeholder instanceof HTMLElement) placeholder.hidden = statusMatches;
         if (statusMatches && slot.dataset.status !== "missing") matchingExecutions += 1;
       });
-      row.hidden = !rowMatches || (filters.status === "all" ? visibleSlots === 0 : matchingExecutions === 0);
+      row.hidden = !rowMatches || (filters.status === "" ? visibleSlots === 0 : matchingExecutions === 0);
       if (!row.hidden) visibleRowCount += 1;
     });
     document.querySelectorAll("[data-route-group]").forEach(updateRouteHeading);
@@ -306,13 +315,10 @@ const interactions = `
       detail.dataset.filterMatch = String(isMatch);
       if (isMatch) executionCount += 1;
     });
-    if (activeDetail !== null) {
-      const detail = document.getElementById(activeDetail);
-      if (!(detail instanceof HTMLElement) || detail.dataset.filterMatch !== "true") closeDetail(false, true);
-    }
+    if (activeDetail instanceof HTMLElement && activeDetail.dataset.filterMatch !== "true") closeDetail(false, updateDetailHistory);
     if (result) result.textContent = "Showing " + executionCount + " of " + details.length + " executions across " + visibleRowCount + " matrix " + (visibleRowCount === 1 ? "row." : "rows.");
     if (noResults instanceof HTMLElement) noResults.hidden = executionCount !== 0;
-    if (reset instanceof HTMLButtonElement) reset.disabled = selects.every((select) => select.value === "all");
+    if (reset instanceof HTMLButtonElement) reset.disabled = selects.every((select) => select.value === "");
     if (updateUrl) writeFilterUrl(filters);
   }
 
@@ -320,14 +326,21 @@ const interactions = `
     const params = new URLSearchParams(window.location.search);
     selects.forEach((select) => {
       const value = params.get(select.name);
-      if (value !== null && Array.from(select.options).some((option) => option.value === value)) select.value = value;
+      select.value = value !== null && Array.from(select.options).some((option) => option.value === value) ? value : "";
     });
   }
 
   function syncDetailFromHash() {
     const id = window.location.hash.slice(1);
-    if (id.startsWith("execution-")) openDetail(id, null, false);
-    else if (activeDetail !== null) closeDetail(false, false);
+    if (id.startsWith("execution-")) {
+      if (!(activeDetail instanceof HTMLElement) || activeDetail.id !== id) openDetail(id, null, false);
+    } else if (activeDetail !== null) closeDetail(true, false);
+  }
+
+  function syncStateFromUrl() {
+    restoreFiltersFromUrl();
+    applyFilters(false, false);
+    syncDetailFromHash();
   }
 
   form.addEventListener("change", () => applyFilters());
@@ -352,7 +365,7 @@ const interactions = `
     }
   });
   window.addEventListener("hashchange", syncDetailFromHash);
-  window.addEventListener("popstate", syncDetailFromHash);
+  window.addEventListener("popstate", syncStateFromUrl);
 
   restoreFiltersFromUrl();
   details.forEach((detail) => { detail.hidden = true; });

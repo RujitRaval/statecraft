@@ -4,7 +4,11 @@ import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "@statecra
 import { describe, expect, it } from "vitest";
 
 import { renderReportHtml } from "../src/render.js";
-import { interactiveReportFixture, reportFixture } from "./fixture.js";
+import {
+  allIdentifierReportFixture,
+  interactiveReportFixture,
+  reportFixture,
+} from "./fixture.js";
 
 describe("renderReportHtml", () => {
   it("renders a polished offline matrix and execution details", () => {
@@ -42,6 +46,18 @@ describe("renderReportHtml", () => {
     expect(cspHash).toBe(
       createHash("sha256").update(script ?? "").digest("base64"),
     );
+  });
+
+  it("keeps the valid identifier 'all' distinct from each wildcard option", () => {
+    const html = renderReportHtml(allIdentifierReportFixture());
+
+    for (const name of ["route", "state", "viewport", "theme"]) {
+      const select = html.match(
+        new RegExp(`<select name="${name}">([\\s\\S]*?)<\\/select>`),
+      )?.[1];
+      expect(select).toContain('<option value="">All ');
+      expect(select).toContain('<option value="all">All</option>');
+    }
   });
 
   it("escapes report-controlled strings in every rendered detail", () => {

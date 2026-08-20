@@ -140,3 +140,34 @@ export function interactiveReportFixture(): StatecraftReport {
     },
   });
 }
+
+export function allIdentifierReportFixture(): StatecraftReport {
+  const matrixCell = namedCell("all", "/all", "all", "all", "all", 800, 600);
+  const result = execution(matrixCell, "passed");
+  return parseReport({
+    executions: [result],
+    generatedAt: "2026-08-20T18:00:00.000Z",
+    project: { baseURL: "https://statecraft.invalid" },
+    schemaVersion: REPORT_SCHEMA_VERSION,
+    summary: {
+      coverage: calculateCoverage(
+        [matrixCell],
+        [
+          {
+            passed: true,
+            routeId: result.routeId,
+            stateId: result.stateId,
+            theme: result.theme,
+            viewportId: result.viewportId,
+          },
+        ],
+      ),
+      durationMs: result.durationMs,
+      executions: 1,
+      failed: 0,
+      passed: 1,
+      routes: 1,
+      states: 1,
+    },
+  });
+}
