@@ -138,7 +138,7 @@ Dashboard
       ASSERTION_FAILED: Expected error heading.
 
 Coverage: 87.5%
-Report: .statecraft/report/statecraft.json
+Report: .statecraft/report/index.html
 1 of 4 executions failed.
 ```
 
