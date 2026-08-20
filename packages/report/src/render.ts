@@ -71,7 +71,7 @@ function screenshot(cell: ReportCellView, className: string): string {
   }
   const execution = cell.execution;
   const alt = `${words(execution.routeId)} ${words(execution.stateId)}, ${words(execution.viewportId)}, ${words(execution.theme)} theme`;
-  return `<img class="${className}" src="${escapeHtml(cell.screenshotHref)}" alt="${escapeHtml(alt)}" loading="lazy">`;
+  return `<img class="${className}" src="${escapeHtml(cell.screenshotHref)}" alt="${escapeHtml(alt)}" width="${execution.viewport.width}" height="${execution.viewport.height}" loading="lazy">`;
 }
 
 function matrixCell(
