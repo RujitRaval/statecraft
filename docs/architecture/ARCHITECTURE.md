@@ -22,6 +22,8 @@ Public types, Zod config validation, `defineConfig`, matrix expansion, result co
 ### @statecraft/runner-playwright
 Browser/context lifecycle, scenario loading/hooks, viewport/theme, navigation/readiness, screenshots, diagnostics, assertions, isolation.
 
+The initial lifecycle slice runs matrix cells sequentially in configured order. One healthy Chromium process is reused across cells, while every cell receives a new context and page. Per-cell setup, callback, and cleanup failures are returned as settled outcomes so later cells still execute. If context cleanup fails, the compromised browser is closed and replaced before the next cell; browser launch, replacement, and browser cleanup failures remain run-level failures.
+
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 

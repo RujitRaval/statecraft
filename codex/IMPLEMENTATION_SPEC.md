@@ -450,15 +450,16 @@ Treat this file as the product and architecture specification.
 14. At each phase end, run tests/build and summarize work, assumptions,
     and risks.
 
-## 23. Initial Codex task
+## 23. Current Codex task
 
-Start with **Phase 1 and Phase 2 only**. Do not begin the Playwright
-runner or report UI until the core types, configuration model, matrix
-expansion, coverage semantics, package boundaries, and tests are stable.
+Phase 1 and Phase 2 are complete. Implement **Phase 3 only** through
+focused Playwright-runner steps. Do not begin the CLI, report UI, or
+later phases until the user explicitly advances the phase.
 
-At completion provide: repository tree; architecture summary; public API
-implemented; tests added; build/test commands; assumptions; unresolved
-questions; proposed Phase 3 plan.
+At each Phase 3 handoff provide: runner API implemented; lifecycle
+behavior; fixture and integration tests added; build/test commands;
+assumptions; unresolved questions; and the recommended next Phase 3
+step.
 
 Guiding sentence:
 

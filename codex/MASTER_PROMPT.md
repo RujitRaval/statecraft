@@ -19,7 +19,7 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - If ambiguous, choose the smallest design preserving future extensibility.
 - Explain major dependency additions.
 
-## First assignment
-Implement **Phase 1 and Phase 2 only**. Do not start the Playwright runner/report UI until core types, config, matrix behavior, coverage semantics, package boundaries, and tests are stable.
+## Current assignment
+Phase 1 and Phase 2 are complete. Implement **Phase 3 only** through focused, tested Playwright-runner steps. Do not start the CLI, report UI, or later phases until the user explicitly advances the phase.
 
-At completion provide repository tree, architecture summary, public API, tests, build/test commands, assumptions, unresolved questions, and proposed Phase 3 plan.
+At each Phase 3 handoff, provide the runner API added, lifecycle behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next Phase 3 step.

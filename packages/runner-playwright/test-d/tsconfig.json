@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
+    "noEmit": true,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "public-api.test-d.ts"
+  ]
+}

@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft is currently in its Phase 1 and Phase 2 foundation work. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed its Phase 1 foundation and Phase 2 core contracts. Phase 3 Playwright-runner work is underway through focused pull requests. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 
@@ -22,6 +22,7 @@ Statecraft is currently in its Phase 1 and Phase 2 foundation work. Read `AGENTS
 
    ```bash
    corepack pnpm install --frozen-lockfile
+   corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium
    ```
 
 5. Run the local checks:

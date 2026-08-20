@@ -4,6 +4,20 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.7.0.0] - 2026-08-19
+
+### Added
+
+- Developers can execute deterministic matrix cells through the initial `@statecraft/runner-playwright` programmatic API while reusing a healthy Chromium process.
+- Every cell receives a fresh Playwright context and page with its configured viewport, isolated cookies and storage, ordered settled outcomes, and cleanup before the next cell starts.
+- A browser is quarantined and replaced when context cleanup cannot be confirmed, preserving isolation without preventing unrelated cells from running.
+- Real-Chromium fixtures, forced lifecycle-failure tests, built-package checks, and compile-time API contracts cover every runner path.
+
+### Changed
+
+- Phase 3 is now underway, with its runner lifecycle boundary documented while scenario hooks, navigation, screenshots, diagnostics, assertions, CLI, and report UI remain out of scope.
+- CI installs the exact Chromium build paired with Playwright `1.62.1` before running the repository quality gate.
+
 ## [0.6.0.0] - 2026-08-19
 
 ### Added

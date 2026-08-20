@@ -6,6 +6,8 @@ Config validation; duplicate/invalid IDs; matrix expansion/filtering; coverage m
 ## Integration
 Scenario loading; Playwright lifecycle; route interception; viewport/theme; readiness; screenshots; diagnostics; assertions; continuation after a failed cell.
 
+The initial runner fixture uses real headless Chromium with programmatically supplied HTML. It verifies one healthy browser is reused, contexts/pages and cookies are isolated, configured viewports are applied, resources close after success and failure, and a rejected cell does not prevent later cells from running. Mocked lifecycle tests force cleanup failure to verify browser quarantine, replacement, and run-level replacement failures.
+
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
 

@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-The current implementation boundary is Phase 1 and Phase 2. Do not begin the Playwright runner, report UI, or other later phases until the user explicitly advances the phase.
+Phase 1 and Phase 2 are complete. The current implementation boundary is Phase 3, delivered through focused Playwright-runner steps. Do not begin the CLI, report UI, or other later phases until the user explicitly advances the phase.
 
 ## Development workflow
 
@@ -40,7 +40,7 @@ node --test scripts/*.test.mjs
 node scripts/run-ci.mjs
 ```
 
-Run `corepack pnpm install --frozen-lockfile` first when dependencies are present.
+Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. For Phase 3 runner work, also install the pinned browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium` before running browser-backed tests.
 
 ## Engineering constraints
 
