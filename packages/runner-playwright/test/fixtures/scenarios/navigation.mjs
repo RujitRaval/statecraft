@@ -113,6 +113,14 @@ export default {
         });
         return;
       }
+      if (url.pathname === "/during-readiness") {
+        await route.fulfill({
+          body: pageMarkup(state.id),
+          contentType: "text/html",
+          status: 209,
+        });
+        return;
+      }
       await route.fallback();
     });
   },
@@ -161,6 +169,20 @@ export default {
         },
         { redirectUrl: crossOriginUrl("/during-readiness") },
       );
+    }
+    if (state.id === "readiness-same-origin") {
+      await page.waitForLoadState("load");
+      await page.evaluate(() => {
+        const font = new globalThis.FontFace(
+          "StatecraftDelayed",
+          "url('/slow-font.woff2')",
+        );
+        globalThis.document.fonts.add(font);
+        void font.load().catch(() => undefined);
+        setTimeout(() => {
+          globalThis.location.href = "/during-readiness";
+        }, 10);
+      });
     }
     record(`after:${state.id}:${theme}`);
     if (state.id === "after-failure") {

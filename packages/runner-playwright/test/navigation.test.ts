@@ -432,6 +432,40 @@ describe("runNavigatedScenarioCells", () => {
     }
   });
 
+  it("rejects same-origin document navigation during readiness", async () => {
+    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const events: string[] = [];
+    Reflect.set(globalThis, eventKey, events);
+
+    try {
+      const cells = navigationCells(["readiness-same-origin", "ready"]);
+      const outcomes = await runNavigatedScenarioCells(
+        cells,
+        async ({ state }) => state.id,
+        {
+          baseURL,
+          readiness: { timeoutMs: 1_000 },
+          scenarioBaseDirectory,
+        },
+      );
+
+      expect(outcomes[0]).toEqual({
+        cell: cells[0],
+        reason: new TypeError(
+          "Navigation cannot change the document during deterministic readiness.",
+        ),
+        status: "rejected",
+      });
+      expect(outcomes[1]).toEqual({
+        cell: cells[1],
+        status: "fulfilled",
+        value: "ready",
+      });
+    } finally {
+      Reflect.deleteProperty(globalThis, eventKey);
+    }
+  });
+
   it("waits for a font load started after the normal load event", async () => {
     const eventKey = Symbol.for("statecraft.test.navigation-events");
     const events: string[] = [];

@@ -1,5 +1,5 @@
 import type { MatrixCell } from "@statecraft/core";
-import type { Page } from "playwright";
+import type { Page, Request } from "playwright";
 
 import {
   runExecutionCells,
@@ -177,21 +177,50 @@ async function settleReadiness(
   page: Page,
   settings: NavigationSettings,
 ): Promise<void> {
-  await page.addStyleTag({ content: stabilityStyles });
-  await page.waitForLoadState("load", {
-    timeout: settings.readinessTimeoutMs,
-  });
-  if (settings.readinessSelector !== undefined) {
-    await page.locator(settings.readinessSelector).waitFor({
-      state: "visible",
-      timeout: settings.readinessTimeoutMs,
-    });
+  let documentNavigationRequested = false;
+  const trackDocumentNavigation = (request: Request): void => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+      documentNavigationRequested = true;
+    }
+  };
+  const rejectDocumentNavigation = (): never => {
+    assertPageOrigin(page, settings.baseURL);
+    throw new TypeError(
+      "Navigation cannot change the document during deterministic readiness.",
+    );
+  };
+
+  page.on("request", trackDocumentNavigation);
+  try {
+    try {
+      await page.addStyleTag({ content: stabilityStyles });
+      await page.waitForLoadState("load", {
+        timeout: settings.readinessTimeoutMs,
+      });
+      if (settings.readinessSelector !== undefined) {
+        await page.locator(settings.readinessSelector).waitFor({
+          state: "visible",
+          timeout: settings.readinessTimeoutMs,
+        });
+      }
+      await page.waitForFunction(
+        () => !("fonts" in document) || document.fonts.status === "loaded",
+        undefined,
+        { timeout: settings.readinessTimeoutMs },
+      );
+    } catch (cause: unknown) {
+      if (documentNavigationRequested) {
+        rejectDocumentNavigation();
+      }
+      throw cause;
+    }
+
+    if (documentNavigationRequested) {
+      rejectDocumentNavigation();
+    }
+  } finally {
+    page.off("request", trackDocumentNavigation);
   }
-  await page.waitForFunction(
-    () => !("fonts" in document) || document.fonts.status === "loaded",
-    undefined,
-    { timeout: settings.readinessTimeoutMs },
-  );
 }
 
 function lifecycleOptions(

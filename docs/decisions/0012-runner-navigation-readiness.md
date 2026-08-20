@@ -14,7 +14,7 @@ Phase 3 needs one built-in path from a configured matrix cell to a stable page t
 - Resolve slash-prefixed route paths against the base URL and reject paths that change origin, even when callers bypass core runtime validation. Recheck the page origin after built-in navigation and `afterNavigate` so redirects or hook-driven navigation cannot escape the boundary before readiness and caller-owned work.
 - Apply `data-theme` before application scripts. Map `light` and `dark` to color-scheme media emulation, map other themes to `no-preference`, and request reduced motion for every theme.
 - Preserve the lifecycle order: theme setup, `beforeNavigate`, DOM-content-loaded navigation, `afterNavigate`, deterministic readiness, then caller-owned post-readiness work.
-- Define readiness as bounded normal-load, optional visible-selector, and font-set gates after injecting stability styles that suppress animation, transitions, smooth scrolling, and carets. Never use `networkidle` or an implicit fixed delay.
+- Define readiness as bounded normal-load, optional visible-selector, and font-set gates after injecting stability styles that suppress animation, transitions, smooth scrolling, and carets. Reject main-frame document navigation that starts during readiness so a replacement document cannot bypass those gates. Never use `networkidle` or an implicit fixed delay.
 - Return frozen requested/final URL metadata and the built-in requested navigation's response status to the post-readiness callback. Recheck the origin after readiness so scheduled navigation cannot escape the boundary before caller-owned work. Treat scenario, hook, navigation, readiness, and callback failures as cell failures so later cells continue.
 
 ## Consequences
