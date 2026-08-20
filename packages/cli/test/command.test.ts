@@ -9,7 +9,24 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../src/init.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/init.js")>();
+  return {
+    ...original,
+    initProject: vi.fn(async (options: { readonly cwd?: string }) => {
+      if (options.cwd === "write-failure") {
+        throw new original.InitError(
+          "INIT_WRITE_FAILED",
+          "Statecraft could not create every starter file.",
+          { paths: ["/project/statecraft.config.ts", "/project/statecraft"] },
+        );
+      }
+      return original.initProject(options);
+    }),
+  };
+});
 
 import { runCli } from "../src/command.js";
 
@@ -120,7 +137,7 @@ Created:
 Next:
   1. Update statecraft.config.ts for your app.
   2. Add scenario hooks in statecraft/scenarios/home/success.ts.
-  3. Run statecraft scan.
+  3. Commit both starter files to version control.
 `);
     expect(stderr.messages).toEqual([]);
   });
@@ -142,5 +159,23 @@ Next:
       "Statecraft initialization conflicts with existing paths:",
     );
     await expect(readFile(configPath, "utf8")).resolves.toBe("keep");
+  });
+
+  it("reports targets for write failures", async () => {
+    const stderr = outputCapture();
+
+    await expect(
+      runCli({
+        args: ["init"],
+        cwd: "write-failure",
+        stderr: stderr.write,
+      }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(`Statecraft could not create every starter file.
+
+Targets:
+  /project/statecraft.config.ts
+  /project/statecraft
+`);
   });
 });

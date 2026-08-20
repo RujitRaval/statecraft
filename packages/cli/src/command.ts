@@ -65,11 +65,15 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
     const result = await initProject({ cwd: options.cwd });
     const configPath = displayPath(result.projectRoot, result.configPath);
     const scenarioPath = displayPath(result.projectRoot, result.scenarioPath);
-    stdout(`Statecraft initialized.\n\nCreated:\n  ${configPath}\n  ${scenarioPath}\n\nNext:\n  1. Update ${configPath} for your app.\n  2. Add scenario hooks in ${scenarioPath}.\n  3. Run statecraft scan.\n`);
+    stdout(`Statecraft initialized.\n\nCreated:\n  ${configPath}\n  ${scenarioPath}\n\nNext:\n  1. Update ${configPath} for your app.\n  2. Add scenario hooks in ${scenarioPath}.\n  3. Commit both starter files to version control.\n`);
     return 0;
   } catch (error: unknown) {
     if (error instanceof InitError) {
-      stderr(`${error.message}\n`);
+      const targets =
+        error.code === "INIT_WRITE_FAILED" && error.paths.length > 0
+          ? `\n\nTargets:\n${error.paths.map((path) => `  ${path}`).join("\n")}`
+          : "";
+      stderr(`${error.message}${targets}\n`);
     } else {
       stderr("Statecraft initialization failed unexpectedly.\n");
     }
