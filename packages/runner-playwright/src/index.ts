@@ -15,6 +15,11 @@ export type {
   RunCapturedScenarioCellsOptions,
   ScenarioCaptureEvidence,
 } from "./capture.js";
+export { runPersistedScenarioCells } from "./persistence.js";
+export type {
+  PersistedScenarioRun,
+  RunPersistedScenarioCellsOptions,
+} from "./persistence.js";
 export {
   loadScenario,
   runScenarioCells,

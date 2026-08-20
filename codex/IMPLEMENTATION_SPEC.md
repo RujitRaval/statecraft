@@ -452,14 +452,14 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 and Phase 2 are complete. Implement **Phase 3 only** through
-focused Playwright-runner steps. Do not begin the CLI, report UI, or
-later phases until the user explicitly advances the phase.
+Phase 1, Phase 2, and Phase 3 are complete. Do not begin the CLI,
+report UI, or another later phase until the user explicitly advances
+the phase.
 
-At each Phase 3 handoff provide: runner API implemented; lifecycle
-behavior; fixture and integration tests added; build/test commands;
-assumptions; unresolved questions; and the recommended next Phase 3
-step.
+At each handoff provide: API implemented; lifecycle behavior; fixture
+and integration tests added; build/test commands; assumptions;
+unresolved questions; and the recommended next step inside the
+explicitly approved phase.
 
 Guiding sentence:
 

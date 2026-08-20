@@ -85,7 +85,7 @@ export class ScenarioCaptureError extends Error {
     const safeOptions =
       options?.cause === undefined
         ? undefined
-        : { cause: new Error(errorMessage(options.cause)) };
+        : { cause: new Error(diagnosticErrorMessage(options.cause)) };
     super(
       `Scenario capture failed: ${safeFailures.map(({ code }) => code).join(", ")}.`,
       safeOptions,
@@ -185,7 +185,8 @@ export function sanitizeDiagnosticText(value: string): string {
   return sanitized.length === 0 ? "[empty diagnostic]" : sanitized;
 }
 
-function errorMessage(reason: unknown): string {
+/** @internal Converts unknown thrown values into bounded sanitized text. */
+export function diagnosticErrorMessage(reason: unknown): string {
   try {
     return sanitizeDiagnosticText(
       String(reason instanceof Error ? reason.message : reason),
@@ -251,7 +252,7 @@ class DiagnosticCollector {
 
   readonly onPageError = (error: Error): void => {
     if (this.pageErrors.length < maxDiagnosticsPerCategory) {
-      this.pageErrors.push(errorMessage(error));
+      this.pageErrors.push(diagnosticErrorMessage(error));
     } else {
       this.dropped.pageErrors += 1;
     }
@@ -431,7 +432,10 @@ export async function runCapturedScenarioCells(
           );
           throw captureError(
             [
-              failure(lifecycleFailureCode(cause), errorMessage(cause)),
+              failure(
+                lifecycleFailureCode(cause),
+                diagnosticErrorMessage(cause),
+              ),
               ...policyFailures(
                 currentEvidence.diagnostics,
                 currentEvidence.droppedDiagnostics,
@@ -456,7 +460,7 @@ export async function runCapturedScenarioCells(
             screenshot,
           );
           const failures = [
-            failure("SCREENSHOT_FAILED", errorMessage(cause)),
+            failure("SCREENSHOT_FAILED", diagnosticErrorMessage(cause)),
             ...policyFailures(
               currentEvidence.diagnostics,
               currentEvidence.droppedDiagnostics,
@@ -476,7 +480,10 @@ export async function runCapturedScenarioCells(
           } catch (cause: unknown) {
             assertionStatus = "failed";
             assertionCause = cause;
-            assertionFailure = failure("ASSERTION_FAILED", errorMessage(cause));
+            assertionFailure = failure(
+              "ASSERTION_FAILED",
+              diagnosticErrorMessage(cause),
+            );
           }
         }
 

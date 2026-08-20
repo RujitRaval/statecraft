@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft has completed its Phase 1 foundation and Phase 2 core contracts. Phase 3 Playwright-runner work is underway through focused pull requests. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed its Phase 1 foundation, Phase 2 core contracts, and Phase 3 Playwright runner. Do not begin the CLI, report UI, or another later phase until the user explicitly advances the phase. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 

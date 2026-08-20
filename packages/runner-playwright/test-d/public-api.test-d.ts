@@ -3,6 +3,7 @@ import {
   runCapturedScenarioCells,
   runExecutionCells,
   runNavigatedScenarioCells,
+  runPersistedScenarioCells,
   runScenarioCells,
   runScenarioLifecycle,
   ScenarioLoadError,
@@ -19,10 +20,12 @@ import {
   type NavigatedScenarioCellExecutor,
   type NavigatedScenarioContext,
   type NavigationMetadata,
+  type PersistedScenarioRun,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
   type RunCapturedScenarioCellsOptions,
   type RunNavigatedScenarioCellsOptions,
+  type RunPersistedScenarioCellsOptions,
   type RunScenarioCellsOptions,
   type ScenarioCellExecutor,
   type ScenarioContext,
@@ -93,6 +96,13 @@ const captureOptions: RunCapturedScenarioCellsOptions = {
 const captureOutcomes: Promise<
   readonly CellExecutionOutcome<CapturedScenarioCell>[]
 > = runCapturedScenarioCells([execution.cell], captureOptions);
+const persistenceOptions: RunPersistedScenarioCellsOptions = {
+  ...captureOptions,
+  generatedAt: new Date("2026-08-20T15:00:00.000Z"),
+  projectDirectory: process.cwd(),
+};
+const persistedRun: Promise<PersistedScenarioRun> =
+  runPersistedScenarioCells([execution.cell], persistenceOptions);
 declare const capture: CapturedScenarioCell;
 const evidence: ScenarioCaptureEvidence = capture;
 const assertionStatus: AssertionStatus = capture.assertionStatus;
@@ -150,6 +160,7 @@ void assertionStatus;
 void captureFailures;
 void captureOutcomes;
 void loadedScenario;
+void persistedRun;
 void navigation;
 void navigationOutcomes;
 void scenarioOutcomes;

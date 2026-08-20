@@ -169,9 +169,39 @@ The runner never reads diagnostic request/response headers, cookies, bodies, or 
 
 `failOn` uses the core `FailurePolicy`. Defaults are `{ consoleError: false, failedRequest: false, pageError: true }`. Enabled categories generate `CONSOLE_ERROR`, `FAILED_REQUEST`, or `PAGE_ERROR` failures. Screenshot and assertion failures are always fatal and generate `SCREENSHOT_FAILED` and `ASSERTION_FAILED`. Multiple failures are retained in deterministic assertion/console/page/request order. `ScenarioCaptureError` exposes those stable failures plus `ScenarioCaptureEvidence`, whose screenshot and navigation fields are nullable when the lifecycle failed before they became available. Route and browser lifecycle failures use `NAVIGATION_FAILED`; scenario module loading/validation uses `INTERNAL_ERROR`. Once the built-in navigation receives a response, `navigationStatus` survives later failures. Same-origin responses also retain partial navigation metadata; a cross-origin redirect retains status only and exposes no external URL through evidence. As with every runner stage, a failed cell does not abort later cells.
 
+## Result translation and local persistence
+
+`runPersistedScenarioCells(cells, options)` is the complete programmatic Phase 3 entry point. It runs capture, translates every settled outcome into the core `ExecutionResult` contract, calculates configured-state coverage, validates a schema-v1 `StatecraftReport`, writes deterministic screenshots, and serializes `.statecraft/report/statecraft.json`.
+
+```ts
+import { expandMatrix, parseConfig } from "@statecraft/core";
+import { runPersistedScenarioCells } from "@statecraft/runner-playwright";
+
+const config = parseConfig(unknownConfig);
+const run = await runPersistedScenarioCells(expandMatrix(config), {
+  baseURL: config.baseURL,
+  failOn: config.failOn,
+  projectDirectory: process.cwd(),
+  readiness: { selector: "main[data-ready]" },
+  scenarioBaseDirectory: process.cwd(),
+});
+
+run.reportPath;
+// .statecraft/report/statecraft.json
+run.report.summary.coverage.execution;
+```
+
+The project directory must already exist and defaults to `process.cwd()`. Cells must come from the validated core configuration/matrix boundary; malformed hand-built cells reject the run before Chromium launches. `generatedAt` optionally accepts a valid `Date` for deterministic callers and tests; normal runs record completion time. The returned `PersistedScenarioRun` contains the validated report and the fixed project-relative JSON path. It does not retain screenshot bytes after publication.
+
+Each successful capture becomes a passed execution with its deterministic `screenshotArtifactPath(cell)`. A rejected `ScenarioCaptureError` becomes a failed execution with the same stable failures, diagnostics, duration, safe URL metadata, and a screenshot path when capture completed before the later failure. Unexpected context or cleanup failures become sanitized `INTERNAL_ERROR` results without screenshots. Result parsing redacts route, execution, failed-request, and project URL credentials, fragments, and query values before anything reaches disk.
+
+Publication uses a private staging directory and local run lock inside `.statecraft/`. The lock keeps an immutable process owner plus append-only publishing/recovery markers and is acquired before Chromium launches, so two programmatic runs cannot interleave capture and publication for one project. An abandoned capture-phase lock and its uncommitted staging are recovered when its owner is no longer alive; a small durable claim keyed to that abandoned owner prevents delayed recovery contenders from moving a newer live lock. The publishing marker is created only immediately before the first destructive rename, and publishing or recovery state is preserved for inspection. Once every screenshot and the validated JSON payload are ready, the runner hides the prior JSON, replaces the complete `.statecraft/artifacts/` tree so filtered or removed cells cannot leave stale screenshots, then publishes the new `statecraft.json` last. Existing `.statecraft/report/index.html` or other future report UI files are preserved. Artifact and JSON symbolic links are rejected, and new or existing runner directories/files use owner-only modes where supported. A failed publication restores artifacts before making the previous JSON visible; if recovery itself fails, the runner preserves staging data and the owned lock for manual recovery instead of deleting the last good copies. Filesystem validation, locking, and publication errors reject the run instead of fabricating per-cell browser failures.
+
+This API writes data only. It does not discover configuration, render HTML, print terminal output, choose exit codes, or open a report.
+
 ## Current boundary
 
-The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, ordered hooks, same-origin navigation, theme application, deterministic readiness, in-memory PNG capture, sanitized diagnostics, assertion execution, and failure policies. Execution-result construction and artifact persistence remain the final Phase 3 runner step. CLI and report UI work remain out of scope.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, deterministic artifact persistence, and versioned JSON report data. CLI and report UI work remain out of scope until the user explicitly advances the phase.
 
 ## Dependency decision
 
