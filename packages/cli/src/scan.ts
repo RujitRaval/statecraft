@@ -45,7 +45,7 @@ export interface ScanResult {
 
 /**
  * Loads one trusted config, expands its selected matrix, executes every cell,
- * and persists deterministic screenshots plus the schema-v1 JSON report.
+ * and persists deterministic screenshots plus schema-v1 JSON and offline HTML.
  */
 export async function scanProject(
   options: ScanOptions = {},

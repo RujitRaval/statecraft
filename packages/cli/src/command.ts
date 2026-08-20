@@ -20,7 +20,7 @@ Usage:
 
 Commands:
   init  Create a starter config and scenario without overwriting files
-  scan  Execute configured UI states and persist screenshots plus JSON
+  scan  Execute configured UI states and persist screenshots, JSON, and HTML
   open  Open the latest generated offline HTML report
 `;
 

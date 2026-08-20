@@ -63,7 +63,7 @@ export interface RunPersistedScenarioCellsOptions
   readonly projectDirectory?: string | undefined;
 }
 
-/** The validated report and its stable project-relative JSON location. */
+/** The validated report and its stable project-relative JSON and HTML locations. */
 export interface PersistedScenarioRun {
   readonly htmlReportPath: typeof REPORT_HTML_PATH;
   readonly report: StatecraftReport;

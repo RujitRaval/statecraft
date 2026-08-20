@@ -164,6 +164,9 @@ describe("runCli", () => {
     ).resolves.toBe(0);
     expect(stdout.messages.join("")).toContain("statecraft init");
     expect(stdout.messages.join("")).toContain("statecraft open");
+    expect(stdout.messages.join("")).toContain(
+      "persist screenshots, JSON, and HTML",
+    );
     expect(stderr.messages).toEqual([]);
     await expect(
       lstat(join(project, "statecraft.config.ts")),
