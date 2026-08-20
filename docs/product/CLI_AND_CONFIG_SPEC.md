@@ -4,6 +4,18 @@
 ### `statecraft init`
 Create starter config/scenario directory; never silently overwrite; print exact next steps.
 
+The starter is intentionally small:
+
+```text
+statecraft.config.ts
+statecraft/
+  scenarios/
+    home/
+      success.ts
+```
+
+Existing target files cause a setup error. There is no force flag.
+
 ### `statecraft scan`
 Validate config, optionally filter, execute matrix, write artifacts/report, print summary, return stable exit code.
 ```bash

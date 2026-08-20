@@ -1,7 +1,18 @@
 import { execFile } from "node:child_process";
-import { access, readFile } from "node:fs/promises";
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 import { describe, expect, it } from "vitest";
@@ -10,6 +21,9 @@ const execFileAsync = promisify(execFile);
 const require = createRequire(import.meta.url);
 
 interface PackageManifest {
+  bin?: {
+    statecraft?: string;
+  };
   exports?: {
     "."?: {
       import?: string;
@@ -31,6 +45,9 @@ describe("@statecraft/cli package boundary", () => {
       name: "@statecraft/cli",
       private: true,
       type: "module",
+      bin: {
+        statecraft: "./dist/bin.js",
+      },
       exports: {
         ".": {
           import: "./dist/index.js",
@@ -41,20 +58,31 @@ describe("@statecraft/cli package boundary", () => {
 
     const importPath = manifest.exports?.["."]?.import;
     const typesPath = manifest.exports?.["."]?.types;
+    const binPath = manifest.bin?.statecraft;
     expect(importPath).toBeDefined();
     expect(typesPath).toBeDefined();
+    expect(binPath).toBeDefined();
 
     const packageRoot = new URL("../", import.meta.url);
     const importUrl = new URL(importPath ?? "", packageRoot);
     const typesUrl = new URL(typesPath ?? "", packageRoot);
+    const binUrl = new URL(binPath ?? "", packageRoot);
     await expect(access(typesUrl)).resolves.toBeUndefined();
+    await expect(access(binUrl)).resolves.toBeUndefined();
+    await expect(readFile(binUrl, "utf8")).resolves.toMatch(
+      /^#!\/usr\/bin\/env node\n/,
+    );
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule).sort()).toEqual([
       "ConfigDiscoveryError",
       "ConfigLoadError",
       "DEFAULT_CONFIG_FILENAMES",
+      "InitError",
+      "defineConfig",
       "discoverConfig",
+      "initProject",
       "loadConfig",
+      "runCli",
     ]);
   });
 
@@ -67,5 +95,90 @@ describe("@statecraft/cli package boundary", () => {
     await expect(
       execFileAsync(process.execPath, [typeScriptCli, "-p", typeContractConfig]),
     ).resolves.toMatchObject({ stderr: "", stdout: "" });
+  });
+
+  it("runs the built executable entrypoint", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "statecraft-cli-bin-")),
+    );
+    const binPath = fileURLToPath(
+      new URL("../dist/bin.js", import.meta.url),
+    );
+
+    try {
+      await expect(
+        execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
+      ).resolves.toMatchObject({
+        stderr: "",
+        stdout: expect.stringContaining("Statecraft initialized."),
+      });
+      await expect(
+        access(join(project, "statecraft.config.ts")),
+      ).resolves.toBeUndefined();
+
+      const packageScope = join(project, "node_modules", "@statecraft");
+      await mkdir(packageScope, { recursive: true });
+      await symlink(
+        fileURLToPath(new URL("../", import.meta.url)),
+        join(packageScope, "cli"),
+        process.platform === "win32" ? "junction" : "dir",
+      );
+      await writeFile(
+        join(project, "package.json"),
+        JSON.stringify({ private: true, type: "module" }),
+        "utf8",
+      );
+      await writeFile(
+        join(project, "tsconfig.json"),
+        JSON.stringify({
+          compilerOptions: {
+            module: "NodeNext",
+            moduleResolution: "NodeNext",
+            noEmit: true,
+            skipLibCheck: false,
+            strict: true,
+            target: "ES2023",
+            types: [],
+          },
+          include: ["statecraft.config.ts", "statecraft/**/*.ts"],
+        }),
+        "utf8",
+      );
+      const typeScriptCli = require.resolve("typescript/bin/tsc");
+      await expect(
+        execFileAsync(process.execPath, [typeScriptCli, "-p", "tsconfig.json"], {
+          cwd: project,
+        }),
+      ).resolves.toMatchObject({ stderr: "", stdout: "" });
+
+      const builtCli = await import(
+        new URL("../dist/index.js", import.meta.url).href
+      );
+      await expect(builtCli.loadConfig({ cwd: project })).resolves.toMatchObject(
+        {
+          config: {
+            baseURL: "http://localhost:3000",
+            routes: [{ id: "home", path: "/" }],
+          },
+        },
+      );
+      const scenarioModule = await import(
+        pathToFileURL(
+          join(project, "statecraft", "scenarios", "home", "success.ts"),
+        ).href
+      );
+      expect(scenarioModule.default).toEqual({});
+
+      await expect(
+        execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
+      ).rejects.toMatchObject({
+        code: 2,
+        stderr: expect.stringContaining(
+          "Statecraft initialization conflicts with existing paths:",
+        ),
+      });
+    } finally {
+      await rm(project, { force: true, recursive: true });
+    }
   });
 });

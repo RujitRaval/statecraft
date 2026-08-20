@@ -452,11 +452,12 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active. Implement
-the CLI through focused slices, beginning with package foundation and
-deterministic config discovery/loading. Keep command execution and the
-report UI out of the first slice. Do not begin Phase 5 or another later
-phase until the user explicitly advances it.
+Phase 1, Phase 2, and Phase 3 are complete. Phase 4 is active. The CLI
+package, deterministic config discovery/loading, executable command
+foundation, and overwrite-safe `init` command are complete. Continue
+Phase 4 through focused `scan` and `open` slices. Do not begin the report
+UI, Phase 5, or another later phase until the user explicitly advances
+it.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

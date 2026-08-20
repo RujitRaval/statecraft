@@ -24,6 +24,8 @@ Exit 0 all-pass; 1 completed with failures; 2 invalid config/internal setup. Ver
 
 Config foundation tests cover default and explicit path discovery, canonical paths, absent and ambiguous configs, invalid roots and non-file paths, trusted module import failures, missing default exports, delegation to core validation, and the built package/type boundary. Discovery tests use isolated temporary projects and do not walk parent directories or access the network.
 
+CLI initialization tests cover generated config/scenario content, canonical project roots, existing-directory preservation, every supported config-name conflict, scenario conflicts, repeated initialization, symbolic-link directory refusal, invalid/unwritable roots, help and usage errors, exact next-step output, exit codes, the public type boundary, the built executable entrypoint, and isolated-consumer compilation/loading from a one-package CLI install. All filesystem cases use isolated temporary projects.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

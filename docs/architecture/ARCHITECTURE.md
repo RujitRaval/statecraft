@@ -40,6 +40,8 @@ Config discovery, commands, orchestration, terminal UX, exit codes.
 
 The initial Phase 4 slice exposes deterministic project-root config discovery and loading. Discovery checks only the explicit working directory, supports an explicit path relative to that directory, canonicalizes results, accepts the documented TypeScript and JavaScript module variants, and rejects ambiguity instead of choosing by extension precedence. Loading executes the selected config as trusted local code, requires a default export, and delegates value validation to `@statecraft/core`. Command parsing, runner orchestration, terminal behavior, and report opening remain outside this slice.
 
+The next Phase 4 slice adds an executable dispatcher without a third-party parser and an `init` command. Initialization creates one typed config that imports its helper from the installed CLI package plus one valid empty scenario, accepts no force/overwrite flag, preflights every target, rejects symbolic-link directory boundaries, writes files with exclusive creation, and publishes the config last. It never deletes paths during failure recovery because concurrent filesystem changes could replace a file after creation. `scan`, `open`, runner orchestration, and report UI generation remain outside this slice.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {

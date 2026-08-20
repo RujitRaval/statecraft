@@ -36,8 +36,8 @@
 ## Phase 4
 - [x] CLI package foundation and public package boundary
 - [x] Deterministic config discovery and trusted local module loading
-- [ ] Command parser and dispatch
-- [ ] `init` starter generation and overwrite protection
+- [x] Command parser and dispatch
+- [x] `init` starter generation and overwrite protection
 - [ ] `scan` orchestration, filters, and headed mode
 - [ ] Terminal summary and exit codes 0/1/2
 - [ ] `open` latest-report behavior
