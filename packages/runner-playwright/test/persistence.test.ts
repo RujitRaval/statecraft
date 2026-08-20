@@ -92,6 +92,31 @@ function interactiveReportCells(): readonly MatrixCell[] {
   );
 }
 
+function allIdentifierCells(): readonly MatrixCell[] {
+  return expandMatrix(
+    parseConfig({
+      baseURL,
+      routes: [
+        {
+          id: "zeta",
+          path: "/capture",
+          states: [{ id: "alpha", setup: "./capture.mjs" }],
+        },
+        {
+          id: "all",
+          path: "/capture",
+          states: [{ id: "all", setup: "./capture.mjs" }],
+        },
+      ],
+      themes: ["dark", "all"],
+      viewports: {
+        wide: { height: 480, width: 720 },
+        all: { height: 240, width: 320 },
+      },
+    }),
+  );
+}
+
 async function temporaryProject(): Promise<{
   readonly cleanup: () => Promise<void>;
   readonly path: string;
@@ -271,6 +296,19 @@ describe("runPersistedScenarioCells", () => {
           expect(await page.locator("[data-detail-target]:visible").count()).toBe(10);
           expect(await page.locator("[data-matrix-row]:visible").count()).toBe(3);
 
+          if (viewport.width > 1_000) {
+            expect(
+              await page
+                .locator('select[name="route"] option')
+                .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value)),
+            ).toEqual(["", "capture", "secondary"]);
+            expect(
+              await page
+                .locator('select[name="state"] option')
+                .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value)),
+            ).toEqual(["", "clean-after", "page-error", "nonfatal"]);
+          }
+
           const heroColumns = await page.locator(".hero").evaluate((hero) =>
             getComputedStyle(hero).gridTemplateColumns.split(" ").length,
           );
@@ -331,15 +369,45 @@ describe("runPersistedScenarioCells", () => {
             expect(await page.locator("[data-matrix-row]:visible").count()).toBe(1);
 
             const firstCell = page.locator("[data-detail-target]:visible").first();
+            await page.emulateMedia({ reducedMotion: "reduce" });
+            await page.evaluate(() => {
+              HTMLElement.prototype.scrollIntoView = (options) => {
+                document.documentElement.dataset["scrollBehavior"] =
+                  typeof options === "object" && options !== null
+                    ? (options.behavior ?? "")
+                    : "legacy";
+              };
+            });
             await firstCell.focus();
             await page.keyboard.press("Enter");
             expect(new URL(page.url()).hash).toMatch(/^#execution-/);
             expect(await page.locator("[data-detail]:visible").count()).toBe(1);
+            expect(await firstCell.getAttribute("aria-current")).toBe("true");
+            expect(
+              await page.locator("html").getAttribute("data-scroll-behavior"),
+            ).toBe("auto");
             expect(
               await page.locator("[data-detail]:visible").evaluate(
                 (detail) => detail === document.activeElement,
               ),
             ).toBe(true);
+            const visibleDetail = page.locator("[data-detail]:visible");
+            const diagnosticCounts = await visibleDetail
+              .locator("details summary strong")
+              .allTextContents();
+            expect(diagnosticCounts).toHaveLength(4);
+            expect(diagnosticCounts.some((count) => Number(count) > 0)).toBe(true);
+            const consoleDisclosure = visibleDetail.locator("details").nth(1);
+            await consoleDisclosure.locator("summary").click();
+            expect(await consoleDisclosure.getAttribute("open")).not.toBeNull();
+            await visibleDetail.locator("[data-close-detail]").click();
+            expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+            expect(await firstCell.evaluate((cell) => cell === document.activeElement)).toBe(
+              true,
+            );
+
+            await firstCell.focus();
+            await page.keyboard.press("Enter");
             await page.keyboard.press("Escape");
             expect(await page.locator("[data-detail]:visible").count()).toBe(0);
             expect(await firstCell.evaluate((cell) => cell === document.activeElement)).toBe(
@@ -405,6 +473,14 @@ describe("runPersistedScenarioCells", () => {
               "failed",
             );
             expect(await page.locator("[data-detail-target]:visible").count()).toBe(2);
+
+            await page.goto(`${reportUrl}?route=unknown&state=unknown#execution-1`, {
+              waitUntil: "load",
+            });
+            expect(await page.locator('select[name="route"]').inputValue()).toBe("");
+            expect(await page.locator('select[name="state"]').inputValue()).toBe("");
+            expect(await page.locator("[data-detail-target]:visible").count()).toBe(10);
+            expect(await page.locator("#execution-1").isVisible()).toBe(true);
           } else {
             const horizontalOverflow = await page.evaluate(
               () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -430,8 +506,92 @@ describe("runPersistedScenarioCells", () => {
           await context.close();
         }
       }
+
+      const noScriptContext = await browser.newContext({
+        javaScriptEnabled: false,
+        viewport: { height: 900, width: 1_440 },
+      });
+      try {
+        const page = await noScriptContext.newPage();
+        await page.goto(reportUrl, { waitUntil: "load" });
+        expect(await page.locator("html.js").count()).toBe(0);
+        expect(await page.locator("#report-filters").isVisible()).toBe(true);
+        expect(await page.locator("[data-detail-target]:visible").count()).toBe(10);
+        expect(await page.locator("[data-detail]:visible").count()).toBe(10);
+        await page.locator('[data-detail-target="execution-1"]').click();
+        expect(new URL(page.url()).hash).toBe("#execution-1");
+      } finally {
+        await noScriptContext.close();
+      }
     } finally {
       Reflect.deleteProperty(globalThis, eventKey);
+      await browser.close();
+      await project.cleanup();
+    }
+  }, 30_000);
+
+  it("filters identifiers named all without treating them as wildcards", async () => {
+    const project = await temporaryProject();
+    const browser = await chromium.launch({ headless: true });
+    const eventKey = Symbol.for("statecraft.test.capture-events");
+    Reflect.set(globalThis, eventKey, []);
+    try {
+      const run = await runPersistedScenarioCells(allIdentifierCells(), {
+        baseURL,
+        generatedAt: new Date("2026-08-20T15:00:45.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      const reportUrl = pathToFileURL(
+        join(project.path, ...run.htmlReportPath.split("/")),
+      ).href;
+      const page = await browser.newPage();
+      await page.goto(reportUrl, { waitUntil: "load" });
+
+      expect(
+        await page
+          .locator('select[name="route"] option')
+          .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value)),
+      ).toEqual(["", "zeta", "all"]);
+      await page.locator('select[name="route"]').selectOption("all");
+      await page.locator('select[name="state"]').selectOption("all");
+      await page.locator('select[name="viewport"]').selectOption("all");
+      await page.locator('select[name="theme"]').selectOption("all");
+      expect(await page.locator("[data-detail-target]:visible").count()).toBe(1);
+      expect(await page.locator("#filter-results").textContent()).toBe(
+        "Showing 1 of 8 executions across 1 matrix row.",
+      );
+    } finally {
+      Reflect.deleteProperty(globalThis, eventKey);
+      await browser.close();
+      await project.cleanup();
+    }
+  }, 30_000);
+
+  it("runs the empty-report script guard without a filter form", async () => {
+    const project = await temporaryProject();
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const run = await runPersistedScenarioCells([], {
+        baseURL,
+        generatedAt: new Date("2026-08-20T15:00:50.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      const reportUrl = pathToFileURL(
+        join(project.path, ...run.htmlReportPath.split("/")),
+      ).href;
+      const page = await browser.newPage();
+      const pageErrors: string[] = [];
+      page.on("pageerror", (error) => pageErrors.push(error.message));
+      await page.goto(reportUrl, { waitUntil: "load" });
+
+      expect(await page.locator("#report-filters").count()).toBe(0);
+      expect(await page.getByText("No executions were selected for this report.").isVisible()).toBe(
+        true,
+      );
+      expect(pageErrors).toEqual([]);
+    } finally {
       await browser.close();
       await project.cleanup();
     }
