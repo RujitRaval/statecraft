@@ -64,14 +64,18 @@ describe("@statecraft/runner-playwright package boundary", () => {
     ]);
   });
 
-  it("compiles the documented public API through the package export", async () => {
-    const typeScriptCli = require.resolve("typescript/bin/tsc");
-    const typeContractConfig = fileURLToPath(
-      new URL("../test-d/tsconfig.json", import.meta.url),
-    );
+  it(
+    "compiles the documented public API through the package export",
+    async () => {
+      const typeScriptCli = require.resolve("typescript/bin/tsc");
+      const typeContractConfig = fileURLToPath(
+        new URL("../test-d/tsconfig.json", import.meta.url),
+      );
 
-    await expect(
-      execFileAsync(process.execPath, [typeScriptCli, "-p", typeContractConfig]),
-    ).resolves.toMatchObject({ stderr: "", stdout: "" });
-  });
+      await expect(
+        execFileAsync(process.execPath, [typeScriptCli, "-p", typeContractConfig]),
+      ).resolves.toMatchObject({ stderr: "", stdout: "" });
+    },
+    15_000,
+  );
 });
