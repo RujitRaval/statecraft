@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.15.0.0] - 2026-08-20
+
+### Added
+
+- Developers can run `statecraft open` to launch the latest `.statecraft/report/index.html` in their operating system's default browser, with a useful error when no HTML report exists.
+- The CLI exports typed `openReport` and `OpenReportError` APIs with stable missing-report, invalid-root, invalid-path, and launcher-failure contracts.
+- Filesystem, command, launcher, built-executable, package-boundary, and compile-time tests cover canonical paths, every symbolic-link boundary, platform mapping, process handoff, arguments, terminal output, and exit codes.
+
+### Changed
+
+- Phase 4's CLI command scope is complete; the fresh-example report gate remains pending on Phase 5 HTML generation, which stays outside this release.
+- GUI launchers are detached after successful process spawn, so the CLI neither waits for a browser to exit nor treats Windows Explorer's later exit status as a failed open.
+
+### Security
+
+- Report opening rejects observed symbolic-link and non-regular boundaries, passes the absolute report path as one shell-free argument to an absolute system-launcher path, never creates or modifies HTML, and explicitly treats concurrent same-user project-directory mutation during the pathname handoff as trusted local state.
+
 ## [0.14.0.0] - 2026-08-20
 
 ### Added

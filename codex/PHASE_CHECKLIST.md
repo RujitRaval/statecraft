@@ -40,7 +40,7 @@
 - [x] `init` starter generation and overwrite protection
 - [x] `scan` orchestration, filters, and headed mode
 - [x] Terminal summary and exit codes 0/1/2
-- [ ] `open` latest-report behavior
+- [x] `open` latest-report behavior
 - [ ] Fresh example passes init -> scan -> report
 
-Stop after Phase 4 and report findings before proceeding. The report UI remains deferred to Phase 5.
+Phase 4's command implementation is complete. Its final fresh-example gate depends on the Phase 5 HTML generator. Stop and report findings before proceeding; the report UI remains deferred to Phase 5.

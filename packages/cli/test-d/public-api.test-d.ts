@@ -6,9 +6,11 @@ import {
   defineConfig,
   initProject,
   loadConfig,
+  openReport,
   runCli,
   scanProject,
   InitError,
+  OpenReportError,
   ScanError,
   type ConfigDiscoveryErrorCode,
   type ConfigDiscoveryOptions,
@@ -18,6 +20,9 @@ import {
   type InitErrorCode,
   type InitOptions,
   type InitResult,
+  type OpenReportErrorCode,
+  type OpenReportOptions,
+  type OpenReportResult,
   type RunCliOptions,
   type ScanErrorCode,
   type ScanOptions,
@@ -46,6 +51,14 @@ const initOptions: InitOptions = { cwd: "/tmp/example" };
 const initResult: Promise<InitResult> = initProject(initOptions);
 const initCode: InitErrorCode = "INIT_CONFLICT";
 const initError: Error = new InitError(initCode, "Already exists.");
+const openOptions: OpenReportOptions = { cwd: "/tmp/example" };
+const openResult: Promise<OpenReportResult> = openReport(openOptions);
+const openCode: OpenReportErrorCode = "OPEN_REPORT_NOT_FOUND";
+const openError: Error = new OpenReportError(
+  openCode,
+  "Report missing.",
+  "/tmp/example/.statecraft/report/index.html",
+);
 const cliOptions: RunCliOptions = {
   args: ["init"],
   stdout: (message) => void message,
@@ -76,6 +89,8 @@ void discoveryError;
 void loadError;
 void initResult;
 void initError;
+void openResult;
+void openError;
 void cliResult;
 void scanResult;
 void scanError;

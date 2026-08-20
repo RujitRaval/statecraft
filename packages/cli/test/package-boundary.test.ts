@@ -78,11 +78,13 @@ describe("@statecraft/cli package boundary", () => {
       "ConfigLoadError",
       "DEFAULT_CONFIG_FILENAMES",
       "InitError",
+      "OpenReportError",
       "ScanError",
       "defineConfig",
       "discoverConfig",
       "initProject",
       "loadConfig",
+      "openReport",
       "runCli",
       "scanProject",
     ]);
@@ -117,6 +119,14 @@ describe("@statecraft/cli package boundary", () => {
       await expect(
         access(join(project, "statecraft.config.ts")),
       ).resolves.toBeUndefined();
+      await expect(
+        execFileAsync(process.execPath, [binPath, "open"], { cwd: project }),
+      ).rejects.toMatchObject({
+        code: 2,
+        stderr: expect.stringContaining(
+          "No Statecraft HTML report found at .statecraft/report/index.html.",
+        ),
+      });
 
       const packageScope = join(project, "node_modules", "@statecraft");
       await mkdir(packageScope, { recursive: true });
@@ -207,6 +217,10 @@ describe("@statecraft/cli package boundary", () => {
       await expect(
         access(join(project, ".statecraft", "report", "statecraft.json")),
       ).resolves.toBeUndefined();
+      await expect(builtCli.openReport({ cwd: project })).rejects.toMatchObject({
+        code: "OPEN_REPORT_NOT_FOUND",
+        reportPath: join(project, ".statecraft", "report", "index.html"),
+      });
 
       await expect(
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
