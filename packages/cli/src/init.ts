@@ -256,6 +256,34 @@ export async function initProject(
     );
   }
 
+  const lateConfigConflicts: string[] = [];
+  for (const filename of DEFAULT_CONFIG_FILENAMES) {
+    if (filename === CONFIG_FILENAME) {
+      continue;
+    }
+    const path = join(projectRoot, filename);
+    try {
+      if (await existingPath(path)) {
+        lateConfigConflicts.push(path);
+      }
+    } catch (error: unknown) {
+      throw new InitError(
+        "INIT_WRITE_FAILED",
+        `Initialization target cannot be rechecked: ${path}`,
+        { cause: error, paths: [path] },
+      );
+    }
+  }
+  if (lateConfigConflicts.length > 0) {
+    throw new InitError(
+      "INIT_CONFLICT",
+      `Statecraft initialization detected configuration paths created concurrently:\n${lateConfigConflicts
+        .map((path) => `  ${path}`)
+        .join("\n")}\nThe generated starter files were preserved for inspection.`,
+      { paths: lateConfigConflicts },
+    );
+  }
+
   return Object.freeze({
     configPath,
     files: Object.freeze([configPath, scenarioPath]),

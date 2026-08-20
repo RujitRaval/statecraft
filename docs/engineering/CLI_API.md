@@ -16,9 +16,9 @@ statecraft.config.ts
 statecraft/scenarios/home/success.ts
 ```
 
-The config imports `defineConfig` from the installed `@statecraft/cli` package and declares one `/` route, one `success` state, mobile and desktop viewports, and light and dark themes. The scenario starts as a valid empty module with no external import, so the documented one-package installation is sufficient. Developers can add typed Playwright hooks when they customize that scenario. Successful initialization prints the created paths and exact edit/scan next steps.
+The config imports `defineConfig` from the installed `@statecraft/cli` package and declares one `/` route, one `success` state, mobile and desktop viewports, and light and dark themes. The scenario starts as a valid empty module with no external import, so the documented one-package installation is sufficient. Developers can add typed Playwright hooks when they customize that scenario. Successful initialization prints the created paths plus edit, hook, and version-control next steps.
 
-No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation and the config is published last. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; the reported targets remain available for inspection before retrying.
+No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation, the config is published last, and alternate config names are rechecked before success is reported. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; write failures list the affected targets for inspection before retrying.
 
 Missing commands, unsupported commands (including the deferred `scan` and `open` commands), and extra `init` arguments also return `2`. Help returns `0`. Exit code `1` remains reserved for a future completed scan containing failed cells.
 
