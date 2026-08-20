@@ -1,6 +1,39 @@
-# CLI Config API
+# CLI API
 
-Phase 4 begins with a small programmatic boundary in `@statecraft/cli`. This slice locates and validates configuration; it does not parse commands, run Playwright, render terminal output, generate HTML, or open reports.
+`@statecraft/cli` exposes deterministic config loading plus the executable command foundation. The current executable supports `init` and help. It does not yet run Playwright, implement `scan` or `open`, generate HTML, or open reports.
+
+## Executable
+
+```bash
+statecraft init
+statecraft --help
+```
+
+`init` creates:
+
+```text
+statecraft.config.ts
+statecraft/scenarios/home/success.ts
+```
+
+The config imports `defineConfig` from the installed `@statecraft/cli` package and declares one `/` route, one `success` state, mobile and desktop viewports, and light and dark themes. The scenario starts as a valid empty module with no external import, so the documented one-package installation is sufficient. Developers can add typed Playwright hooks when they customize that scenario. Successful initialization prints the created paths plus edit, hook, and version-control next steps.
+
+No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation, the config is published last, and alternate config names are rechecked before success is reported. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; write failures list the affected targets for inspection before retrying.
+
+Missing commands, unsupported commands (including the deferred `scan` and `open` commands), and extra `init` arguments also return `2`. Help returns `0`. Exit code `1` remains reserved for a future completed scan containing failed cells.
+
+## Programmatic command and init API
+
+```ts
+import { initProject, runCli } from "@statecraft/cli";
+
+const result = await initProject({ cwd: process.cwd() });
+const exitCode = await runCli({ args: ["init"], cwd: process.cwd() });
+```
+
+`initProject` returns canonical absolute `projectRoot`, `configPath`, and `scenarioPath` values plus an immutable `files` list. Expected failures use `InitError` with `INIT_CONFLICT`, `INIT_ROOT_INVALID`, or `INIT_WRITE_FAILED` and expose the affected paths.
+
+`runCli` accepts injectable arguments, working directory, and stdout/stderr writers for embedding and deterministic tests. `CliExitCode` is the stable `0 | 1 | 2` command contract; `1` is reserved until the scan slice can complete with failed cells.
 
 ## Discovery
 

@@ -6,6 +6,9 @@
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
+  "bin": {
+    "statecraft": "./dist/bin.js"
+  },
   "files": [
     "dist"
   ],
