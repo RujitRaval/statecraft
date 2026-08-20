@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 export default defineConfig(
   {
-    ignores: ["**/coverage/**", "**/dist/**", "**/node_modules/**"],
+    ignores: ["**/.next/**", "**/coverage/**", "**/dist/**", "**/node_modules/**"],
   },
   eslint.configs.recommended,
   tseslint.configs.recommended,
@@ -15,6 +15,18 @@ export default defineConfig(
     },
     linterOptions: {
       reportUnusedDisableDirectives: "error",
+    },
+  },
+  {
+    files: ["apps/**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
     },
   },
 );

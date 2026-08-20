@@ -452,12 +452,12 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 5 are complete. The report now includes
-deterministic transformation, self-contained offline HTML,
-route/state/viewport/theme/status filters, URL-restorable filter state,
-and an accessible single-execution detail inspector. Do not begin the
-example app or another later phase until the user explicitly advances
-it.
+Phase 1 through Phase 5 are complete. Phase 6 is active. Its first slice
+establishes the visual system, Next.js application foundation,
+deterministic dashboard data contract, and `/dashboard`
+success/loading/empty/error states. Keep `/orders`, `/customers/[id]`,
+intentional defects, the complete Statecraft scenario matrix, and Phase
+7 in focused follow-ups.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

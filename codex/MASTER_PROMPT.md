@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 5 are complete. The report includes deterministic transformation, offline HTML generation, route/state/viewport/theme/status filters, and the final accessible detail interaction. Do not start the example app or another later phase until the user explicitly advances the phase.
+Phase 1 through Phase 5 are complete. Phase 6 is active. Build the example application in focused slices, beginning with the design system, Next.js foundation, deterministic dashboard contract, and `/dashboard` success/loading/empty/error states. Keep the remaining example routes, intentional defects, and Phase 7 deferred until their focused follow-ups.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

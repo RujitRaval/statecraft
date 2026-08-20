@@ -50,6 +50,9 @@ The latest-report slice adds `statecraft open` and the programmatic `openReport`
 
 Phase 5 scan integration returns the runner's coordinated output directly. `ScanResult` exposes both the HTML and JSON project-relative paths, and terminal output points developers to the HTML report that `statecraft open` consumes. The CLI does not duplicate transformation, rendering, or persistence behavior.
 
+### apps/example-nextjs
+The Phase 6 example is a real Next.js App Router application and a deterministic product-state fixture. It owns a self-hosted visual system, fixed commerce-operations data, a narrow `/api/dashboard` response contract, and a client-rendered `/dashboard` state boundary. The page begins in a deliberate loading state, validates the API payload before rendering, classifies a valid no-data payload as empty, and turns transport, HTTP, or contract failures into a recoverable error state. Statecraft scenarios can intercept the API without adding test-only behavior to production components. Theme styling follows the runner-owned `data-theme` attribute before application scripts execute.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {
