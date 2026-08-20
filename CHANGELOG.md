@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.11.0.0] - 2026-08-20
+
+### Added
+
+- Developers can run matrix cells and receive a validated schema-version-1 report through the new `runPersistedScenarioCells` API.
+- Successful and partial screenshots are persisted at deterministic, collision-resistant paths under the ignored `.statecraft/artifacts/` tree, and report data is published at `.statecraft/report/statecraft.json`.
+- Browser-backed and filesystem fault-injection tests cover result translation, sanitized failures, deterministic paths, permissions, symlink rejection, concurrent locking, abandoned-run recovery, rollback ordering, and package contracts.
+
+### Changed
+
+- Phase 3 is now complete: runner outcomes translate into the existing core execution contracts, coverage and duration summaries are derived from validated executions, and the report manifest is published only after its artifact tree is durable.
+- Existing report UI files remain untouched, while CLI commands and report UI generation remain deferred to later phases.
+
+### Security
+
+- Persistence uses owner-only directories and files, refuses symbolic-link output boundaries, sanitizes unexpected lifecycle failures, and preserves recoverable state instead of exposing a report that references incomplete artifacts.
+
 ## [0.10.0.0] - 2026-08-20
 
 ### Added
