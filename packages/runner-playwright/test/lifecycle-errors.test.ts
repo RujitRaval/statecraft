@@ -143,6 +143,7 @@ describe("runExecutionCells error lifecycle", () => {
 
   it("replaces a browser after context cleanup fails and continues", async () => {
     const cleanupError = new Error("context cleanup failed");
+    const launchOptions = { headless: true } as const;
     const failedCleanupContext = controlledContext({ closeError: cleanupError });
     const successContext = controlledContext();
     const compromisedBrowser = controlledBrowser([failedCleanupContext.context]);
@@ -151,8 +152,10 @@ describe("runExecutionCells error lifecycle", () => {
       .mockResolvedValueOnce(compromisedBrowser.browser)
       .mockResolvedValueOnce(replacementBrowser.browser);
 
-    const outcomes = await runExecutionCells(cells, async ({ cell }) =>
-      cell.viewportId,
+    const outcomes = await runExecutionCells(
+      cells,
+      async ({ cell }) => cell.viewportId,
+      { launchOptions },
     );
 
     expect(outcomes[0]).toMatchObject({
@@ -169,6 +172,8 @@ describe("runExecutionCells error lifecycle", () => {
     expect(compromisedBrowser.close).toHaveBeenCalledOnce();
     expect(replacementBrowser.close).toHaveBeenCalledOnce();
     expect(playwrightMocks.launch).toHaveBeenCalledTimes(2);
+    expect(playwrightMocks.launch).toHaveBeenNthCalledWith(1, launchOptions);
+    expect(playwrightMocks.launch).toHaveBeenNthCalledWith(2, launchOptions);
   });
 
   it("preserves callback and cleanup errors while continuing", async () => {
