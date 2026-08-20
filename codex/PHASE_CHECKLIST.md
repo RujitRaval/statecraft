@@ -30,7 +30,7 @@
 - [x] Scenario module loading and hooks
 - [x] Navigation, theme, and deterministic readiness
 - [x] Screenshots, sanitized diagnostics, assertions, and failure policies
-- [ ] Execution-result construction and artifact persistence
-- [ ] Programmatic runner passes the complete Phase 3 fixture gate
+- [x] Execution-result construction and artifact persistence
+- [x] Programmatic runner passes the complete Phase 3 fixture gate
 
 Stop after Phase 3 and report findings before proceeding.

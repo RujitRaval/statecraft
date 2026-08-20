@@ -30,6 +30,8 @@ The navigated runner resolves local route paths against one validated HTTP(S) ba
 
 The capture runner attaches diagnostics before theme setup and hooks, follows the same navigation lifecycle, captures viewport-sized PNG bytes after readiness, and then executes the scenario assertion. Console errors, uncaught page errors, failed-request metadata, navigation status, and duration remain in memory. Free-form diagnostic text is capped and redacted; failed requests never expose headers or bodies. Page errors fail by default, while console errors and failed requests are nonfatal unless `failOn` enables them. Screenshot and assertion failures are always fatal. A structured cell error retains partial evidence, and no capture artifact is persisted until the following Phase 3 slice.
 
+The persisted runner prevalidates individual cells and cross-cell report invariants, translates every settled capture into the schema-v1 core `ExecutionResult` contract, including failures that retain a successfully captured screenshot, and calculates summary coverage from the configured cells. It validates the complete `StatecraftReport` and writes deterministic PNG paths plus `.statecraft/report/statecraft.json`. A process-owned, phase-aware run lock covers capture and publication and safely recovers abandoned capture-only locks. Writes stage a complete replacement artifact tree, reject symbolic-link output roots, normalize private filesystem modes, preserve unrelated report UI files, hide the old JSON before artifact replacement, and publish the new JSON last. Incomplete recovery preserves its staging data and lock. The runner does not generate HTML or expose CLI behavior.
+
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 

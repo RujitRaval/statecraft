@@ -11,6 +11,7 @@ Config types/schema, `defineConfig`, validation, matrix planner, deterministic p
 ## Phase 3 - Playwright runner
 Browser reuse + isolated contexts, scenarios/hooks, viewport/theme, readiness, screenshots, diagnostics, assertions, resilient per-cell execution.
 **Gate:** programmatic runner works against a minimal fixture.
+**Status:** complete.
 
 ## Phase 4 - CLI
 `init`, `scan`, `open`, config discovery, `--config`, `--route`, `--headed`, terminal summary, exit codes 0/1/2.

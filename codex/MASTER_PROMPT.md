@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 and Phase 2 are complete. Implement **Phase 3 only** through focused, tested Playwright-runner steps. Do not start the CLI, report UI, or later phases until the user explicitly advances the phase.
+Phase 1, Phase 2, and Phase 3 are complete. Do not start the CLI, report UI, or another later phase until the user explicitly advances the phase.
 
-At each Phase 3 handoff, provide the runner API added, lifecycle behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next Phase 3 step.
+At each handoff, provide the API added, lifecycle behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step inside the explicitly approved phase.
