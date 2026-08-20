@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1, Phase 2, and Phase 3 are complete. Phase 4's focused CLI command implementation is complete: config discovery/loading, `init`, `scan`, and latest-report `open` behavior. Its fresh-example report gate remains pending on the Phase 5 HTML generator. Do not begin the report UI or other later phases until the user explicitly advances the phase.
+Phase 1 through Phase 4 are complete. Phase 5 is active. Its first approved slice owns deterministic report transformation, offline HTML generation, and the scan-to-report handoff. Keep interactive filters and final report polish in focused Phase 5 follow-ups; do not begin the example app or later phases until the user explicitly advances the phase.
 
 ## Development workflow
 

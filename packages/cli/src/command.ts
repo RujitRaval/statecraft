@@ -20,7 +20,7 @@ Usage:
 
 Commands:
   init  Create a starter config and scenario without overwriting files
-  scan  Execute configured UI states and persist screenshots plus JSON
+  scan  Execute configured UI states and persist screenshots, JSON, and HTML
   open  Open the latest generated offline HTML report
 `;
 
@@ -144,7 +144,7 @@ export function formatScanSummary(result: ScanResult): string {
   lines.push(
     "",
     `Coverage: ${result.report.summary.coverage.execution.percentage}%`,
-    `Report: ${result.reportPath}`,
+    `Report: ${result.htmlReportPath}`,
     failed === 0
       ? `All ${executions} execution${executions === 1 ? "" : "s"} passed.`
       : `${failed} of ${executions} execution${executions === 1 ? "" : "s"} failed.`,

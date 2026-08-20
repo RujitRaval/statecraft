@@ -14,7 +14,7 @@ Navigation integration tests use real Chromium and intercepted HTTP fixtures to 
 
 Capture integration tests verify viewport-sized PNG signatures and dimensions, screenshot-before-assertion ordering, assertion execution, absent assertions, sanitized console/page/request diagnostics, default and overridden diagnostic failure policies, screenshot failures, partial evidence on rejection, and continuation into later cells. Fixtures use intercepted HTTP responses and deliberately failed subrequests; no screenshot or report is written to disk.
 
-Persistence integration tests run the complete programmatic lifecycle and verify deterministic PNG locations, passed/failed result translation, partial screenshot retention, sanitized schema-v1 JSON, aggregate coverage, normalized private modes, stale artifact replacement, preservation of future report UI files, artifact/report symbolic-link refusal, rollback ordering and recovery-state preservation, live and abandoned lock handling, malformed individual/cross-cell inputs and project roots, empty selections, invalid timestamps, and public package contracts. Tests write only to isolated temporary project directories.
+Persistence integration tests run the complete programmatic lifecycle and verify deterministic PNG locations, passed/failed result translation, partial screenshot retention, sanitized schema-v1 JSON, offline HTML generation, aggregate coverage, normalized private modes, coherent stale-output replacement, artifact/JSON/HTML symbolic-link refusal, final-HTML rollback ordering and recovery-state preservation, live and abandoned lock handling, malformed individual/cross-cell inputs and project roots, empty selections, invalid timestamps, and public package contracts. Tests write only to isolated temporary project directories.
 
 ## End-to-end
 Run against example Next.js app; verify matrix size, screenshots, JSON/HTML, known passes, and at least one intentional failure.
@@ -29,6 +29,10 @@ CLI initialization tests cover generated config/scenario content, canonical proj
 CLI scan tests cover deterministic option parsing, exact route selection, unknown-route setup failures before output creation, config-relative scenario resolution, headed-mode forwarding, all-pass and completed-with-failure summaries, stable exit codes, continuation after a failed cell, schema-v1 report persistence, deterministic screenshot paths, and the public programmatic/type boundary. Browser-backed cases use the pinned Chromium build and isolated temporary projects.
 
 CLI open tests cover canonical latest-report selection, absent reports, invalid roots, non-file targets, symbolic-link boundaries, shell-free platform command mapping, launcher failures, argument rejection, terminal sanitization, exit codes, and public package/type boundaries. Fixture launchers are injected internally so tests never open a real browser or create report UI.
+
+## Report contracts
+
+Report transformation tests verify deterministic first-seen column and route/state ordering, aligned missing cells, report-relative screenshot references, and rejection of invalid schema input. Renderer tests cover summary/matrix/detail content, empty selections, HTML escaping for report-controlled diagnostics, no script or external assets, and the restrictive offline Content Security Policy. Runner persistence tests cover coordinated replacement, owner-private file modes, artifact/JSON/HTML symbolic-link boundaries, stable errors, and rollback; report package-boundary tests cover the built renderer API. Browser-backed CLI scan tests prove PNG, JSON, and HTML are produced together and that terminal output points to the offline document.
 
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.

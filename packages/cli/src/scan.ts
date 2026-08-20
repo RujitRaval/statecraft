@@ -38,13 +38,14 @@ export interface ScanOptions {
 /** Validated persisted output from one completed scan. */
 export interface ScanResult {
   readonly configPath: string;
+  readonly htmlReportPath: ".statecraft/report/index.html";
   readonly report: StatecraftReport;
   readonly reportPath: ".statecraft/report/statecraft.json";
 }
 
 /**
  * Loads one trusted config, expands its selected matrix, executes every cell,
- * and persists deterministic screenshots plus the schema-v1 JSON report.
+ * and persists deterministic screenshots plus schema-v1 JSON and offline HTML.
  */
 export async function scanProject(
   options: ScanOptions = {},
@@ -83,9 +84,9 @@ export async function scanProject(
     projectDirectory,
     scenarioBaseDirectory: dirname(loaded.path),
   });
-
   return Object.freeze({
     configPath: loaded.path,
+    htmlReportPath: run.htmlReportPath,
     report: run.report,
     reportPath: run.reportPath,
   });

@@ -217,10 +217,9 @@ describe("@statecraft/cli package boundary", () => {
       await expect(
         access(join(project, ".statecraft", "report", "statecraft.json")),
       ).resolves.toBeUndefined();
-      await expect(builtCli.openReport({ cwd: project })).rejects.toMatchObject({
-        code: "OPEN_REPORT_NOT_FOUND",
-        reportPath: join(project, ".statecraft", "report", "index.html"),
-      });
+      await expect(
+        readFile(join(project, ".statecraft", "report", "index.html"), "utf8"),
+      ).resolves.toContain("UI State Coverage Report");
 
       await expect(
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),

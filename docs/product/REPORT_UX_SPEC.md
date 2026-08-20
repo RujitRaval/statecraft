@@ -19,3 +19,7 @@ Fully offline; no CDN/server; bundled CSS/JS; responsive; keyboard usable; scree
 
 ## Launch test
 A report screenshot should explain Statecraft before a developer reads the README.
+
+## Current Phase 5 boundary
+
+The first slice implements validated report transformation plus a responsive offline document with the header, summary cards, matrix thumbnails, linked full evidence, metadata, failures, and diagnostics. It uses inline CSS, no runtime script or external assets, ordinary keyboard-reachable links, and a restrictive document Content Security Policy. Interactive filters and final detail-view/launch polish remain focused follow-up slices before the Phase 5 gate is complete.

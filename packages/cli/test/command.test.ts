@@ -128,6 +128,7 @@ function completedScan(
         states: 1,
       },
     }),
+    htmlReportPath: ".statecraft/report/index.html",
     reportPath: ".statecraft/report/statecraft.json",
   });
 }
@@ -163,6 +164,9 @@ describe("runCli", () => {
     ).resolves.toBe(0);
     expect(stdout.messages.join("")).toContain("statecraft init");
     expect(stdout.messages.join("")).toContain("statecraft open");
+    expect(stdout.messages.join("")).toContain(
+      "persist screenshots, JSON, and HTML",
+    );
     expect(stderr.messages).toEqual([]);
     await expect(
       lstat(join(project, "statecraft.config.ts")),
@@ -361,7 +365,7 @@ Dashboard
   ✓ success · desktop · light
 
 Coverage: 100%
-Report: .statecraft/report/statecraft.json
+Report: .statecraft/report/index.html
 All 1 execution passed.
 `);
     expect(stderr.messages).toEqual([]);

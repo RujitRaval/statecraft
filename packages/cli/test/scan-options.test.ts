@@ -9,20 +9,22 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
 import { parseReport } from "@statecraft/core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const runPersistedScenarioCellsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@statecraft/runner-playwright", () => ({
   runPersistedScenarioCells: runPersistedScenarioCellsMock,
 }));
-
 import { scanProject } from "../src/scan.js";
 
 const projects: string[] = [];
 
-afterEach(async () => {
+beforeEach(() => {
   runPersistedScenarioCellsMock.mockReset();
+});
+
+afterEach(async () => {
   await Promise.all(
     projects.splice(0).map((project) =>
       rm(project, { force: true, recursive: true }),
@@ -69,6 +71,7 @@ describe("scanProject options", () => {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
+      htmlReportPath: ".statecraft/report/index.html",
       report,
       reportPath: ".statecraft/report/statecraft.json",
     });
@@ -129,6 +132,7 @@ export default {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
+      htmlReportPath: ".statecraft/report/index.html",
       report,
       reportPath: ".statecraft/report/statecraft.json",
     });

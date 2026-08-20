@@ -13,8 +13,9 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
+import { chromium } from "playwright";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -94,6 +95,7 @@ describe("runPersistedScenarioCells", () => {
       });
 
       expect(run.reportPath).toBe(".statecraft/report/statecraft.json");
+      expect(run.htmlReportPath).toBe(".statecraft/report/index.html");
       expect(run.report).toMatchObject({
         generatedAt: "2026-08-20T15:00:00.000Z",
         project: { baseURL },
@@ -175,18 +177,90 @@ describe("runPersistedScenarioCells", () => {
       if (process.platform !== "win32") {
         expect((await stat(reportPath)).mode & 0o777).toBe(0o600);
         expect(
+          (
+            await stat(join(project.path, ".statecraft/report/index.html"))
+          ).mode & 0o777,
+        ).toBe(0o600);
+        expect(
           (await stat(join(project.path, ".statecraft/artifacts"))).mode &
             0o777,
         ).toBe(0o700);
       }
-      await expectMissing(join(project.path, ".statecraft/report/index.html"));
+      await expect(
+        readFile(join(project.path, run.htmlReportPath), "utf8"),
+      ).resolves.toContain("UI State Coverage Report");
     } finally {
       Reflect.deleteProperty(globalThis, eventKey);
       await project.cleanup();
     }
   });
 
-  it("replaces stale runner artifacts while preserving report UI files", async () => {
+  it("loads the generated report from disk without network access", async () => {
+    const project = await temporaryProject();
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const run = await runPersistedScenarioCells(
+        persistenceCells(["clean-after"]),
+        {
+          baseURL,
+          generatedAt: new Date("2026-08-20T15:00:30.000Z"),
+          projectDirectory: project.path,
+          scenarioBaseDirectory,
+        },
+      );
+      const reportUrl = pathToFileURL(
+        join(project.path, ...run.htmlReportPath.split("/")),
+      ).href;
+
+      for (const viewport of [
+        { height: 900, width: 1_440 },
+        { height: 844, width: 390 },
+      ]) {
+        const context = await browser.newContext({ viewport });
+        try {
+          const networkRequests: string[] = [];
+          await context.route(/^https?:\/\//, async (route) => {
+            networkRequests.push(route.request().url());
+            await route.abort();
+          });
+          const page = await context.newPage();
+          await page.goto(reportUrl, { waitUntil: "load" });
+
+          const imageWidths = await page.locator("img").evaluateAll((images) =>
+            images.map((image) => (image as HTMLImageElement).naturalWidth),
+          );
+          expect(imageWidths.length).toBeGreaterThan(0);
+          expect(imageWidths.every((width) => width > 0)).toBe(true);
+          expect(networkRequests).toEqual([]);
+
+          const heroColumns = await page.locator(".hero").evaluate((hero) =>
+            getComputedStyle(hero).gridTemplateColumns.split(" ").length,
+          );
+          expect(heroColumns).toBe(viewport.width > 1_000 ? 2 : 1);
+
+          if (viewport.width > 1_000) {
+            await page.keyboard.press("Tab");
+            await page.keyboard.press("Tab");
+            expect(
+              await page
+                .locator(".matrix-cell")
+                .first()
+                .evaluate((cell) => cell === document.activeElement),
+            ).toBe(true);
+            await page.keyboard.press("Enter");
+            expect(new URL(page.url()).hash).toBe("#execution-1");
+          }
+        } finally {
+          await context.close();
+        }
+      }
+    } finally {
+      await browser.close();
+      await project.cleanup();
+    }
+  }, 30_000);
+
+  it("replaces stale artifacts, JSON, and HTML as one report set", async () => {
     const project = await temporaryProject();
     const statecraftRoot = join(project.path, ".statecraft");
     const artifactsRoot = join(statecraftRoot, "artifacts");
@@ -201,7 +275,7 @@ describe("runPersistedScenarioCells", () => {
       }
       await writeFile(join(artifactsRoot, "stale/old.png"), "old");
       await writeFile(join(reportRoot, "statecraft.json"), "stale");
-      await writeFile(join(reportRoot, "index.html"), "future report UI");
+      await writeFile(join(reportRoot, "index.html"), "stale report UI");
 
       const run = await runPersistedScenarioCells([], {
         baseURL,
@@ -212,8 +286,8 @@ describe("runPersistedScenarioCells", () => {
 
       expect(run.report.executions).toEqual([]);
       expect(await readdir(artifactsRoot)).toEqual([]);
-      expect(await readFile(join(reportRoot, "index.html"), "utf8")).toBe(
-        "future report UI",
+      expect(await readFile(join(reportRoot, "index.html"), "utf8")).toContain(
+        "UI State Coverage Report",
       );
       expect((await readdir(statecraftRoot)).sort()).toEqual([
         "artifacts",
@@ -287,6 +361,39 @@ describe("runPersistedScenarioCells", () => {
           ".statecraft/report/statecraft.json must be a regular file, not a symbolic link.",
         );
         expect(await readFile(outsideReport, "utf8")).toBe("outside report");
+        await expectMissing(
+          join(project.path, ".statecraft/.runner-persistence-lock"),
+        );
+      } finally {
+        await project.cleanup();
+        await outside.cleanup();
+      }
+    },
+  );
+
+  it.skipIf(process.platform === "win32")(
+    "rejects symbolic-link HTML targets without modifying their destination",
+    async () => {
+      const project = await temporaryProject();
+      const outside = await temporaryProject();
+      const reportRoot = join(project.path, ".statecraft/report");
+      const outsideHtml = join(outside.path, "index.html");
+
+      try {
+        await mkdir(reportRoot, { recursive: true });
+        await writeFile(outsideHtml, "outside HTML");
+        await symlink(outsideHtml, join(reportRoot, "index.html"));
+
+        await expect(
+          runPersistedScenarioCells([], {
+            baseURL,
+            projectDirectory: project.path,
+            scenarioBaseDirectory,
+          }),
+        ).rejects.toThrow(
+          ".statecraft/report/index.html must be a regular file, not a symbolic link.",
+        );
+        expect(await readFile(outsideHtml, "utf8")).toBe("outside HTML");
         await expectMissing(
           join(project.path, ".statecraft/.runner-persistence-lock"),
         );
@@ -539,19 +646,24 @@ describe("runPersistedScenarioCells", () => {
     });
   });
 
-  it("restores artifacts before making the previous report visible", async () => {
+  it("restores artifacts before making the previous JSON and HTML visible", async () => {
     const calls: string[] = [];
     const errors = await recoverPublication(
       {
         existingArtifacts: "existing-artifacts",
+        existingHtml: "existing-html",
         existingReport: "existing-report",
         previousArtifacts: "previous-artifacts",
+        previousHtml: "previous-html",
         previousReport: "previous-report",
       },
       {
         movedPreviousArtifacts: true,
+        movedPreviousHtml: true,
         movedPreviousReport: true,
         publishedArtifacts: true,
+        publishedHtml: true,
+        publishedReport: true,
       },
       {
         remove: async (path) => {
@@ -564,9 +676,12 @@ describe("runPersistedScenarioCells", () => {
     );
 
     expect(calls).toEqual([
+      "remove:existing-html",
+      "remove:existing-report",
       "remove:existing-artifacts",
       "rename:previous-artifacts:existing-artifacts",
       "rename:previous-report:existing-report",
+      "rename:previous-html:existing-html",
     ]);
     expect(errors).toEqual([]);
   });
@@ -577,14 +692,19 @@ describe("runPersistedScenarioCells", () => {
     const errors = await recoverPublication(
       {
         existingArtifacts: "existing-artifacts",
+        existingHtml: "existing-html",
         existingReport: "existing-report",
         previousArtifacts: "previous-artifacts",
+        previousHtml: "previous-html",
         previousReport: "previous-report",
       },
       {
         movedPreviousArtifacts: true,
+        movedPreviousHtml: true,
         movedPreviousReport: true,
         publishedArtifacts: true,
+        publishedHtml: true,
+        publishedReport: true,
       },
       {
         remove: async (path) => {
@@ -599,7 +719,11 @@ describe("runPersistedScenarioCells", () => {
       },
     );
 
-    expect(calls).toEqual(["remove:existing-artifacts"]);
+    expect(calls).toEqual([
+      "remove:existing-html",
+      "remove:existing-report",
+      "remove:existing-artifacts",
+    ]);
     expect(errors).toEqual([removalFailure]);
   });
 
@@ -663,6 +787,88 @@ describe("runPersistedScenarioCells", () => {
         join(project.path, ".statecraft/report/statecraft.json"),
       );
     } finally {
+      await project.cleanup();
+    }
+  });
+
+  it("restores the previous PNG, JSON, and HTML when final HTML publication fails", async () => {
+    const project = await temporaryProject();
+    let lock: Awaited<ReturnType<typeof acquirePersistenceLock>> | undefined;
+    try {
+      const initialCells = persistenceCells(["clean-after"]);
+      const initial = await runPersistedScenarioCells(initialCells, {
+        baseURL,
+        generatedAt: new Date("2026-08-20T15:02:30.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      const initialScreenshotPath = initial.report.executions[0]!.screenshotPath!;
+      const initialScreenshot = await readFile(
+        join(project.path, ...initialScreenshotPath.split("/")),
+      );
+      const nextCell = persistenceCells(["replacement"])[0]!;
+      const nextScreenshotPath = screenshotArtifactPath(nextCell);
+      const nextExecution = {
+        ...initial.report.executions[0]!,
+        screenshotPath: nextScreenshotPath,
+        stateId: nextCell.state.id,
+      };
+      const next = parseReport({
+        ...initial.report,
+        executions: [nextExecution],
+        generatedAt: "2026-08-20T15:02:31.000Z",
+      });
+      lock = await acquirePersistenceLock(project.path);
+      let rejectedHtml = false;
+
+      await expect(
+        persistReport(
+          project.path,
+          lock,
+          next,
+          [{ result: next.executions[0]!, screenshot: Uint8Array.of(1, 2, 3) }],
+          {
+            remove: rm,
+            rename: async (source, destination) => {
+              if (
+                !rejectedHtml &&
+                String(source).includes(".runner-persistence-stage-") &&
+                String(source).endsWith("index.html")
+              ) {
+                rejectedHtml = true;
+                throw new Error("HTML publication failed");
+              }
+              await fsRename(source, destination);
+            },
+          },
+        ),
+      ).rejects.toThrow("HTML publication failed");
+
+      expect(
+        parseReport(
+          JSON.parse(
+            await readFile(
+              join(project.path, ".statecraft/report/statecraft.json"),
+              "utf8",
+            ),
+          ),
+        ),
+      ).toEqual(initial.report);
+      const html = await readFile(
+        join(project.path, ".statecraft/report/index.html"),
+        "utf8",
+      );
+      expect(html).toContain("2026-08-20T15:02:30.000Z");
+      expect(html).not.toContain("2026-08-20T15:02:31.000Z");
+      await expect(
+        readFile(join(project.path, ...initialScreenshotPath.split("/"))),
+      ).resolves.toEqual(initialScreenshot);
+      await expectMissing(join(project.path, ...nextScreenshotPath.split("/")));
+      expect(lock.preserve).toBe(false);
+    } finally {
+      if (lock !== undefined) {
+        await releasePersistenceLock(lock).catch(() => undefined);
+      }
       await project.cleanup();
     }
   });

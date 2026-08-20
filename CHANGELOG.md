@@ -4,6 +4,28 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.16.0.0] - 2026-08-20
+
+### Added
+
+- Every completed `statecraft scan` now produces a responsive offline report at `.statecraft/report/index.html` with execution coverage, route/state matrix cells, screenshot evidence, metadata, failures, and sanitized diagnostics.
+- The new browser-independent `@statecraft/report` package exposes validated deterministic report transformation and HTML rendering contracts without a server, runtime script, external asset, telemetry, or new third-party runtime dependency.
+- Transformation, rendering, package-boundary, CLI, real-Chromium persistence, symbolic-link, rollback, offline-file, and responsive visual checks cover the Phase 5 foundation.
+
+### Changed
+
+- HTML, schema-v1 JSON, and deterministic PNGs are staged and recovered as one output set under the runner's existing owned project lock, so overlapping scans cannot mix report generations.
+- Phase 5 is now active, and Phase 4's remaining fresh-example `init` → `scan` → report handoff is unlocked while interactive report filters remain deferred to the next slice.
+
+### Fixed
+
+- Report view models now freeze nested execution diagnostics, failures, viewports, and coverage summaries instead of exposing mutable parsed data.
+- Report route headers now use proper table row groups, screenshot dimensions reserve layout space, return links meet minimum target sizing, and the typography and color system remain legible across desktop and mobile layouts.
+
+### Security
+
+- Every report-controlled string is escaped, a restrictive Content Security Policy blocks scripts and network content, generated files remain owner-private where supported, HTML symbolic-link targets are rejected, and failed final publication restores the previous coherent report set.
+
 ## [0.15.0.0] - 2026-08-20
 
 ### Added
