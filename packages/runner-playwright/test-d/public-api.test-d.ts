@@ -8,6 +8,7 @@ import {
   type CellExecutionOutcome,
   type CellExecutor,
   type FulfilledCellExecution,
+  type LoadScenarioOptions,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
   type RunScenarioCellsOptions,
@@ -38,9 +39,12 @@ const scenarioOptions: RunScenarioCellsOptions = {
   launchOptions: { headless: true },
   scenarioBaseDirectory: process.cwd(),
 };
+const loadOptions: LoadScenarioOptions = {
+  baseDirectory: process.cwd(),
+};
 const loadedScenario: Promise<StatecraftScenario> = loadScenario(
   execution.cell.state.setup,
-  { baseDirectory: process.cwd() },
+  loadOptions,
 );
 const scenarioValue: Promise<string> = runScenarioLifecycle(
   scenario,
