@@ -4,6 +4,29 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.18.0.0] - 2026-08-20
+
+### Added
+
+- Phase 6 begins with the polished Northline commerce operations example application, a Next.js App Router fixture with a responsive dashboard, deterministic fictional data, and light/dark theme support.
+- The dashboard provides deliberate loading, success, empty, and recoverable error states backed by runtime-validated API data and real-Chromium coverage.
+- A documented industrial-editorial design system, self-hosted IBM Plex Sans variable font, reusable server-rendered workspace shell, and architecture decision establish the visual and structural foundation for the remaining example routes.
+
+### Changed
+
+- Phase 5 is complete and Phase 6 is active; `/orders`, `/customers/[id]`, intentional defects, and the complete Statecraft scenario matrix remain focused follow-up slices.
+- Root lint, type-check, test, and build orchestration now include the example application, deterministic Next route type generation, its production build, and its browser fixture tests.
+
+### Fixed
+
+- Dashboard payload validation rejects unsupported pulse cardinality and duplicate metric or order identifiers before rendering.
+- The error-state browser fixture proves Retry transitions through loading to success, and the Next command wrapper forwards termination signals without orphaning its child server.
+- GStack design review raised utility captions to at least 12px and compact control targets to at least 44px.
+
+### Security
+
+- Every repository-owned Next.js command disables framework telemetry before loading the CLI; the example uses fixed fictional data, no hosted service, and no external font or asset request.
+
 ## [0.17.0.0] - 2026-08-20
 
 ### Added
