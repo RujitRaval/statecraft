@@ -12,7 +12,11 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 5 are complete. The report includes deterministic transformation, offline HTML generation, route/state/viewport/theme/status filters, and the final accessible detail interaction. Do not begin the example app or another later phase until the user explicitly advances the phase.
+Phase 1 through Phase 5 are complete. Phase 6 is active. Its first approved slice establishes the polished Next.js fixture, shared visual system, deterministic dashboard data contract, and `/dashboard` success/loading/empty/error states. Keep `/orders`, `/customers/[id]`, intentional defects, scenario matrices, and Phase 7 in focused follow-ups.
+
+## Design system
+
+Always read `DESIGN.md` before making visual or UI decisions. Font choices, colors, spacing, layout, motion, and the industrial-editorial direction are defined there. Do not deviate without explicit user approval. In visual QA, flag code that does not match `DESIGN.md`.
 
 ## Development workflow
 
