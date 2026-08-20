@@ -1,3 +1,4 @@
+import { parseReport } from "@statecraft/core";
 import { describe, expect, it } from "vitest";
 
 import { transformReport } from "../src/transform.js";
@@ -52,5 +53,34 @@ describe("transformReport", () => {
     expect(() => transformReport({ schemaVersion: 99 })).toThrow(
       "Invalid Statecraft report.",
     );
+  });
+
+  it("preserves route order while reusing shared viewport and theme columns", () => {
+    const fixture = reportFixture();
+    const second = fixture.executions[1]!;
+    const report = parseReport({
+      ...fixture,
+      executions: [
+        fixture.executions[0],
+        {
+          ...second,
+          routeId: "settings",
+          routePath: "/settings",
+          screenshotPath:
+            ".statecraft/artifacts/settings/error/desktop-light.png",
+          theme: "light",
+        },
+      ],
+      summary: { ...fixture.summary, routes: 2 },
+    });
+
+    const view = transformReport(report);
+
+    expect(view.columns).toHaveLength(1);
+    expect(view.routes.map(({ id }) => id)).toEqual(["dashboard", "settings"]);
+    expect(view.routes[1]!.rows[0]!.cells[0]).toMatchObject({
+      detailId: "execution-2",
+      screenshotHref: "../artifacts/settings/error/desktop-light.png",
+    });
   });
 });

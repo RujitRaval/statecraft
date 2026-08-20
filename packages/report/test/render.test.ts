@@ -50,4 +50,41 @@ describe("renderReportHtml", () => {
     expect(html).toContain("No executions were selected for this report.");
     expect(html).not.toContain('class="matrix-cell matrix-cell--passed"');
   });
+
+  it("renders missing evidence and every diagnostic metadata branch", () => {
+    const fixture = reportFixture();
+    const failed = fixture.executions[1]!;
+    const report = parseReport({
+      ...fixture,
+      executions: [
+        fixture.executions[0],
+        {
+          ...failed,
+          diagnostics: {
+            ...failed.diagnostics,
+            failedRequests: [
+              {
+                errorText: "net::ERR_CONNECTION_RESET",
+                method: "POST",
+                url: "https://statecraft.invalid/api/widget?token=secret",
+              },
+            ],
+            navigationStatus: null,
+          },
+          durationMs: 10_000,
+          screenshotPath: null,
+        },
+      ],
+      summary: { ...fixture.summary, durationMs: 10_420 },
+    });
+
+    const html = renderReportHtml(report);
+
+    expect(html).toContain("Screenshot unavailable");
+    expect(html).toContain("Not available");
+    expect(html).toContain("10 s");
+    expect(html).toContain("<strong>POST</strong>");
+    expect(html).toContain("token=%5BREDACTED%5D");
+    expect(html).toContain("net::ERR_CONNECTION_RESET");
+  });
 });
