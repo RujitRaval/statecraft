@@ -40,9 +40,52 @@ A rejected cell does not abort later cells. Initial or replacement browser launc
 
 `RunExecutionCellsOptions.launchOptions` exposes Playwright's launch settings directly. This keeps the API small and supports headed orchestration later without wrapping Playwright.
 
+## Typed scenarios and hooks
+
+`runScenarioCells(cells, execute, options?)` layers typed local scenario loading onto the isolated cell lifecycle. Each state's `setup` path is resolved relative to `options.scenarioBaseDirectory`; programmatic callers that omit it use `process.cwd()`.
+
+```ts
+import { expandMatrix, parseConfig } from "@statecraft/core";
+import { runScenarioCells } from "@statecraft/runner-playwright";
+
+const cells = expandMatrix(parseConfig(unknownConfig));
+const outcomes = await runScenarioCells(
+  cells,
+  async ({ page, route, state, viewport, theme }) => {
+    // The next Phase 3 slice will provide built-in navigation here.
+    await page.goto(new URL(route.path, "http://127.0.0.1:3000").href);
+    return { stateId: state.id, theme, width: viewport.width };
+  },
+  { scenarioBaseDirectory: process.cwd() },
+);
+```
+
+A scenario is trusted local ESM code with an object default export:
+
+```ts
+import type { StatecraftScenario } from "@statecraft/runner-playwright";
+
+const scenario: StatecraftScenario = {
+  async beforeNavigate({ page }) {
+    await page.route("**/api/dashboard", async (route) => {
+      await route.fulfill({ json: { projects: [] } });
+    });
+  },
+  async afterNavigate({ page }) {
+    await page.getByRole("main").waitFor();
+  },
+};
+
+export default scenario;
+```
+
+The runner runtime-checks the default export and the optional `beforeNavigate`, `afterNavigate`, and reserved `assert` fields. For each cell it runs `beforeNavigate`, the caller's middle step, and `afterNavigate` in order with one frozen `ScenarioContext`. A module-load, validation, or hook failure rejects only that cell; cleanup still runs and later cells continue. `ScenarioLoadError` distinguishes `module-load-failed` from `invalid-module` failures.
+
+`loadScenario(path, options?)` and `runScenarioLifecycle(scenario, context, execute)` expose the two smaller primitives for orchestration and focused testing. Dynamic imports follow normal Node ESM caching semantics. Scenario/config modules are trusted local code with the user's privileges and are not sandboxed.
+
 ## Current boundary
 
-This development step owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, and settled outcomes. Scenario module loading and hooks, navigation, themes, readiness, screenshots, diagnostics, assertions, execution-result construction, and artifact persistence remain later Phase 3 steps. CLI and report UI work remain out of scope.
+The runner now owns browser reuse, per-cell context/page isolation, configured viewports, cleanup, settled outcomes, typed scenario loading, and ordered pre/post-navigation hooks. Built-in navigation, theme application, readiness, screenshots, diagnostics, assertion execution, result construction, and artifact persistence remain later Phase 3 steps. CLI and report UI work remain out of scope.
 
 ## Dependency decision
 

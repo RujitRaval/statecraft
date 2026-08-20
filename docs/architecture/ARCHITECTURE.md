@@ -24,6 +24,8 @@ Browser/context lifecycle, scenario loading/hooks, viewport/theme, navigation/re
 
 The initial lifecycle slice runs matrix cells sequentially in configured order. One healthy Chromium process is reused across cells, while every cell receives a new context and page. Per-cell setup, callback, and cleanup failures are returned as settled outcomes so later cells still execute. If context cleanup fails, the compromised browser is closed and replaced before the next cell; browser launch, replacement, and browser cleanup failures remain run-level failures.
 
+Scenario modules are trusted local ESM code resolved from each state's configured `setup` path and an explicit base directory. The runner validates the default export and hook fields at runtime, then executes `beforeNavigate`, caller-owned work, and `afterNavigate` inside the cell's isolated context. Module and hook failures settle as cell failures. Assertion execution remains part of the later diagnostics/assertions slice.
+
 ### @statecraft/report
 Report transformation and offline HTML UI/assets. No execution semantics.
 

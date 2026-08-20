@@ -103,7 +103,7 @@ export default defineConfig({
 Example scenario:
 
 ``` ts
-import type { StatecraftScenario } from "@statecraft/core";
+import type { StatecraftScenario } from "@statecraft/runner-playwright";
 
 const scenario: StatecraftScenario = {
   async beforeNavigate({ page }) {
