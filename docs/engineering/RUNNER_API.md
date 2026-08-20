@@ -201,7 +201,7 @@ This API writes data only. It does not discover configuration, render HTML, prin
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, deterministic artifact persistence, and versioned JSON report data. Phase 4 now consumes this API through `statecraft scan`; report opening and the report UI remain deferred.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, deterministic artifact persistence, and versioned JSON report data. Phase 4 consumes this API through `statecraft scan` and exposes latest-report opening through the CLI; HTML generation and the report UI remain deferred to Phase 5.
 
 ## Dependency decision
 

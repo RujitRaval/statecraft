@@ -461,7 +461,8 @@ explicitly advances it.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved
-questions; and the recommended next step inside Phase 4.
+questions; and the recommended next step at the current approved phase
+boundary.
 
 Guiding sentence:
 
