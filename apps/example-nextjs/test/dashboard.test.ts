@@ -34,6 +34,9 @@ describe("dashboard fixture contract", () => {
     { ...dashboardData, orders: [dashboardData.orders[0], dashboardData.orders[0]] },
     { ...dashboardData, orders: [{ status: "Unknown" }] },
     { ...dashboardData, summary: { atRisk: "12" } },
+    { ...dashboardData, summary: { ...dashboardData.summary, atRisk: Number.POSITIVE_INFINITY } },
+    { ...dashboardData, summary: { ...dashboardData.summary, fulfilledToday: -1 } },
+    { ...dashboardData, metrics: [], orders: [] },
   ])("rejects malformed API payload %#", (payload) => {
     expect(() => parseDashboardData(payload)).toThrow(
       /Dashboard response (must be an object|does not match)/,

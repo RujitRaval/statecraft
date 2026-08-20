@@ -134,6 +134,10 @@ function hasUniqueIds(values: readonly { readonly id: string }[]): boolean {
   return new Set(values.map((value) => value.id)).size === values.length;
 }
 
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && (value as number) >= 0;
+}
+
 export function parseDashboardData(value: unknown): DashboardData {
   if (!isRecord(value)) throw new Error("Dashboard response must be an object.");
   const metrics = value["metrics"];
@@ -148,8 +152,8 @@ export function parseDashboardData(value: unknown): DashboardData {
     !Array.isArray(pulse) ||
     !pulse.every((point) => typeof point === "number" && Number.isFinite(point)) ||
     !isRecord(summary) ||
-    typeof summary["atRisk"] !== "number" ||
-    typeof summary["fulfilledToday"] !== "number" ||
+    !isNonNegativeSafeInteger(summary["atRisk"]) ||
+    !isNonNegativeSafeInteger(summary["fulfilledToday"]) ||
     typeof summary["nextDispatch"] !== "string"
   ) {
     throw new Error("Dashboard response does not match the expected contract.");
@@ -158,7 +162,7 @@ export function parseDashboardData(value: unknown): DashboardData {
   if (
     !hasUniqueIds(metrics) ||
     !hasUniqueIds(orders) ||
-    (pulse.length !== 12 && !(hasNoContent && pulse.length === 0))
+    (hasNoContent ? pulse.length !== 0 : pulse.length !== 12)
   ) {
     throw new Error("Dashboard response does not match the expected contract.");
   }

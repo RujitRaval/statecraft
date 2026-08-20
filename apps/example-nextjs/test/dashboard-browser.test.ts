@@ -12,6 +12,7 @@ const appDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 let baseURL = "";
 let browser: Browser;
 let server: ChildProcess;
+let serverExit: Promise<void>;
 
 async function availablePort(): Promise<number> {
   return new Promise((resolvePort, reject) => {
@@ -63,6 +64,7 @@ beforeAll(async () => {
     cwd: appDirectory,
     stdio: "ignore",
   });
+  serverExit = new Promise<void>((resolveExit) => server.once("exit", () => resolveExit()));
   await waitForServer(`${baseURL}/api/dashboard`);
   browser = await chromium.launch({ headless: true });
 }, 30_000);
@@ -70,8 +72,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await browser?.close();
   if (server !== undefined) {
-    const serverExit = new Promise<void>((resolveExit) => server.once("exit", () => resolveExit()));
-    server.kill("SIGTERM");
+    if (server.exitCode === null && server.signalCode === null) server.kill("SIGTERM");
     await serverExit;
     await waitForServerShutdown(`${baseURL}/api/dashboard`);
   }
