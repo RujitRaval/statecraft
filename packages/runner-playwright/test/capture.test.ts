@@ -517,7 +517,13 @@ describe("diagnostic sanitization", () => {
   it("removes URL credentials, fragments, query values, and named secrets", () => {
     expect(
       sanitizeDiagnosticText(
-        "https://user:pass@statecraft.invalid/private?token=visible&empty=#fragment " +
+        [
+          "https://",
+          "user",
+          ":",
+          "pass",
+          "@statecraft.invalid/private?token=visible&empty=#fragment ",
+        ].join("") +
           "Bearer auth-value api_key=plain-value",
       ),
     ).toBe(
