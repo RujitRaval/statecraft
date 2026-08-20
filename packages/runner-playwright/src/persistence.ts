@@ -92,7 +92,6 @@ interface PublicationState {
 
 interface PersistenceLock {
   readonly directory: string;
-  phase: PersistenceLockPhase;
   preserve: boolean;
   readonly reportDirectory: string;
   readonly statecraftRoot: string;
@@ -547,7 +546,6 @@ async function updateLockPhase(
       : recoveryMarkerFileName,
   );
   await writePrivateFile(marker, `${phase}\n`);
-  lock.phase = phase;
 }
 
 /** @internal Releases a lock only when its durable owner token still matches. */
@@ -591,7 +589,6 @@ export async function acquirePersistenceLock(
     const token = randomUUID();
     const lock: PersistenceLock = {
       directory,
-      phase: "capture",
       preserve: false,
       reportDirectory,
       statecraftRoot,
@@ -821,9 +818,15 @@ export async function persistReport(
   if (!preserveRecoveryState) {
     if (stagingRoot !== undefined) {
       try {
-        await rm(stagingRoot, { force: true, recursive: true });
+        await operations.remove(stagingRoot, { force: true, recursive: true });
       } catch (error: unknown) {
         cleanupErrors.push(error);
+        lock.preserve = true;
+        try {
+          await updateLockPhase(lock, "recovery");
+        } catch (phaseError: unknown) {
+          cleanupErrors.push(phaseError);
+        }
       }
     }
   }

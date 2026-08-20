@@ -667,6 +667,60 @@ describe("runPersistedScenarioCells", () => {
     }
   });
 
+  it("preserves recovery state when published staging cleanup fails", async () => {
+    const project = await temporaryProject();
+    try {
+      const initial = await runPersistedScenarioCells([], {
+        baseURL,
+        generatedAt: new Date("2026-08-20T15:03:00.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      const lock = await acquirePersistenceLock(project.path);
+      const cleanupFailure = new Error("staging cleanup failed");
+
+      await expect(
+        persistReport(
+          project.path,
+          lock,
+          initial.report,
+          [],
+          {
+            remove: async (path, options) => {
+              if (String(path).includes(".runner-persistence-stage-")) {
+                throw cleanupFailure;
+              }
+              await rm(path, options);
+            },
+            rename: fsRename,
+          },
+        ),
+      ).rejects.toMatchObject({ errors: [cleanupFailure] });
+
+      expect(lock.preserve).toBe(true);
+      expect(await readFile(join(lock.directory, "recovery"), "utf8")).toBe(
+        "recovery\n",
+      );
+      expect(
+        (await readdir(join(project.path, ".statecraft"))).some((entry) =>
+          entry.startsWith(".runner-persistence-stage-"),
+        ),
+      ).toBe(true);
+      expect(
+        parseReport(
+          JSON.parse(
+            await readFile(
+              join(project.path, ".statecraft/report/statecraft.json"),
+              "utf8",
+            ),
+          ),
+        ),
+      ).toEqual(initial.report);
+    } finally {
+      await project.cleanup();
+    }
+  });
+
   it("rejects malformed matrix cells before launching a browser", async () => {
     const project = await temporaryProject();
     try {
