@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 6 are complete. Phase 7 is active with clean-checkout consumer smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation. Keep launch assets and remaining release polish in focused follow-ups.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 are complete. Keep future work in an explicitly approved roadmap slice.
 
 ## Skill routing
 

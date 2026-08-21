@@ -31,7 +31,7 @@ Polished Next.js dashboard with `/dashboard`, `/orders`, `/customers/[id]`; mean
 ## Phase 7 - Release
 README, CI usage, contributor docs, GIF/screenshots, package metadata, smoke tests.
 **Gate:** another developer can use it from docs alone.
-**Status:** active; clean-checkout production build and built-CLI consumer smoke coverage, exact known-failure validation, short-lived report artifacts, documented GitHub Actions usage, publish-ready npm package metadata, artifact-level consumer verification, and release automation are implemented. Launch assets and remaining release polish stay in focused follow-ups.
+**Status:** complete; clean-checkout production build and built-CLI consumer smoke coverage, exact known-failure validation, short-lived report artifacts, documented GitHub Actions usage, public npm packages, artifact-level consumer verification, protected release automation, real report launch assets, and final contributor/release guidance are implemented.
 
 ## Rules
 Keep main buildable; no speculative abstractions/backend/telemetry/LLM; tests accompany capabilities; record important decisions as ADRs; justify major dependencies.

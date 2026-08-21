@@ -4,6 +4,21 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.1.0] - 2026-08-21
+
+### Added
+
+- The public README now leads with Statecraft's install-to-report workflow, real Northline coverage evidence, package links, CI guidance, privacy guarantees, and a comparison with screenshot-regression tools.
+- Reproducible launch-asset tooling captures the offline report overview and a real failed-cell detail view from the complete 60-cell example matrix, with selector validation covered by focused tests.
+
+### Changed
+
+- Phase 7 is complete, and contributor, release, implementation, and launch-strategy guidance now reflect the shipped npm packages and the final public-repository workflow.
+
+### Security
+
+- Launch-asset capture blocks HTTP and HTTPS requests while opening the local report, and release documentation records the exact trusted-publisher binding, revoked bootstrap token, removed GitHub secret, and strict npm 2FA policy.
+
 ## [0.24.0.0] - 2026-08-21
 
 ### Added

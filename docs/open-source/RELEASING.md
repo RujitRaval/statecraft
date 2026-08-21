@@ -9,7 +9,7 @@ Statecraft publishes four npm packages from one verified GitHub Release:
 | `statecraft-ui-runner-playwright` | Playwright execution and local result persistence |
 | `statecraft-ui` | Public API and the `statecraft` executable |
 
-The package names were checked for availability when this contract was added. npm names are global and remain unclaimed until the first publication, so the initial release should follow promptly after this branch lands.
+All four names were claimed by the verified `v0.24.0` release. Each package now trusts only `RujitRaval/statecraft`, `.github/workflows/release.yml`, and the `npm-publish` environment for OIDC publication; the one-time bootstrap token and GitHub `NPM_TOKEN` secret have been revoked.
 
 ## Version contract
 
@@ -38,7 +38,7 @@ corepack pnpm release:smoke
 
 `release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, installs the exact tarballs into an isolated project, imports all public APIs, exercises the packed executable, and verifies overwrite-safe initialization. Temporary tarballs are removed and `*.tgz` is ignored.
 
-## First publication bootstrap
+## First publication bootstrap (completed for v0.24.0)
 
 npm requires each package to exist before a trusted publisher can be configured. For the first release only:
 
@@ -49,6 +49,8 @@ npm requires each package to exist before a trusted publisher can be configured.
 5. Approve the protected Environment deployment and wait for the `Release` workflow to verify and publish all four packages.
 6. In npm package settings for each package, add the GitHub Actions trusted publisher for repository `RujitRaval/statecraft`, workflow `.github/workflows/release.yml`, and environment `npm-publish`.
 7. Delete the `NPM_TOKEN` Environment secret and revoke the token in npm immediately.
+
+Statecraft completed this bootstrap on August 21, 2026. Do not recreate `NPM_TOKEN` for normal releases. Each package's publishing access requires two-factor authentication and disallows bypass-2FA tokens; OIDC trusted publishing remains compatible with that restrictive setting.
 
 The workflow configures token authentication only when that bootstrap secret exists. After bootstrap, GitHub's short-lived OIDC identity supplies publication authority through the workflow's `id-token: write` permission, with no token-style npm configuration present to suppress the OIDC exchange. No npm token should remain configured. The Environment approval remains a deliberate human gate for every registry publication.
 

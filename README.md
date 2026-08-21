@@ -1,38 +1,160 @@
-# Statecraft Project Documentation
+# Statecraft
 
-Statecraft is an open-source UI product-state coverage tool: **find, render, and report the UI states your product forgot.**
+[![CI](https://github.com/RujitRaval/statecraft/actions/workflows/ci.yml/badge.svg)](https://github.com/RujitRaval/statecraft/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/statecraft-ui.svg)](https://www.npmjs.com/package/statecraft-ui)
+[![license](https://img.shields.io/badge/license-MIT-171a16.svg)](LICENSE)
 
-This folder is the implementation source of truth intended to be handed to Codex.
+**Find the UI states your product forgot.**
 
-Phase 1 provides the pnpm and strict TypeScript foundation. Phase 2 completes the browser-independent `statecraft-ui-core` contracts. Phase 3 completes the programmatic `statecraft-ui-runner-playwright` path: isolated browser lifecycles, deterministic navigation/readiness, screenshots, sanitized diagnostics, assertions, result translation, and private local artifact/report persistence. Phase 4 completes deterministic config discovery/loading plus overwrite-safe `statecraft init`, scan orchestration, and safe latest-report opening. Phase 5 completes the real `statecraft-ui-report` package with deterministic transformation, self-contained offline HTML, route/state/viewport/theme/status filters, and an accessible evidence inspector. Phase 6 completes the polished Northline example and its 60-cell route/state/viewport/theme matrix: 56 cells pass and four expose the approved responsive/theme defects in the offline report. Phase 7 is active with clean-checkout release smoke coverage, documented GitHub Actions usage, publish-ready npm metadata, and release automation.
+Statecraft is a local-first product-state coverage tool. It renders your routes across meaningful states, viewports, and themes; runs assertions; captures screenshots and sanitized diagnostics; and produces one self-contained offline report.
 
-## Start here
-1. [Master prompt](codex/MASTER_PROMPT.md)
-2. [Implementation specification](codex/IMPLEMENTATION_SPEC.md)
-3. [Product requirements](docs/product/PRD.md)
-4. [Architecture](docs/architecture/ARCHITECTURE.md)
-5. [Implementation plan](docs/engineering/IMPLEMENTATION_PLAN.md)
-6. [Test strategy](docs/engineering/TEST_STRATEGY.md)
-7. [Launch strategy](docs/open-source/LAUNCH_STRATEGY.md)
+```bash
+npm install --save-dev statecraft-ui playwright@1.62.1
+npx playwright install chromium
+npx statecraft init
+npx statecraft scan
+```
 
-## Documentation map
+![Statecraft report showing 60 UI executions, 56 passes, four failures, filters, and the beginning of the evidence matrix](docs/assets/statecraft-report-overview.png)
 
-- Project guidance: [agent guide](AGENTS.md), [Claude guidance](CLAUDE.md), [phase checklist](codex/PHASE_CHECKLIST.md), [contributing](CONTRIBUTING.md), [security policy](SECURITY.md), and [changelog](CHANGELOG.md)
-- Product: [CLI and configuration](docs/product/CLI_AND_CONFIG_SPEC.md) and [report UX](docs/product/REPORT_UX_SPEC.md)
-- Engineering: [`statecraft-ui-core` API](docs/engineering/CORE_API.md), [Playwright runner API](docs/engineering/RUNNER_API.md), [report API](docs/engineering/REPORT_API.md), [CLI API](docs/engineering/CLI_API.md), and [security and privacy](docs/engineering/SECURITY_PRIVACY.md)
-- Architecture decisions: [product-state coverage](docs/decisions/0001-product-state-coverage.md), [local deterministic core](docs/decisions/0002-local-deterministic-core.md), [Playwright runner](docs/decisions/0003-playwright-runner.md), [Phase 1 toolchain](docs/decisions/0004-phase-1-toolchain.md), [core configuration validation](docs/decisions/0005-core-config-validation.md), [deterministic matrix planning](docs/decisions/0006-core-matrix-planner.md), [deterministic artifact paths](docs/decisions/0007-deterministic-artifact-paths.md), [configured-state coverage](docs/decisions/0008-configured-state-coverage.md), [versioned result/report contracts](docs/decisions/0009-versioned-result-report-contracts.md), [runner execution lifecycle](docs/decisions/0010-runner-execution-lifecycle.md), [runner scenario loading and hooks](docs/decisions/0011-runner-scenario-loading-hooks.md), [runner navigation and readiness](docs/decisions/0012-runner-navigation-readiness.md), [runner capture, diagnostics, and assertions](docs/decisions/0013-runner-capture-diagnostics-assertions.md), [runner result persistence](docs/decisions/0014-runner-result-persistence.md), [CLI config discovery](docs/decisions/0015-cli-config-discovery.md), [CLI initialization](docs/decisions/0016-cli-init.md), [CLI scan orchestration](docs/decisions/0017-cli-scan-orchestration.md), [CLI latest-report opening](docs/decisions/0018-cli-open.md), [offline report foundation](docs/decisions/0019-report-offline-html.md), [offline report interaction](docs/decisions/0020-report-interactive-filters.md), [example application foundation](docs/decisions/0021-example-application-foundation.md), [example orders states](docs/decisions/0022-example-orders-states.md), [example customer-detail states](docs/decisions/0023-example-customer-detail-states.md), [example intentional defects](docs/decisions/0024-example-intentional-defects.md), [example scenario matrix](docs/decisions/0025-example-scenario-matrix.md), [release CI smoke](docs/decisions/0026-release-ci-smoke.md), and [release package metadata](docs/decisions/0027-release-package-metadata.md)
-- Open source: [GitHub Actions](docs/open-source/GITHUB_ACTIONS.md), [release guide](docs/open-source/RELEASING.md), [contributing plan](docs/open-source/CONTRIBUTING_PLAN.md), and [launch strategy](docs/open-source/LAUNCH_STRATEGY.md)
+The screenshot above is the real 60-cell Northline example report. Four deliberately broken coordinates remain visible so the release gate proves Statecraft catches narrow-viewport overflow and theme-specific contrast failures.
 
-## Governing workflow
-`configure -> scan -> inspect report -> identify broken states`
+## Product states, not just pixel changes
 
-Do not expand scope until this local-first v0.1 workflow is excellent.
+Conventional visual regression asks whether an existing screenshot changed. Statecraft asks whether every important product state still works in the conditions you support.
 
-## Development
+| | Statecraft | Screenshot regression |
+| --- | --- | --- |
+| Primary question | Did each configured product state survive? | Did pixels change from a baseline? |
+| Coverage model | Route × state × viewport × theme | Screenshot cases you remembered to write |
+| Evidence | Screenshot, assertions, console/page/request diagnostics | Image diff |
+| Output | Private local JSON, PNGs, and offline HTML | Usually service- or runner-specific |
 
-Read [AGENTS.md](AGENTS.md) before making changes. Every development step starts from `main`, uses a focused branch, runs GStack `review`, and is published through GStack `ship` as a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+Use it for loading, empty, error, unauthorized, long-content, responsive, and theme states—the places where otherwise healthy applications tend to break.
 
-Statecraft requires Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x, and uses the pnpm version pinned in `package.json`:
+## Quick start
+
+Statecraft supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x.
+
+1. Install the CLI and its pinned browser runtime:
+
+   ```bash
+   npm install --save-dev statecraft-ui playwright@1.62.1
+   npx playwright install chromium
+   ```
+
+2. Generate an overwrite-safe starter config and scenario:
+
+   ```bash
+   npx statecraft init
+   ```
+
+3. Start your application, then scan and open the report:
+
+   ```bash
+   npx statecraft scan
+   npx statecraft open
+   ```
+
+`scan` exits `0` when all cells pass, `1` when completed cells expose product-state failures, and `2` for setup or configuration errors. A failing scan still writes its report whenever execution completed.
+
+## Configure a small, explicit matrix
+
+```ts
+import { defineConfig } from "statecraft-ui";
+
+export default defineConfig({
+  baseURL: "http://127.0.0.1:3000",
+  routes: [
+    {
+      id: "orders",
+      path: "/orders",
+      states: ["success", "loading", "empty", "error"].map((id) => ({
+        id,
+        setup: "./statecraft/scenarios/orders.mjs",
+      })),
+    },
+  ],
+  themes: ["light", "dark"],
+  viewports: {
+    mobile: { width: 390, height: 844 },
+    desktop: { width: 1440, height: 1000 },
+  },
+});
+```
+
+Scenarios are trusted local modules. They can intercept deterministic API responses, wait for product-specific readiness, and make assertions with the same Playwright page used for capture:
+
+```js
+export default {
+  async beforeNavigate({ page, state }) {
+    if (state.id === "empty") {
+      await page.route("**/api/orders", (route) =>
+        route.fulfill({ json: { orders: [] }, status: 200 }),
+      );
+    }
+  },
+  async afterNavigate({ page }) {
+    await page.locator("[data-orders-state]").waitFor();
+  },
+  async assert({ page }) {
+    await page.getByRole("heading", { name: "Orders" }).waitFor();
+  },
+};
+```
+
+See the [CLI and configuration specification](docs/product/CLI_AND_CONFIG_SPEC.md), [runner API](docs/engineering/RUNNER_API.md), and complete [Northline matrix](apps/example-nextjs/statecraft.config.ts).
+
+## Inspect evidence offline
+
+Every completed scan writes a versioned report beneath `.statecraft/`:
+
+```text
+.statecraft/
+├── artifacts/        # deterministic PNG evidence
+└── report/
+    ├── index.html    # self-contained interactive report
+    └── statecraft.json
+```
+
+Filter by route, state, viewport, theme, or status. Open a cell to inspect the exact screenshot, route metadata, assertion failures, console errors, page errors, and failed requests. The report needs no server, account, network request, or external asset.
+
+![Statecraft failure detail showing the Northline customer long-content mobile overflow and its assertion evidence](docs/assets/statecraft-failure-detail.png)
+
+## GitHub Actions
+
+Statecraft is a normal CLI job; no custom Marketplace action or hosted service is required. The copy-ready [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) covers application readiness, Chromium installation, exit codes, privacy, and uploading the complete `.statecraft` bundle with `if: always()` so failures retain their evidence.
+
+Reports can contain screenshots, URLs, and application data. Treat artifacts from a public repository as public, use only fictional or approved test data, and choose the shortest useful retention period.
+
+## Packages
+
+| Package | Purpose |
+| --- | --- |
+| [`statecraft-ui`](https://www.npmjs.com/package/statecraft-ui) | Public API and the `statecraft` executable |
+| [`statecraft-ui-core`](https://www.npmjs.com/package/statecraft-ui-core) | Browser-independent config, matrix, coverage, and report contracts |
+| [`statecraft-ui-runner-playwright`](https://www.npmjs.com/package/statecraft-ui-runner-playwright) | Isolated Playwright execution and local persistence |
+| [`statecraft-ui-report`](https://www.npmjs.com/package/statecraft-ui-report) | Deterministic offline report transformation and rendering |
+
+All four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. No long-lived npm token remains configured.
+
+## Local-first architecture
+
+```text
+configure → expand matrix → run isolated browser cells → persist evidence → inspect report
+```
+
+- No telemetry, hosted backend, database, account, cloud dependency, or required LLM.
+- One Chromium process is reused while every matrix cell gets a fresh browser context and page.
+- Screenshot paths, result schemas, coverage math, and report rendering are deterministic.
+- Console, page, and request diagnostics are sanitized before persistence.
+- `.statecraft/` is ignored because reports may contain sensitive application data.
+
+Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), and [report UX specification](docs/product/REPORT_UX_SPEC.md) for the detailed contracts.
+
+## Develop and contribute
+
+The workspace uses pnpm, strict TypeScript, Vitest, Playwright, and a polished Next.js fixture:
 
 ```bash
 corepack pnpm install --frozen-lockfile
@@ -43,32 +165,14 @@ corepack pnpm test
 corepack pnpm build
 ```
 
-The workspace contains `packages/core`, `packages/runner-playwright`, `packages/report`, `packages/cli`, and the complete Phase 6 `apps/example-nextjs` fixture. To produce its proof report, start the example app in one terminal:
+The Northline scan intentionally exits `1` with exactly 56 passes and four failures. To regenerate the checked-in launch images after producing that report, run `corepack pnpm launch:assets`.
 
-```bash
-corepack pnpm --filter @statecraft/example-nextjs dev
-```
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [documentation map](codex/MASTER_PROMPT.md), [implementation specification](codex/IMPLEMENTATION_SPEC.md), [release guide](docs/open-source/RELEASING.md), and [launch strategy](docs/open-source/LAUNCH_STRATEGY.md) explain the product boundary and workflow.
 
-Then run its checked-in Statecraft config from a second terminal:
+## Roadmap
 
-```bash
-corepack pnpm --filter @statecraft/example-nextjs statecraft:scan
-```
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, and a complete example. Potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
 
-The scan exits `1` by design because the report must contain exactly four known assertion failures. Generated `.statecraft/` evidence stays local and ignored.
+## License
 
-## GitHub Actions
-
-Statecraft needs no custom Marketplace action. Install the `statecraft-ui` CLI package, run `statecraft scan` as a normal job step, and upload the complete `.statecraft` bundle with `if: always()` so a failed product-state check still leaves its report and screenshot evidence. The scan keeps its normal exit contract: `0` passes CI, `1` fails CI with product-state failures, and `2` fails CI for setup or configuration errors.
-
-The [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) includes a copy-ready workflow, application readiness handling, a pinned report-upload action, and privacy/retention guidance. The [release guide](docs/open-source/RELEASING.md) documents version synchronization, artifact verification, npm trusted-publisher setup, and the one-time first-publication bootstrap.
-
-Maintainers can reproduce the clean-checkout consumer gate after building the workspace:
-
-```bash
-corepack pnpm release:smoke
-corepack pnpm release:check
-corepack pnpm release:package-smoke
-```
-
-The release smoke starts the production example, resolves the executable through the CLI package's declared `bin` target, invokes it from a unique isolated project root, and requires the exact 56-pass/four-failure report. Local temporary output is removed after verification; CI preserves the fictional `.statecraft` evidence only long enough to upload its short-lived artifact.
+[MIT](LICENSE)
