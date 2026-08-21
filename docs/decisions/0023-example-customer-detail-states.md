@@ -16,6 +16,7 @@ Add a dynamic `/api/customers/[id]` response contract and a client-rendered `/cu
 
 - The example demonstrates a realistic account dossier without a backend, database, network dependency, telemetry, or test-only application switch.
 - Authorization failures disclose no customer fields in either the rendered page or browser chunks, while not-found and service failures remain distinguishable.
-- Long names, roles, contact details, addresses, notes, and activity descriptions exercise the production layout and dark theme without horizontal overflow.
+- Long names, roles, contact details, addresses, notes, and activity descriptions exercise the production layout and dark theme without horizontal overflow; review-status accounts use the warning signal rather than the healthy signal.
+- Recent customer history remains visible, while only orders present in the live queue link to `/orders`; linked order status and amount values match the canonical queue fixture.
 - Unit tests protect nested validation, relational invariants, and cent precision; production-browser tests cover the requested states, 401/403/404 distinctions, route identity, client-bundle privacy, links, retry behavior, theme, accessibility semantics, and responsive layout.
 - Intentional defects and the complete example scenario matrix remain separate Phase 6 changes.

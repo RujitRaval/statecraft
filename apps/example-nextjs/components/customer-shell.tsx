@@ -151,12 +151,17 @@ function RecentOrders({ data }: Readonly<{ data: CustomerData }>) {
       <ul aria-label="Recent customer orders" className="customer-order-list">
         {data.recentOrders.map((order) => (
           <li key={order.id}>
-            <Link className="customer-order" href={`/orders?q=${encodeURIComponent(order.id)}`}>
+            {order.inLiveQueue ? <Link className="customer-order" href={`/orders?q=${encodeURIComponent(order.id)}`}>
               <span><strong>{order.id}</strong><small>{order.placedAt}</small></span>
               <i className={`order-status order-status--${statusClass(order.status)}`}>{order.status}</i>
               <b>{formatCustomerAmount(order.amountCents)}</b>
               <ArrowIcon />
-            </Link>
+            </Link> : <div className="customer-order">
+              <span><strong>{order.id}</strong><small>{order.placedAt}</small></span>
+              <i className={`order-status order-status--${statusClass(order.status)}`}>{order.status}</i>
+              <b>{formatCustomerAmount(order.amountCents)}</b>
+              <small className="customer-order__history">History</small>
+            </div>}
           </li>
         ))}
       </ul>
@@ -196,7 +201,7 @@ function CustomerSidebar({ data }: Readonly<{ data: CustomerData }>) {
         <dl>
           <div><dt>Warehouse</dt><dd>{data.warehouse}</dd></div>
           <div><dt>Receiving window</dt><dd>{data.deliveryWindow}</dd></div>
-          <div><dt>Ship to</dt><dd>{data.deliveryAddress.map((line) => <span key={line}>{line}</span>)}</dd></div>
+          <div><dt>Ship to</dt><dd>{data.deliveryAddress.map((line, index) => <span key={`${index}:${line}`}>{line}</span>)}</dd></div>
           <div><dt>Account owner</dt><dd>{data.accountOwner}</dd></div>
         </dl>
       </section>
@@ -221,7 +226,7 @@ function SuccessCustomer({ data }: Readonly<{ data: CustomerData }>) {
           <p>{data.tier}</p>
           <div className="customer-hero__meta"><span>{data.region}</span><span>{data.joinedAt}</span><span>Owner · {data.accountOwner}</span></div>
         </div>
-        <div className="customer-status-card">
+        <div className={`customer-status-card customer-status-card--${data.status.toLowerCase()}`}>
           <span><i />{data.status} account</span>
           <strong>Priority 04</strong>
           <small>Service review · 02 Sep</small>

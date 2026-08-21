@@ -48,9 +48,9 @@ export const customerData = {
     role: "Director of purchasing",
   },
   recentOrders: [
-    { amountCents: 284000, id: "NL-4821", placedAt: "20 Aug · 12:42", status: "Processing" },
-    { amountCents: 176400, id: "NL-4796", placedAt: "18 Aug · 09:16", status: "In transit" },
-    { amountCents: 93200, id: "NL-4738", placedAt: "12 Aug · 15:04", status: "Delivered" },
+    { amountCents: 284000, id: "NL-4821", inLiveQueue: true, placedAt: "20 Aug · 12:42", status: "At risk" },
+    { amountCents: 176400, id: "NL-4796", inLiveQueue: false, placedAt: "18 Aug · 09:16", status: "In transit" },
+    { amountCents: 93200, id: "NL-4738", inLiveQueue: false, placedAt: "12 Aug · 15:04", status: "Delivered" },
   ],
   region: "Boston · East",
   status: "Active",

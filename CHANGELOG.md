@@ -19,7 +19,7 @@ This project uses the four-part version format required by the GStack ship workf
 
 ### Fixed
 
-- Recent-order status pills size to their labels, order links retain native link semantics inside a real list, and state changes announce a concise message instead of the full customer dossier.
+- Recent-order status pills size to their labels, only records present in the live queue link into that queue with canonical status data, and state changes announce a concise message instead of the full customer dossier.
 - Customer validation now rejects inconsistent metric/order relationships and valid records whose identity does not match the requested route.
 
 ### Security

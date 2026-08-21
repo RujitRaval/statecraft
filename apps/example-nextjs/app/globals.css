@@ -1236,6 +1236,14 @@ a:focus-visible {
   background: var(--positive);
 }
 
+.customer-status-card--review span {
+  color: var(--warning);
+}
+
+.customer-status-card--review span i {
+  background: var(--warning);
+}
+
 .customer-status-card strong {
   margin: 12px 0 7px;
   font-size: 1.45rem;
@@ -1385,7 +1393,7 @@ a:focus-visible {
   text-decoration: none;
 }
 
-.customer-order:hover {
+.customer-order[href]:hover {
   background: color-mix(in srgb, var(--signal) 6%, transparent);
 }
 
@@ -1418,6 +1426,15 @@ a:focus-visible {
 
 .customer-order > svg {
   color: var(--muted);
+}
+
+.customer-order__history {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 720;
+  letter-spacing: 0.08em;
+  text-align: right;
+  text-transform: uppercase;
 }
 
 .customer-timeline {

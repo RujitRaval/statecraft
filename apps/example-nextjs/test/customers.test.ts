@@ -19,6 +19,9 @@ describe("customer fixture contract", () => {
     });
     expect(formatCustomerAmount(parsed.metrics.lifetimeValueCents)).toBe("$42,876");
     expect(formatCustomerAmount(18_750)).toBe("$187.50");
+    expect(parsed.recentOrders.filter((order) => order.inLiveQueue)).toEqual([
+      expect.objectContaining({ id: "NL-4821", status: "At risk" }),
+    ]);
   });
 
   it("accepts long content through the same production contract", () => {
@@ -45,6 +48,7 @@ describe("customer fixture contract", () => {
     { ...customerData, metrics: { ...customerData.metrics, orderCount: Number.MAX_SAFE_INTEGER + 1 } },
     { ...customerData, recentOrders: [customerData.recentOrders[0], customerData.recentOrders[0]] },
     { ...customerData, recentOrders: [{ ...customerData.recentOrders[0], status: "Unknown" }] },
+    { ...customerData, recentOrders: [{ ...customerData.recentOrders[2], inLiveQueue: true }] },
     { ...customerData, activities: [customerData.activities[0], customerData.activities[0]] },
   ])("rejects malformed customer payload %#", (payload) => {
     expect(() => parseCustomerData(payload)).toThrow(

@@ -1,5 +1,5 @@
 export const customerStatuses = ["Active", "Review"] as const;
-export const customerOrderStatuses = ["Processing", "Ready", "In transit", "Delivered"] as const;
+export const customerOrderStatuses = ["At risk", "Processing", "Ready", "In transit", "Delivered"] as const;
 
 export type CustomerStatus = (typeof customerStatuses)[number];
 export type CustomerOrderStatus = (typeof customerOrderStatuses)[number];
@@ -54,6 +54,7 @@ export interface CustomerNote {
 export interface CustomerOrder {
   readonly amountCents: number;
   readonly id: string;
+  readonly inLiveQueue: boolean;
   readonly placedAt: string;
   readonly status: CustomerOrderStatus;
 }
@@ -100,6 +101,7 @@ function isCustomerOrder(value: unknown): value is CustomerOrder {
   return isRecord(value) &&
     isSafeNonNegativeInteger(value["amountCents"]) &&
     isNonEmptyString(value["id"]) &&
+    typeof value["inLiveQueue"] === "boolean" &&
     isNonEmptyString(value["placedAt"]) &&
     typeof value["status"] === "string" &&
     customerOrderStatuses.includes(value["status"] as CustomerOrderStatus);
@@ -136,6 +138,7 @@ export function parseCustomerData(value: unknown): CustomerData {
     isCustomerContact(value["primaryContact"]) &&
     Array.isArray(recentOrders) && recentOrders.every(isCustomerOrder) && hasUniqueIds(recentOrders) &&
     recentOrders.length <= metrics.orderCount &&
+    recentOrders.every((order) => !order.inLiveQueue || order.status !== "Delivered") &&
     recentOrders.filter((order) => order.status !== "Delivered").length <= metrics.openOrders &&
     isNonEmptyString(value["region"]) &&
     typeof value["status"] === "string" && customerStatuses.includes(value["status"] as CustomerStatus) &&

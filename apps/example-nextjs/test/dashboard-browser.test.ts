@@ -337,14 +337,24 @@ describe("example application states", () => {
     await page.locator('[data-customer-state="success"]').waitFor();
 
     expect(await page.getByRole("heading", { name: customerData.name }).isVisible()).toBe(true);
+    expect(await page.locator(".customer-status-card--active").isVisible()).toBe(true);
     expect(await page.getByRole("link", { name: /Customers/ }).first().getAttribute("aria-current")).toBe("page");
     expect(await page.getByRole("region", { name: "Customer account summary" }).getByText("$42,876").isVisible()).toBe(true);
     const recentOrders = page.getByRole("list", { name: "Recent customer orders" });
     expect(await recentOrders.getByRole("listitem").count()).toBe(3);
-    expect(await recentOrders.getByRole("link").count()).toBe(3);
+    expect(await recentOrders.getByRole("link").count()).toBe(1);
+    expect(await recentOrders.getByText("History", { exact: true }).count()).toBe(2);
     expect(await page.getByRole("status").textContent()).toBe(`Customer record loaded for ${customerData.name}.`);
     expect(await page.getByRole("link", { name: customerData.primaryContact.email }).getAttribute("href")).toBe(`mailto:${customerData.primaryContact.email}`);
     expect(errors).toEqual([]);
+
+    await recentOrders.getByRole("link", { name: /NL-4821/ }).click();
+    await page.locator('[data-orders-state="success"]').waitFor();
+    await page.getByText("Showing 1 of 8 orders", { exact: true }).waitFor();
+    expect(await page.getByRole("searchbox", { name: "Search orders" }).inputValue()).toBe("NL-4821");
+    const queue = page.getByRole("table", { name: "Fulfillment order queue" });
+    expect(await queue.getByRole("row").count()).toBe(2);
+    expect(await queue.getByRole("cell", { name: "At risk" }).isVisible()).toBe(true);
     await page.close();
   });
 
@@ -460,7 +470,11 @@ describe("example application states", () => {
       }
     });
     await page.route("**/api/customers/**", (route) => route.fulfill({
-      body: JSON.stringify(longCustomerData),
+      body: JSON.stringify({
+        ...longCustomerData,
+        deliveryAddress: [...longCustomerData.deliveryAddress, longCustomerData.deliveryAddress[0]],
+        status: "Review",
+      }),
       contentType: "application/json",
       status: 200,
     }));
@@ -471,6 +485,7 @@ describe("example application states", () => {
     expect(await page.getByRole("heading", { name: longCustomerData.name }).isVisible()).toBe(true);
     expect(await page.getByText(longCustomerData.primaryContact.role).isVisible()).toBe(true);
     expect(await page.getByText(longCustomerData.note.body).isVisible()).toBe(true);
+    expect(await page.locator(".customer-status-card--review").isVisible()).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
     const mobileNavigation = page.getByRole("navigation", { name: "Mobile workspace navigation" });
     expect(await mobileNavigation.getByRole("link", { name: /Customers/ }).getAttribute("aria-current")).toBe("page");
