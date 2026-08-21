@@ -26,6 +26,7 @@ This project uses the four-part version format required by the GStack ship workf
 ### Fixed
 
 - The release workflow now resolves its temporary package directory only after GitHub assigns a runner, preventing workflow validation from rejecting the first `v0.24.0` publication before any checks can start.
+- Release artifact validation now accepts npm publish summaries that omit the redundant `id` field while still requiring an exact package name and version and rejecting conflicting identities.
 
 ## [0.23.0.0] - 2026-08-21
 

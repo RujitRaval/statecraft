@@ -9,7 +9,11 @@ import {
   packageIntegrity,
   publishReleasePackages,
 } from "./publish-release-packages.mjs";
-import { releaseTarballName, runCommand } from "./release-package-smoke.mjs";
+import {
+  assertPublishSummaryIdentity,
+  releaseTarballName,
+  runCommand,
+} from "./release-package-smoke.mjs";
 import { RELEASE_PACKAGES, validateReleaseWorkspace } from "./check-release-packages.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
@@ -46,6 +50,28 @@ function packageNameFromTarball(tarball) {
 test("derives stable npm tarball names", () => {
   assert.equal(releaseTarballName("statecraft-ui", "1.2.3"), "statecraft-ui-1.2.3.tgz");
   assert.equal(releaseTarballName("@example/tool", "1.2.3"), "example-tool-1.2.3.tgz");
+});
+
+test("validates npm publish identities across supported JSON summary shapes", () => {
+  const name = "statecraft-ui-core";
+  const version = "1.2.3";
+  assert.doesNotThrow(() => assertPublishSummaryIdentity({ name, version }, name, version));
+  assert.doesNotThrow(() =>
+    assertPublishSummaryIdentity({ id: `${name}@${version}`, name, version }, name, version),
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ id: "other@1.2.3", name, version }, name, version),
+    /inconsistent package id/u,
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ name: "other", version }, name, version),
+    /wrong package name/u,
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ name, version: "9.9.9" }, name, version),
+    /wrong package version/u,
+  );
+  assert.throws(() => assertPublishSummaryIdentity([], name, version), /invalid publish summary/u);
 });
 
 test("runs bounded shell-free release commands", async () => {
