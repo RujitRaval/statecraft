@@ -59,6 +59,8 @@ The customer-detail slice adds a dynamic `/api/customers/[id]` contract and `/cu
 
 The intentional-defect slice preserves two narrow, deterministic visual failures without a test-only application mode. At mobile widths, an unusually long customer email remains on one line and overflows its contact card while the default customer stays contained. In dark theme, the orders service-error signal uses identical foreground and background colors while the rest of the recoverable error state remains usable. Browser contracts verify both trigger boundaries; the following complete scenario matrix owns the assertions that surface them as known failed cells.
 
+The final Phase 6 slice checks an example-owned Statecraft config into `apps/example-nextjs`. It declares 15 route/state combinations across mobile/desktop and light/dark for 60 stable cells. Three route-level scenario modules use isolated interception to render every dashboard, orders, and customer state, then assert the desired visible state and layout/contrast invariants. The assertions truthfully fail the two dark orders-error cells and the two mobile long-content cells; Statecraft does not gain an expected-failure mode. A real CLI scan gate requires exit code `1`, 56 passing cells, those exact four assertion failures, 60 persisted screenshots, schema-v1 JSON, and offline HTML from a temporary project root.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {
