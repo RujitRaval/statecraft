@@ -19,6 +19,10 @@ This project uses the four-part version format required by the GStack ship workf
 
 - Launch-asset capture blocks HTTP and HTTPS requests while opening the local report, and release documentation records the exact trusted-publisher binding, revoked bootstrap token, removed GitHub secret, and strict npm 2FA policy.
 
+### Fixed
+
+- Launch-asset tooling loads Playwright only when a real capture starts, preserving the dependency-free repository checks used by the Documentation CI job.
+
 ## [0.24.0.0] - 2026-08-21
 
 ### Added

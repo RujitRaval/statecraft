@@ -2,8 +2,6 @@ import { mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { chromium } from "playwright";
-
 const exampleRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -41,7 +39,7 @@ export function launchDetailSelector(detailId) {
 }
 
 export async function captureLaunchAssets({
-  browserType = chromium,
+  browserType,
   logger = console,
   sourceReportPath = reportPath,
   targetAssetsRoot = assetsRoot,
@@ -58,7 +56,9 @@ export async function captureLaunchAssets({
     path.basename(failurePath),
   );
 
-  const browser = await browserType.launch({ headless: true });
+  const resolvedBrowserType =
+    browserType ?? (await import("playwright")).chromium;
+  const browser = await resolvedBrowserType.launch({ headless: true });
   try {
     const page = await browser.newPage({
       deviceScaleFactor: 1,
