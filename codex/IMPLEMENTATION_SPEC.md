@@ -78,7 +78,7 @@ statecraft/
 Example config:
 
 ``` ts
-import { defineConfig } from "@statecraft/core";
+import { defineConfig } from "@statecraft/cli";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
