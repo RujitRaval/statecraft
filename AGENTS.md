@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 5 are complete. Phase 6 is active. Its first four approved slices establish the polished Next.js fixture, shared visual system, deterministic dashboard, orders, and customer data contracts, meaningful state surfaces for `/dashboard`, `/orders`, and `/customers/[id]`, and focused responsive/theme defects. Keep the complete scenario matrix and Phase 7 in focused follow-ups.
+Phase 1 through Phase 6 are complete. The polished Next.js fixture now includes its shared visual system, deterministic dashboard, orders and customer contracts, meaningful state surfaces, focused responsive/theme defects, complete 60-cell scenario matrix, and known-failure report gate. Keep Phase 7 deferred until the user explicitly initiates it.
 
 ## Design system
 

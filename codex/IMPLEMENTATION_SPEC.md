@@ -452,12 +452,11 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 5 are complete. Phase 6 is active. Its first four
-slices establish the visual system, Next.js application foundation,
-deterministic dashboard, orders, and customer data contracts, the
-meaningful state surfaces for `/dashboard`, `/orders`, and
-`/customers/[id]`, and focused responsive/theme defects. Keep the
-complete Statecraft scenario matrix and Phase 7 in focused follow-ups.
+Phase 1 through Phase 6 are complete. The example application includes
+its visual system, deterministic data contracts and meaningful states,
+focused responsive/theme defects, complete 60-cell
+route/state/viewport/theme matrix, and CLI-to-report known-failure gate.
+Keep Phase 7 deferred until the user explicitly initiates it.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

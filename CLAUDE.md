@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 5 are complete. Phase 6 is active with the polished example-app foundation, dashboard, orders, customer-detail states, and focused responsive/theme defects complete; keep the complete scenario matrix and Phase 7 in focused follow-ups.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 6 are complete, including the polished example application, complete 60-cell scenario matrix, and four-cell known-failure report gate. Keep Phase 7 deferred until the user explicitly initiates it.
 
 ## Skill routing
 

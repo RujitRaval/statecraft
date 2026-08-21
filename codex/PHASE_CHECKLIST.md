@@ -43,7 +43,7 @@
 - [x] `open` latest-report behavior
 - [x] Scan publishes offline HTML consumable by `open`
 
-Phase 4 is complete. Phase 5 is complete. Phase 6 is active.
+Phase 4 through Phase 6 are complete.
 
 ## Phase 5
 - [x] Report package and validated transformation boundary
@@ -59,4 +59,4 @@ Phase 4 is complete. Phase 5 is complete. Phase 6 is active.
 - [x] `/orders` meaningful states
 - [x] `/customers/[id]` meaningful states and long-content coverage
 - [x] Intentional responsive/theme defects
-- [ ] Complete Statecraft scenario matrix and example-app E2E gate
+- [x] Complete 60-cell Statecraft scenario matrix and known-failure report gate

@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
@@ -9,6 +9,28 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["apps/**/*.test.ts", "packages/**/*.test.ts"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          exclude: [
+            ...configDefaults.exclude,
+            "apps/example-nextjs/test/scenario-matrix.test.ts",
+          ],
+          include: ["apps/**/*.test.ts", "packages/**/*.test.ts"],
+          name: "workspace",
+          sequence: { groupOrder: 0 },
+        },
+      },
+      {
+        extends: true,
+        test: {
+          fileParallelism: false,
+          include: ["apps/example-nextjs/test/scenario-matrix.test.ts"],
+          name: "example-scenario-matrix",
+          sequence: { groupOrder: 1 },
+        },
+      },
+    ],
   },
 });
