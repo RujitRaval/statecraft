@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Statecraft has not published a supported release yet. Security fixes will target the latest commit on `main` until the first release.
+Security fixes target the latest published Statecraft release and the latest commit on `main`. Older releases may not receive fixes.
 
 ## Reporting a vulnerability
 

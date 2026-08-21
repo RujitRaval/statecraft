@@ -1,6 +1,6 @@
 # `statecraft-ui-runner-playwright` API
 
-Phase 3 owns browser-specific execution while `statecraft-ui-core` remains independent of Playwright. The runner package is private until the CLI and the rest of the Phase 3 lifecycle validate its integration boundary.
+`statecraft-ui-runner-playwright` owns Statecraft's published browser-specific execution boundary while `statecraft-ui-core` remains independent of Playwright. Most users install `statecraft-ui`; direct consumers can compose the programmatic runner APIs documented here.
 
 ## Install the pinned browser
 
