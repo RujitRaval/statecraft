@@ -55,6 +55,8 @@ The Phase 6 example is a real Next.js App Router application and a deterministic
 
 The orders slice extends the same boundary with a fixed `/api/orders` contract and `/orders` success, loading, empty, and recoverable error states. Runtime validation rejects malformed records and duplicate IDs before rendering. The success surface derives its summary from the validated queue and provides client-side search and status filters whose selections are reflected in the local URL; those presentation controls do not change the fixture contract. A route-aware shared navigation component marks the current workspace on desktop and mobile. Scenario interception remains the only mechanism for forcing product states.
 
+The customer-detail slice adds a dynamic `/api/customers/[id]` contract and `/customers/[id]` route. The production API returns one deterministic fictional fixture or a conventional 404; scenario interception supplies alternate valid long content, authorization failures, and service failures. A `server-only` fixture module is separate from the client-safe types, parser, and formatters so restricted record fields cannot enter browser chunks. Runtime validation covers nested contacts, metrics, orders, activity, safe integer and cross-record relationships, unique nested identifiers, and route-to-response identity before rendering. The client boundary distinguishes success, loading, 401/403 authorization, 404 not-found, and recoverable service-error states without exposing customer data in restricted surfaces. Long content uses the same public contract and layout as the default fixture rather than a production test switch.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {

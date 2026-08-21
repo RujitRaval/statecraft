@@ -4,6 +4,28 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.20.0.0] - 2026-08-20
+
+### Added
+
+- The polished `/customers/[id]` example route now demonstrates deterministic success, loading, unauthorized, not-found, recoverable service-error, and long-content states backed by a runtime-validated fictional customer API.
+- Customer records combine account health, recent commitments, relationship activity, contact details, delivery constraints, and account notes in responsive light and dark layouts with working navigation and order links.
+- Unit and production-browser coverage verifies nested payload validation, identity binding, 401/403/404 distinctions, retries, long-content wrapping, currency precision, accessible status announcements, and mobile containment.
+
+### Changed
+
+- The shared workspace navigation now exposes Customers as its third route and keeps a balanced three-column mobile layout without changing the existing responsive order table.
+- Phase 6 now includes complete dashboard, orders, and customer-detail state surfaces; intentional defects and the complete Statecraft scenario matrix remain focused follow-ups.
+
+### Fixed
+
+- Recent-order status pills size to their labels, only records present in the live queue link into that queue with canonical status data, and state changes announce a concise message instead of the full customer dossier.
+- Customer validation now rejects inconsistent metric/order relationships and valid records whose identity does not match the requested route.
+
+### Security
+
+- Customer fixture values live behind Next.js's `server-only` boundary, and a production-build regression check prevents restricted contact, address, and note fields from entering downloadable browser chunks.
+
 ## [0.19.0.0] - 2026-08-20
 
 ### Added
