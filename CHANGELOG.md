@@ -23,6 +23,10 @@ This project uses the four-part version format required by the GStack ship workf
 - npm publication rejects prereleases and older-than-latest versions, binds the GitHub release event SHA to both the checked-out commit and named tag on `main`, limits OIDC to the publish job, and uses an approval-gated Environment for the short-lived first-publication credential.
 - Exact tarball allowlists exclude compiler caches, require matching license text, reject unexpected or symbolic-link package inputs, and stop rather than overwrite when an existing npm version has different bytes.
 
+### Fixed
+
+- The release workflow now resolves its temporary package directory only after GitHub assigns a runner, preventing workflow validation from rejecting the first `v0.24.0` publication before any checks can start.
+
 ## [0.23.0.0] - 2026-08-21
 
 ### Added

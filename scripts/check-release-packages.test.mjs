@@ -114,7 +114,14 @@ test("writes explicit GitHub outputs without inheriting ambient output paths", a
 
 test("keeps bootstrap token auth conditional so trusted publishing can use OIDC", async () => {
   const workflow = await readFile(path.join(repositoryRoot, ".github", "workflows", "release.yml"), "utf8");
+  const jobEnvironment = workflow.match(/ {4}env:\n(?:(?: {6}.*\n)+)/u)?.[0] ?? "";
+
   assert.doesNotMatch(workflow, /registry-url:/u);
+  assert.doesNotMatch(jobEnvironment, /\$\{\{ runner\./u);
+  assert.equal(
+    (workflow.match(/PACKAGE_OUTPUT: \$\{\{ runner\.temp \}\}\/statecraft-packages/gu) ?? []).length,
+    2,
+  );
   assert.match(workflow, /NPM_BOOTSTRAP_TOKEN_PRESENT: \$\{\{ secrets\.NPM_TOKEN != '' \}\}/u);
   assert.match(
     workflow,

@@ -23,7 +23,6 @@ jobs:
       id-token: write
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name }}
-      PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
       NPM_BOOTSTRAP_TOKEN_PRESENT: ${{ secrets.NPM_TOKEN != '' }}
     steps:
       - name: Check out the release tag
@@ -57,5 +56,9 @@ jobs:
         run: env -u GITHUB_OUTPUT corepack pnpm release:smoke
       - name: Pack and test npm artifacts
         run: node scripts/release-package-smoke.mjs --output "$PACKAGE_OUTPUT"
+        env:
+          PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
       - name: Publish npm artifacts
         run: node scripts/publish-release-packages.mjs --input "$PACKAGE_OUTPUT" --tag "$RELEASE_TAG"
+        env:
+          PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
