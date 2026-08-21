@@ -10,7 +10,7 @@ vi.mock("node:fs/promises", async (importOriginal) => {
     ...original,
     open: vi.fn(async (...args: Parameters<typeof original.open>) => {
       const path = String(args[0]);
-      if (path.endsWith("statecraft.config.ts")) {
+      if (path.endsWith("statecraft.config.mts")) {
         await original.writeFile(
           join(dirname(path), "statecraft.config.mjs"),
           "export default {};",
@@ -46,7 +46,7 @@ describe("initProject config races", () => {
       paths: [join(project, "statecraft.config.mjs")],
     });
     await expect(
-      originalFs.readFile(join(project, "statecraft.config.ts"), "utf8"),
+      originalFs.readFile(join(project, "statecraft.config.mts"), "utf8"),
     ).resolves.toContain("defineConfig");
     await expect(
       originalFs.readFile(join(project, "statecraft.config.mjs"), "utf8"),

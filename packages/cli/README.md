@@ -9,6 +9,8 @@ npx statecraft init
 npx statecraft scan
 ```
 
+`init` generates `statecraft.config.mts` and `statecraft/scenarios/home/success.mts`, so the starter works without changing npm's default package type.
+
 The package also exports `defineConfig`, config discovery/loading, initialization, scan orchestration, and report-opening APIs for TypeScript consumers.
 
 See the [Statecraft repository](https://github.com/RujitRaval/statecraft) for configuration, scenario, CI, privacy, and contribution guidance.

@@ -70,7 +70,7 @@ npx statecraft init
 Generated structure:
 
 ``` text
-statecraft.config.ts
+statecraft.config.mts
 statecraft/
   scenarios/
 ```
@@ -91,10 +91,10 @@ export default defineConfig({
     id: "dashboard",
     path: "/dashboard",
     states: [
-      { id: "success", setup: "./statecraft/scenarios/dashboard/success.ts" },
-      { id: "loading", setup: "./statecraft/scenarios/dashboard/loading.ts" },
-      { id: "empty", setup: "./statecraft/scenarios/dashboard/empty.ts" },
-      { id: "error", setup: "./statecraft/scenarios/dashboard/error.ts" },
+      { id: "success", setup: "./statecraft/scenarios/dashboard/success.mts" },
+      { id: "loading", setup: "./statecraft/scenarios/dashboard/loading.mts" },
+      { id: "empty", setup: "./statecraft/scenarios/dashboard/empty.mts" },
+      { id: "error", setup: "./statecraft/scenarios/dashboard/error.mts" },
     ],
   }],
 });

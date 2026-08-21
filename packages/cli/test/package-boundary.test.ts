@@ -117,7 +117,7 @@ describe("statecraft-ui package boundary", () => {
         stdout: expect.stringContaining("Statecraft initialized."),
       });
       await expect(
-        access(join(project, "statecraft.config.ts")),
+        access(join(project, "statecraft.config.mts")),
       ).resolves.toBeUndefined();
       await expect(
         execFileAsync(process.execPath, [binPath, "open"], { cwd: project }),
@@ -137,9 +137,12 @@ describe("statecraft-ui package boundary", () => {
       );
       await writeFile(
         join(project, "package.json"),
-        JSON.stringify({ private: true, type: "module" }),
+        JSON.stringify({ private: true }),
         "utf8",
       );
+      expect(
+        JSON.parse(await readFile(join(project, "package.json"), "utf8")),
+      ).not.toHaveProperty("type");
       await writeFile(
         join(project, "tsconfig.json"),
         JSON.stringify({
@@ -152,7 +155,7 @@ describe("statecraft-ui package boundary", () => {
             target: "ES2023",
             types: [],
           },
-          include: ["statecraft.config.ts", "statecraft/**/*.ts"],
+          include: ["statecraft.config.mts", "statecraft/**/*.mts"],
         }),
         "utf8",
       );
@@ -176,7 +179,7 @@ describe("statecraft-ui package boundary", () => {
       );
       const scenarioModule = await import(
         pathToFileURL(
-          join(project, "statecraft", "scenarios", "home", "success.ts"),
+          join(project, "statecraft", "scenarios", "home", "success.mts"),
         ).href
       );
       expect(scenarioModule.default).toEqual({});

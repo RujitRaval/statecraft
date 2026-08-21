@@ -1,6 +1,6 @@
 {
   "name": "statecraft-ui",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "description": "Local initialization, scan orchestration, and report opening for Statecraft.",
   "license": "MIT",
   "repository": {

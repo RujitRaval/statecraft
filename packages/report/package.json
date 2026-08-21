@@ -1,6 +1,6 @@
 {
   "name": "statecraft-ui-report",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "description": "Deterministic report transformation and offline HTML generation for Statecraft.",
   "license": "MIT",
   "repository": {

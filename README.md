@@ -49,6 +49,8 @@ Statecraft supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.
    npx statecraft init
    ```
 
+   This creates `statecraft.config.mts` and `statecraft/scenarios/home/success.mts`. The explicit ESM extensions work in both npm's default CommonJS projects and projects that set `"type": "module"`.
+
 3. Start your application, then scan and open the report:
 
    ```bash

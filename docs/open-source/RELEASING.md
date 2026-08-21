@@ -36,7 +36,7 @@ corepack pnpm release:package-smoke
 corepack pnpm release:smoke
 ```
 
-`release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, installs the exact tarballs into an isolated project, imports all public APIs, exercises the packed executable, and verifies overwrite-safe initialization. Temporary tarballs are removed and `*.tgz` is ignored.
+`release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, creates a CommonJS-default consumer with `npm init -y`, installs the exact tarballs, imports all public APIs, installs Chromium, and runs the generated `.mts` starter through a complete four-cell scan. Temporary tarballs, screenshots, and reports stay inside removed temporary directories; `*.tgz` and `.statecraft/` remain ignored.
 
 ## First publication bootstrap (completed for v0.24.0)
 

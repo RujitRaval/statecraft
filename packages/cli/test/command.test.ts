@@ -35,7 +35,7 @@ vi.mock("../src/init.js", async (importOriginal) => {
         throw new original.InitError(
           "INIT_WRITE_FAILED",
           "Statecraft could not create every starter file.",
-          { paths: ["/project/statecraft.config.ts", "/project/statecraft"] },
+          { paths: ["/project/statecraft.config.mts", "/project/statecraft"] },
         );
       }
       return original.initProject(options);
@@ -169,7 +169,7 @@ describe("runCli", () => {
     );
     expect(stderr.messages).toEqual([]);
     await expect(
-      lstat(join(project, "statecraft.config.ts")),
+      lstat(join(project, "statecraft.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
     },
   );
@@ -265,7 +265,7 @@ describe("runCli", () => {
       "The init command does not accept arguments: --force",
     );
     await expect(
-      lstat(join(project, "statecraft.config.ts")),
+      lstat(join(project, "statecraft.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -285,12 +285,12 @@ describe("runCli", () => {
     expect(stdout.messages.join("")).toBe(`Statecraft initialized.
 
 Created:
-  statecraft.config.ts
-  statecraft/scenarios/home/success.ts
+  statecraft.config.mts
+  statecraft/scenarios/home/success.mts
 
 Next:
-  1. Update statecraft.config.ts for your app.
-  2. Add scenario hooks in statecraft/scenarios/home/success.ts.
+  1. Update statecraft.config.mts for your app.
+  2. Add scenario hooks in statecraft/scenarios/home/success.mts.
   3. Commit both starter files to version control.
 `);
     expect(stderr.messages).toEqual([]);
@@ -328,7 +328,7 @@ Next:
     expect(stderr.messages.join("")).toBe(`Statecraft could not create every starter file.
 
 Targets:
-  /project/statecraft.config.ts
+  /project/statecraft.config.mts
   /project/statecraft
 `);
   });
