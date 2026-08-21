@@ -58,5 +58,5 @@ Phase 4 is complete. Phase 5 is complete. Phase 6 is active.
 - [x] `/dashboard` success, loading, empty, and error states
 - [x] `/orders` meaningful states
 - [x] `/customers/[id]` meaningful states and long-content coverage
-- [ ] Intentional responsive/theme defects
+- [x] Intentional responsive/theme defects
 - [ ] Complete Statecraft scenario matrix and example-app E2E gate

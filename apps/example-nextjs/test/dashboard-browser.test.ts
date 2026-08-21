@@ -301,6 +301,54 @@ describe("example application states", () => {
     await errorPage.close();
   });
 
+  it("exposes the scoped dark-theme order error signal defect", async () => {
+    const lightPage = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
+    await lightPage.route("**/api/orders", (route) => route.fulfill({
+      body: JSON.stringify({ message: "Unavailable" }),
+      contentType: "application/json",
+      status: 503,
+    }));
+    await lightPage.goto(`${baseURL}/orders`, { waitUntil: "domcontentloaded" });
+    await lightPage.locator('[data-orders-state="error"]').waitFor();
+    const lightPalette = await lightPage.locator(".orders-error__signal").evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { backgroundColor: style.backgroundColor, color: style.color };
+    });
+    expect(lightPalette.color).not.toBe(lightPalette.backgroundColor);
+    await lightPage.close();
+
+    const page = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
+    await page.addInitScript(() => {
+      const apply = (): boolean => {
+        if (document.documentElement === null) return false;
+        document.documentElement.dataset["theme"] = "dark";
+        return true;
+      };
+      if (!apply()) {
+        const observer = new MutationObserver(() => {
+          if (apply()) observer.disconnect();
+        });
+        observer.observe(document, { childList: true, subtree: true });
+      }
+    });
+    await page.route("**/api/orders", (route) => route.fulfill({
+      body: JSON.stringify({ message: "Unavailable" }),
+      contentType: "application/json",
+      status: 503,
+    }));
+    await page.goto(`${baseURL}/orders`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-orders-state="error"]').waitFor();
+
+    const palette = await page.locator(".orders-error__signal").evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { backgroundColor: style.backgroundColor, color: style.color };
+    });
+    expect(await page.locator("html").getAttribute("data-theme")).toBe("dark");
+    expect(palette.color).toBe(palette.backgroundColor);
+    expect(await page.getByRole("heading", { name: "The order queue did not arrive." }).isVisible()).toBe(true);
+    await page.close();
+  });
+
   it("keeps the dark mobile order queue within the viewport", async () => {
     const page = await browser.newPage({ viewport: { height: 844, width: 390 } });
     await page.addInitScript(() => {
@@ -449,7 +497,29 @@ describe("example application states", () => {
     await page.close();
   });
 
-  it("renders long customer content in dark mode without mobile overflow", async () => {
+  it("exposes long-contact overflow only on the narrow customer fixture", async () => {
+    const longPayload = {
+      ...longCustomerData,
+      deliveryAddress: [...longCustomerData.deliveryAddress, longCustomerData.deliveryAddress[0]],
+      status: "Review",
+    };
+    const widePage = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
+    await widePage.route("**/api/customers/**", (route) => route.fulfill({
+      body: JSON.stringify(longPayload),
+      contentType: "application/json",
+      status: 200,
+    }));
+    await widePage.goto(`${baseURL}/customers/${longCustomerData.id}`, { waitUntil: "domcontentloaded" });
+    await widePage.locator('[data-customer-state="success"]').waitFor();
+    expect(await widePage.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1_440);
+    await widePage.close();
+
+    const controlPage = await browser.newPage({ viewport: { height: 844, width: 390 } });
+    await controlPage.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await controlPage.locator('[data-customer-state="success"]').waitFor();
+    expect(await controlPage.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    await controlPage.close();
+
     const page = await browser.newPage({ viewport: { height: 844, width: 390 } });
     const errors: string[] = [];
     page.on("console", (message) => {
@@ -470,11 +540,7 @@ describe("example application states", () => {
       }
     });
     await page.route("**/api/customers/**", (route) => route.fulfill({
-      body: JSON.stringify({
-        ...longCustomerData,
-        deliveryAddress: [...longCustomerData.deliveryAddress, longCustomerData.deliveryAddress[0]],
-        status: "Review",
-      }),
+      body: JSON.stringify(longPayload),
       contentType: "application/json",
       status: 200,
     }));
@@ -486,7 +552,14 @@ describe("example application states", () => {
     expect(await page.getByText(longCustomerData.primaryContact.role).isVisible()).toBe(true);
     expect(await page.getByText(longCustomerData.note.body).isVisible()).toBe(true);
     expect(await page.locator(".customer-status-card--review").isVisible()).toBe(true);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    const overflow = await page.getByRole("link", { name: longCustomerData.primaryContact.email }).evaluate((element) => ({
+      contact: element.scrollWidth - element.clientWidth,
+      page: document.documentElement.scrollWidth - window.innerWidth,
+      whiteSpace: getComputedStyle(element).whiteSpace,
+    }));
+    expect(overflow.whiteSpace).toBe("nowrap");
+    expect(overflow.contact).toBeGreaterThan(0);
+    expect(overflow.page).toBeGreaterThan(0);
     const mobileNavigation = page.getByRole("navigation", { name: "Mobile workspace navigation" });
     expect(await mobileNavigation.getByRole("link", { name: /Customers/ }).getAttribute("aria-current")).toBe("page");
     expect(await mobileNavigation.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" "))).toHaveLength(3);

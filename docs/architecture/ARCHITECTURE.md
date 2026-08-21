@@ -57,6 +57,8 @@ The orders slice extends the same boundary with a fixed `/api/orders` contract a
 
 The customer-detail slice adds a dynamic `/api/customers/[id]` contract and `/customers/[id]` route. The production API returns one deterministic fictional fixture or a conventional 404; scenario interception supplies alternate valid long content, authorization failures, and service failures. A `server-only` fixture module is separate from the client-safe types, parser, and formatters so restricted record fields cannot enter browser chunks. Runtime validation covers nested contacts, metrics, orders, activity, safe integer and cross-record relationships, unique nested identifiers, and route-to-response identity before rendering. The client boundary distinguishes success, loading, 401/403 authorization, 404 not-found, and recoverable service-error states without exposing customer data in restricted surfaces. Long content uses the same public contract and layout as the default fixture rather than a production test switch.
 
+The intentional-defect slice preserves two narrow, deterministic visual failures without a test-only application mode. At mobile widths, an unusually long customer email remains on one line and overflows its contact card while the default customer stays contained. In dark theme, the orders service-error signal uses identical foreground and background colors while the rest of the recoverable error state remains usable. Browser contracts verify both trigger boundaries; the following complete scenario matrix owns the assertions that surface them as known failed cells.
+
 ## Scenario API
 ```ts
 interface StatecraftScenario {

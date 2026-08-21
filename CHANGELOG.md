@@ -4,6 +4,18 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.21.0.0] - 2026-08-20
+
+### Added
+
+- The Phase 6 example now contains two deterministic visual defects for Statecraft to expose: a long customer contact email that overflows only on narrow viewports and an orders service-error signal that disappears only in dark theme.
+- Real-Chromium contracts protect each trigger boundary with healthy controls, proving that the default mobile customer remains contained and the light-theme error signal retains foreground contrast.
+- ADR 0024 records why the defects live in the production fixture layout without query flags, test-only switches, external data, or nondeterministic timing.
+
+### Changed
+
+- Phase 6 now includes its focused intentional-defect slice. The complete route/state/viewport/theme scenario matrix and example-app end-to-end gate remain the final separate Phase 6 follow-up.
+
 ## [0.20.0.0] - 2026-08-20
 
 ### Added
