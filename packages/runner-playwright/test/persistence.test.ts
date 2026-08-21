@@ -25,7 +25,7 @@ import {
   screenshotArtifactPath,
   serializeReport,
   type MatrixCell,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 
 import { runPersistedScenarioCells } from "../src/index.js";
 import {

@@ -1,16 +1,35 @@
 {
-  "name": "@statecraft/cli",
-  "version": "0.0.0",
-  "private": true,
+  "name": "statecraft-ui",
+  "version": "0.24.0",
   "description": "Local initialization, scan orchestration, and report opening for Statecraft.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "bugs": {
+    "url": "https://github.com/RujitRaval/statecraft/issues"
+  },
+  "keywords": [
+    "cli",
+    "playwright",
+    "ui-testing",
+    "state-coverage"
+  ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
     "statecraft": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map"
   ],
   "exports": {
     ".": {
@@ -18,14 +37,22 @@
       "import": "./dist/index.js"
     }
   },
+  "engines": {
+    "node": "^22.20.0 || ^24.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build && corepack pnpm --filter @statecraft/report build && corepack pnpm --filter @statecraft/runner-playwright build",
+    "pretypecheck": "corepack pnpm --filter statecraft-ui-core build && corepack pnpm --filter statecraft-ui-report build && corepack pnpm --filter statecraft-ui-runner-playwright build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@statecraft/core": "workspace:*",
-    "@statecraft/runner-playwright": "workspace:*"
+    "statecraft-ui-core": "workspace:*",
+    "statecraft-ui-runner-playwright": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

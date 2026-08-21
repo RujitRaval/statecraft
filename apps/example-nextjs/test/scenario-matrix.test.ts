@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadConfig, runCli, type LoadedConfig } from "@statecraft/cli";
-import { expandMatrix, parseReport } from "@statecraft/core";
+import { loadConfig, runCli, type LoadedConfig } from "statecraft-ui";
+import { expandMatrix, parseReport } from "statecraft-ui-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { customerData, longCustomerData } from "../lib/customers";

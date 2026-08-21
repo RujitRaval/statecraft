@@ -1,4 +1,4 @@
-import { expandMatrix } from "@statecraft/core";
+import { expandMatrix } from "statecraft-ui-core";
 import { describe, expect, it } from "vitest";
 
 describe("example Statecraft config", () => {

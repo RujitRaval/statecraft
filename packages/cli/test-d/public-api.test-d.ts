@@ -27,7 +27,7 @@ import {
   type ScanErrorCode,
   type ScanOptions,
   type ScanResult,
-} from "@statecraft/cli";
+} from "statecraft-ui";
 
 const options: ConfigDiscoveryOptions = {
   configPath: "./config/statecraft.config.mjs",

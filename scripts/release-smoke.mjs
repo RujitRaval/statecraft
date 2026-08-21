@@ -163,7 +163,7 @@ export async function parseBuiltReport(
   assert.equal(
     typeof module.parseReport,
     "function",
-    "Built @statecraft/core does not export parseReport.",
+    "Built statecraft-ui-core does not export parseReport.",
   );
   return module.parseReport(value);
 }
@@ -237,7 +237,7 @@ async function resolveCliBin() {
   assert.equal(
     typeof manifest.bin?.statecraft,
     "string",
-    "@statecraft/cli does not declare the statecraft bin target.",
+    "statecraft-ui does not declare the statecraft bin target.",
   );
   return path.resolve(packageRoot, manifest.bin.statecraft);
 }

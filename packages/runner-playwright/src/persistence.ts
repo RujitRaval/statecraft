@@ -26,8 +26,8 @@ import {
   type ExecutionResult,
   type MatrixCell,
   type StatecraftReport,
-} from "@statecraft/core";
-import { REPORT_HTML_PATH, renderReportHtml } from "@statecraft/report";
+} from "statecraft-ui-core";
+import { REPORT_HTML_PATH, renderReportHtml } from "statecraft-ui-report";
 
 import {
   diagnosticErrorMessage,

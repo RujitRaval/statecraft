@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Browser, BrowserContext } from "playwright";
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig } from "@statecraft/core";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
 
 import { runExecutionCells } from "../src/index.js";
 import { renderFixturePage } from "./fixtures/page.js";

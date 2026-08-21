@@ -33,7 +33,7 @@ import {
   type ScenarioHook,
   type ScenarioLoadErrorCode,
   type StatecraftScenario,
-} from "@statecraft/runner-playwright";
+} from "statecraft-ui-runner-playwright";
 
 declare const execution: CellExecutionContext;
 

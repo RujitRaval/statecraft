@@ -1,6 +1,6 @@
 import { performance } from "node:perf_hooks";
 
-import type { MatrixCell } from "@statecraft/core";
+import type { MatrixCell } from "statecraft-ui-core";
 import {
   chromium,
   type Browser,

@@ -1,11 +1,11 @@
-# `@statecraft/core` API
+# `statecraft-ui-core` API
 
 Phase 2 provides Statecraft's deterministic, browser-independent contracts. The package remains private until the later runner, CLI, and report packages validate its integration boundary.
 
 ## Configuration
 
 ```ts
-import { defineConfig } from "@statecraft/core";
+import { defineConfig } from "statecraft-ui-core";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
@@ -54,7 +54,7 @@ Configuration and scenario modules are trusted local code running with the user'
 Expansion follows routes and states in declaration order, viewport keys in deterministic ECMAScript property order, then themes in declaration order. Repeating the same validated input produces the same sequence. For normal named viewport IDs such as `mobile` and `desktop`, property order is declaration order; integer-like IDs are enumerated numerically before other keys. Filters do not change that order:
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
 
 const cells = expandMatrix(parseConfig(config), {
   routeIds: ["dashboard"],
@@ -73,7 +73,7 @@ The planner is pure and browser-independent. It does not load scenario modules, 
 `calculateCoverage(cells, observations)` calculates configured-state coverage without depending on runner or report contracts. The matrix is the source of truth for what was configured. Each `CoverageObservation` is a minimal exact coordinate plus a `passed` boolean:
 
 ```ts
-import { calculateCoverage, expandMatrix } from "@statecraft/core";
+import { calculateCoverage, expandMatrix } from "statecraft-ui-core";
 
 const cells = expandMatrix(config);
 const coverage = calculateCoverage(cells, [
@@ -108,7 +108,7 @@ The calculator is pure, does not mutate its inputs, and returns immutable summar
 `screenshotArtifactPath(cell)` returns an opaque `ScreenshotArtifactPath`: the project-relative PNG path reserved for a `MatrixCell`:
 
 ```ts
-import { screenshotArtifactPath } from "@statecraft/core";
+import { screenshotArtifactPath } from "statecraft-ui-core";
 
 const path = screenshotArtifactPath(cell);
 // .statecraft/artifacts/dashboard/success/desktop-light.png

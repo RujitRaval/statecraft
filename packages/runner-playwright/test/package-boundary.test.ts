@@ -22,20 +22,19 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("@statecraft/runner-playwright package boundary", () => {
-  it("defines a private ESM build with pinned runtime dependencies", async () => {
+describe("statecraft-ui-runner-playwright package boundary", () => {
+  it("defines a publishable ESM build with pinned runtime dependencies", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
     const manifest = JSON.parse(contents) as PackageManifest;
 
     expect(manifest).toMatchObject({
       dependencies: {
-        "@statecraft/core": "workspace:*",
-        "@statecraft/report": "workspace:*",
+        "statecraft-ui-core": "workspace:*",
+        "statecraft-ui-report": "workspace:*",
         playwright: "1.62.1",
       },
-      name: "@statecraft/runner-playwright",
-      private: true,
+      name: "statecraft-ui-runner-playwright",
       type: "module",
       exports: {
         ".": {
@@ -44,6 +43,7 @@ describe("@statecraft/runner-playwright package boundary", () => {
         },
       },
     });
+    expect(manifest.private).toBeUndefined();
 
     const importPath = manifest.exports?.["."]?.import;
     const typesPath = manifest.exports?.["."]?.types;

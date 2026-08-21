@@ -1,4 +1,4 @@
-import type { StatecraftReport } from "@statecraft/core";
+import type { StatecraftReport } from "statecraft-ui-core";
 import {
   REPORT_HTML_PATH,
   renderReportHtml,
@@ -8,7 +8,7 @@ import {
   type ReportRouteView,
   type ReportRowView,
   type ReportViewModel,
-} from "@statecraft/report";
+} from "statecraft-ui-report";
 
 declare const report: StatecraftReport;
 

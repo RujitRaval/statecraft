@@ -11,7 +11,7 @@ export type {
   ConfigLoadErrorCode,
   LoadedConfig,
 } from "./config.js";
-export { defineConfig } from "@statecraft/core";
+export { defineConfig } from "statecraft-ui-core";
 export { runCli } from "./command.js";
 export type { CliExitCode, RunCliOptions } from "./command.js";
 export { InitError, initProject } from "./init.js";

@@ -1,8 +1,8 @@
 # GitHub Actions
 
-This is the pre-publication workflow template for Statecraft v0.1. The CLI packages remain private in this repository until the package-metadata release slice lands, so external projects cannot install `@statecraft/cli` from npm yet. Once that package is published, Statecraft can run as an ordinary CI command using the workflow below. Repository contributors can use `corepack pnpm release:smoke` today.
+This workflow template uses the public `statecraft-ui` CLI package. The package metadata and release automation are ready; the command becomes installable after the first npm publication described in [the release guide](RELEASING.md). Repository contributors can use `corepack pnpm release:smoke` before that publication.
 
-Add `@statecraft/cli` and the documented exact Playwright version to the project's development dependencies and lock them in `package-lock.json`. Make sure `npm run build` plus `npm run start` produce and serve the application at `http://127.0.0.1:3000`. Adjust those two commands and the readiness URL for a different stack.
+Add `statecraft-ui` and the documented exact Playwright version to the project's development dependencies and lock them in `package-lock.json`. Make sure `npm run build` plus `npm run start` produce and serve the application at `http://127.0.0.1:3000`. Adjust those two commands and the readiness URL for a different stack.
 
 ```yaml
 name: Statecraft

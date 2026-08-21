@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig } from "@statecraft/core";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
 
 import {
   loadScenario,

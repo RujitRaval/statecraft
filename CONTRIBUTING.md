@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with a clean-checkout release smoke gate and documented GitHub Actions usage. Keep package-publication metadata, launch assets, and remaining release polish in focused follow-ups. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with clean-checkout release smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation. Keep launch assets and remaining release polish in focused follow-ups. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 
@@ -22,7 +22,7 @@ Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with a clean
 
    ```bash
    corepack pnpm install --frozen-lockfile
-   corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium
+   corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
    ```
 
 5. Run the local checks:
@@ -39,6 +39,8 @@ Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with a clean
    Release-facing changes also run the built executable against the production example:
 
    ```bash
+   corepack pnpm release:check
+   corepack pnpm release:package-smoke
    corepack pnpm release:smoke
    ```
 

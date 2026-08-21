@@ -6,7 +6,7 @@ import {
   type ExecutionResult,
   type MatrixCell,
   type StatecraftReport,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 
 function cell(
   stateId: string,

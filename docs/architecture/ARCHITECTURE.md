@@ -16,10 +16,10 @@ docs
 Do not create empty future packages.
 
 ## Boundaries
-### @statecraft/core
+### statecraft-ui-core
 Public types, Zod config validation, `defineConfig`, matrix expansion, result contracts, coverage calculations, shared errors. Avoid browser-specific details.
 
-### @statecraft/runner-playwright
+### statecraft-ui-runner-playwright
 Browser/context lifecycle, scenario loading/hooks, viewport/theme, navigation/readiness, screenshots, diagnostics, assertions, isolation.
 
 The initial lifecycle slice runs matrix cells sequentially in configured order. One healthy Chromium process is reused across cells, while every cell receives a new context and page. Per-cell setup, callback, and cleanup failures are returned as settled outcomes so later cells still execute. If context cleanup fails, the compromised browser is closed and replaced before the next cell; browser launch, replacement, and browser cleanup failures remain run-level failures.
@@ -30,17 +30,17 @@ The navigated runner resolves local route paths against one validated HTTP(S) ba
 
 The capture runner attaches diagnostics before theme setup and hooks, follows the same navigation lifecycle, captures viewport-sized PNG bytes after readiness, and then executes the scenario assertion. Console errors, uncaught page errors, failed-request metadata, navigation status, and duration remain in memory. Free-form diagnostic text is capped and redacted; failed requests never expose headers or bodies. Page errors fail by default, while console errors and failed requests are nonfatal unless `failOn` enables them. Screenshot and assertion failures are always fatal. A structured cell error retains partial evidence, and no capture artifact is persisted until the following Phase 3 slice.
 
-The persisted runner prevalidates individual cells and cross-cell report invariants, translates every settled capture into the schema-v1 core `ExecutionResult` contract, including failures that retain a successfully captured screenshot, and calculates summary coverage from the configured cells. It validates the complete `StatecraftReport`, delegates pure HTML rendering to `@statecraft/report`, and coordinates deterministic PNG, JSON, and HTML persistence. A process-owned, phase-aware run lock covers capture and publication and safely recovers abandoned capture-only locks. Writes stage a complete replacement output set, reject symbolic-link output targets, normalize private filesystem modes, hide the old report files before artifact replacement, and make HTML visible only after JSON. Failed publication restores the previous set; incomplete recovery preserves its staging data and lock. The runner does not expose CLI behavior.
+The persisted runner prevalidates individual cells and cross-cell report invariants, translates every settled capture into the schema-v1 core `ExecutionResult` contract, including failures that retain a successfully captured screenshot, and calculates summary coverage from the configured cells. It validates the complete `StatecraftReport`, delegates pure HTML rendering to `statecraft-ui-report`, and coordinates deterministic PNG, JSON, and HTML persistence. A process-owned, phase-aware run lock covers capture and publication and safely recovers abandoned capture-only locks. Writes stage a complete replacement output set, reject symbolic-link output targets, normalize private filesystem modes, hide the old report files before artifact replacement, and make HTML visible only after JSON. Failed publication restores the previous set; incomplete recovery preserves its staging data and lock. The runner does not expose CLI behavior.
 
-### @statecraft/report
+### statecraft-ui-report
 Report transformation and offline HTML UI/assets. No execution semantics.
 
 The Phase 5 report validates schema-v1 input through the core parser and projects it into deterministic first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution details. It renders one responsive HTML document with inline CSS, relative references to validated screenshots, escaped report-controlled text, and no external asset. Native route/state/viewport/theme/status controls apply AND semantics, persist valid selections in the local document URL, preserve matrix alignment, and expose a live result count. A small constant embedded script manages filtering and the single active detail inspector; report data stays in escaped markup, while CSP authorizes only the exact script hash. Without script execution, ordinary anchors and complete details remain usable. The runner stages HTML, JSON, and screenshots under one owned project lock and recovery transaction, rejecting symbolic-link/non-file targets and restoring the previous coherent set if publication fails.
 
-### @statecraft/cli
+### statecraft-ui
 Config discovery, commands, orchestration, terminal UX, exit codes.
 
-The initial Phase 4 slice exposes deterministic project-root config discovery and loading. Discovery checks only the explicit working directory, supports an explicit path relative to that directory, canonicalizes results, accepts the documented TypeScript and JavaScript module variants, and rejects ambiguity instead of choosing by extension precedence. Loading executes the selected config as trusted local code, requires a default export, and delegates value validation to `@statecraft/core`. Command parsing, runner orchestration, terminal behavior, and report opening remain outside this slice.
+The initial Phase 4 slice exposes deterministic project-root config discovery and loading. Discovery checks only the explicit working directory, supports an explicit path relative to that directory, canonicalizes results, accepts the documented TypeScript and JavaScript module variants, and rejects ambiguity instead of choosing by extension precedence. Loading executes the selected config as trusted local code, requires a default export, and delegates value validation to `statecraft-ui-core`. Command parsing, runner orchestration, terminal behavior, and report opening remain outside this slice.
 
 The next Phase 4 slice adds an executable dispatcher without a third-party parser and an `init` command. Initialization creates one typed config that imports its helper from the installed CLI package plus one valid empty scenario, accepts no force/overwrite flag, preflights every target, rejects symbolic-link directory boundaries, writes files with exclusive creation, and publishes the config last. It never deletes paths during failure recovery because concurrent filesystem changes could replace a file after creation.
 
@@ -64,6 +64,10 @@ The final Phase 6 slice checks an example-owned Statecraft config into `apps/exa
 ### Release verification
 
 Phase 7 starts with a dedicated clean-checkout release-smoke job. After a frozen install, pinned Chromium installation, and production build, a repository script starts the example on an allocated loopback port and spawns the built CLI executable from an isolated generated project root. The gate accepts only the four approved known failures and verifies all 60 screenshots, schema-v1 JSON, coverage totals, and offline HTML. The fictional report is uploaded by explicit CI configuration for short-lived inspection; Statecraft itself performs no upload.
+
+The package-release slice publishes four unscoped ESM packages because the original `@statecraft` scope is not controlled by this project. `statecraft-ui` retains the `statecraft` executable and depends on `statecraft-ui-core` plus `statecraft-ui-runner-playwright`; the runner depends on core and `statecraft-ui-report`. A metadata validator maps the repository's `MAJOR.MINOR.PATCH.0` version to npm's three-component version and rejects nonzero fourth components. The artifact gate packs each workspace, validates npm's publish view, installs all tarballs together into an isolated consumer, imports every public API, and exercises initialization through the packed executable.
+
+Publication runs only for a non-prerelease GitHub Release whose event commit exactly matches its named tag and belongs to `main`. One repository-wide concurrency group serializes releases. The workflow grants OIDC only to the publish job, uses a protected `npm-publish` Environment, verifies the complete repository and consumer gates, and publishes already-tested tarballs directly to `latest` in dependency order with the CLI last. Registry integrity, dist-tag consistency, and monotonic latest-version checks make retries resumable without letting an older release move consumers backward. The workflow avoids separate dist-tag operations, which npm trusted publishing does not authorize. A short-lived, Environment-protected `All Packages` token is permitted only to bootstrap the unclaimed names before npm trusted publishing can be configured.
 
 ## Scenario API
 ```ts

@@ -1,11 +1,11 @@
 # Report API
 
-`@statecraft/report` owns Phase 5's browser-independent transformation and offline HTML boundary. It depends only on `@statecraft/core`; it does not launch Playwright, discover configuration, choose exit codes, start a server, or access the network.
+`statecraft-ui-report` owns Phase 5's browser-independent transformation and offline HTML boundary. It depends only on `statecraft-ui-core`; it does not launch Playwright, discover configuration, choose exit codes, start a server, or access the network.
 
 ## Transformation
 
 ```ts
-import { transformReport } from "@statecraft/report";
+import { transformReport } from "statecraft-ui-report";
 
 const view = transformReport(schemaV1Report);
 ```
@@ -17,7 +17,7 @@ The public `ReportViewModel` and its `ReportColumnView`, `ReportRouteView`, `Rep
 ## Offline HTML
 
 ```ts
-import { renderReportHtml } from "@statecraft/report";
+import { renderReportHtml } from "statecraft-ui-report";
 
 const html = renderReportHtml(schemaV1Report);
 ```
@@ -30,6 +30,6 @@ The interaction script is constant and contains no report values. Its exact SHA-
 
 ## Publication boundary
 
-`@statecraft/report` deliberately owns no filesystem mutation. `REPORT_HTML_PATH` exposes the stable `.statecraft/report/index.html` project-relative contract, while the Playwright runner stages rendered HTML beside its JSON and PNG output. All three outputs publish under the runner's existing owned project lock and recovery transaction, preventing concurrent scans from mixing report generations. Existing HTML targets must be regular files, staged files use owner-only mode where supported, and a failed final HTML rename restores the previous screenshot, JSON, and HTML set.
+`statecraft-ui-report` deliberately owns no filesystem mutation. `REPORT_HTML_PATH` exposes the stable `.statecraft/report/index.html` project-relative contract, while the Playwright runner stages rendered HTML beside its JSON and PNG output. All three outputs publish under the runner's existing owned project lock and recovery transaction, preventing concurrent scans from mixing report generations. Existing HTML targets must be regular files, staged files use owner-only mode where supported, and a failed final HTML rename restores the previous screenshot, JSON, and HTML set.
 
 `statecraft scan` returns both `htmlReportPath` and the machine-readable JSON `reportPath`, and its terminal summary points to the HTML document.

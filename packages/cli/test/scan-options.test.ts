@@ -8,12 +8,12 @@ import {
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
-import { parseReport } from "@statecraft/core";
+import { parseReport } from "statecraft-ui-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const runPersistedScenarioCellsMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@statecraft/runner-playwright", () => ({
+vi.mock("statecraft-ui-runner-playwright", () => ({
   runPersistedScenarioCells: runPersistedScenarioCellsMock,
 }));
 import { scanProject } from "../src/scan.js";

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { MatrixCell } from "@statecraft/core";
+import type { MatrixCell } from "statecraft-ui-core";
 import type { BrowserContext, Page } from "playwright";
 
 import {

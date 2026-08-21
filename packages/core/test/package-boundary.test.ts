@@ -21,15 +21,14 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("@statecraft/core package boundary", () => {
-  it("defines a private ESM build with deterministic dist paths", async () => {
+describe("statecraft-ui-core package boundary", () => {
+  it("defines a publishable ESM build with deterministic dist paths", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
     const manifest = JSON.parse(contents) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "@statecraft/core",
-      private: true,
+      name: "statecraft-ui-core",
       type: "module",
       exports: {
         ".": {
@@ -38,6 +37,7 @@ describe("@statecraft/core package boundary", () => {
         },
       },
     });
+    expect(manifest.private).toBeUndefined();
 
     const importPath = manifest.exports?.["."]?.import;
     const typesPath = manifest.exports?.["."]?.types;

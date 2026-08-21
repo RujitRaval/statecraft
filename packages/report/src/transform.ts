@@ -3,7 +3,7 @@ import {
   type ExecutionResult,
   type ReportSummary,
   type StatecraftReport,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 
 /** One viewport/theme column in the offline report matrix. */
 export interface ReportColumnView {

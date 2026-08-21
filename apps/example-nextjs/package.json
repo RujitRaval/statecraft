@@ -7,8 +7,8 @@
   "scripts": {
     "build": "node scripts/next.mjs build",
     "dev": "node scripts/next.mjs dev",
-    "prestatecraft:scan": "corepack pnpm --filter @statecraft/cli... build",
-    "pretypecheck": "corepack pnpm --filter @statecraft/cli... build",
+    "prestatecraft:scan": "corepack pnpm --filter statecraft-ui... build",
+    "pretypecheck": "corepack pnpm --filter statecraft-ui... build",
     "statecraft:scan": "node ../../packages/cli/dist/bin.js scan",
     "start": "node scripts/next.mjs start",
     "typecheck": "node scripts/next.mjs typegen && tsc --noEmit"
@@ -21,8 +21,8 @@
     "server-only": "0.0.1"
   },
   "devDependencies": {
-    "@statecraft/cli": "workspace:*",
-    "@statecraft/core": "workspace:*",
+    "statecraft-ui": "workspace:*",
+    "statecraft-ui-core": "workspace:*",
     "@types/node": "22.20.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",

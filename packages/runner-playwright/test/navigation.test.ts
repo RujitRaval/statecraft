@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig, type MatrixCell } from "@statecraft/core";
+import { expandMatrix, parseConfig, type MatrixCell } from "statecraft-ui-core";
 
 import { runNavigatedScenarioCells } from "../src/index.js";
 

@@ -1,6 +1,6 @@
 # CLI API
 
-`@statecraft/cli` exposes deterministic config loading plus executable `init`, `scan`, and `open` workflows. Scan composes the existing core planner, Playwright persistence, and Phase 5 report-generation contracts. Open launches the generated offline HTML report; report transformation and rendering stay owned by `@statecraft/report`.
+`statecraft-ui` exposes deterministic config loading plus executable `init`, `scan`, and `open` workflows. Scan composes the existing core planner, Playwright persistence, and Phase 5 report-generation contracts. Open launches the generated offline HTML report; report transformation and rendering stay owned by `statecraft-ui-report`.
 
 ## Executable
 
@@ -18,7 +18,7 @@ statecraft.config.ts
 statecraft/scenarios/home/success.ts
 ```
 
-The config imports `defineConfig` from the installed `@statecraft/cli` package and declares one `/` route, one `success` state, mobile and desktop viewports, and light and dark themes. The scenario starts as a valid empty module with no external import, so the documented one-package installation is sufficient. Developers can add typed Playwright hooks when they customize that scenario. Successful initialization prints the created paths plus edit, hook, and version-control next steps.
+The config imports `defineConfig` from the installed `statecraft-ui` package and declares one `/` route, one `success` state, mobile and desktop viewports, and light and dark themes. The scenario starts as a valid empty module with no external import, so the documented one-package installation is sufficient. Developers can add typed Playwright hooks when they customize that scenario. Successful initialization prints the created paths plus edit, hook, and version-control next steps.
 
 No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation, the config is published last, and alternate config names are rechecked before success is reported. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; write failures list the affected targets for inspection before retrying.
 
@@ -27,7 +27,7 @@ Missing or unsupported commands, extra `init` or `open` arguments, malformed sca
 ## Programmatic command, init, scan, and open API
 
 ```ts
-import { initProject, openReport, runCli, scanProject } from "@statecraft/cli";
+import { initProject, openReport, runCli, scanProject } from "statecraft-ui";
 
 const result = await initProject({ cwd: process.cwd() });
 const exitCode = await runCli({ args: ["init"], cwd: process.cwd() });
@@ -50,7 +50,7 @@ Opening is read-only: it does not parse, create, or modify the report. A complet
 ## Discovery
 
 ```ts
-import { discoverConfig } from "@statecraft/cli";
+import { discoverConfig } from "statecraft-ui";
 
 const configPath = await discoverConfig({ cwd: process.cwd() });
 ```
@@ -80,7 +80,7 @@ The error exposes stable `code`, `configPath`, and `candidates` fields so later 
 ## Loading
 
 ```ts
-import { loadConfig } from "@statecraft/cli";
+import { loadConfig } from "statecraft-ui";
 
 const { config, path } = await loadConfig({
   configPath: "./statecraft.config.ts",
@@ -88,7 +88,7 @@ const { config, path } = await loadConfig({
 });
 ```
 
-`loadConfig` discovers the file, imports it as a trusted local module, requires a default export, and validates that export with `@statecraft/core`'s `parseConfig`. It returns the validated config and its canonical source path.
+`loadConfig` discovers the file, imports it as a trusted local module, requires a default export, and validates that export with `statecraft-ui-core`'s `parseConfig`. It returns the validated config and its canonical source path.
 
 Module execution failures and absent default exports use `ConfigLoadError` with `CONFIG_IMPORT_FAILED` or `CONFIG_DEFAULT_EXPORT_MISSING`. Invalid exported values retain the core `ConfigValidationError` contract and its structured issues.
 

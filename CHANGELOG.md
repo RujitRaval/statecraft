@@ -4,6 +4,25 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.0.0] - 2026-08-21
+
+### Added
+
+- Statecraft now has publish-ready npm metadata, package-specific documentation, and MIT license files for `statecraft-ui`, `statecraft-ui-core`, `statecraft-ui-report`, and `statecraft-ui-runner-playwright`; the CLI package continues to expose the `statecraft` executable.
+- Release contracts synchronize npm's three-component versions from the repository `VERSION`, reject collision-prone nonzero micro versions, validate exact release tags, and test the packed artifacts through dry-run publication, isolated installation, public API imports, the installed command shim, and overwrite-safe initialization.
+- A protected, repository-serialized GitHub Release workflow verifies the complete repository and 60-cell consumer gates, packs artifacts once, and publishes directly to `latest` in dependency order with the CLI last, provenance enabled, and integrity/dist-tag retry protection.
+- Maintainers have a release guide covering the protected `npm-publish` Environment, one-time package-name bootstrap, npm trusted publishing, token revocation, and normal release verification.
+
+### Changed
+
+- Private workspace identities moved from the uncontrolled `@statecraft/*` scope to the unscoped public package names, with source imports, examples, API documentation, package-boundary tests, and CI filters migrated together.
+- Phase 7 now includes publish-ready package metadata and release automation; launch assets and final contributor/release polish remain the focused follow-up.
+
+### Security
+
+- npm publication rejects prereleases and older-than-latest versions, binds the GitHub release event SHA to both the checked-out commit and named tag on `main`, limits OIDC to the publish job, and uses an approval-gated Environment for the short-lived first-publication credential.
+- Exact tarball allowlists exclude compiler caches, require matching license text, reject unexpected or symbolic-link package inputs, and stop rather than overwrite when an existing npm version has different bytes.
+
 ## [0.23.0.0] - 2026-08-21
 
 ### Added
