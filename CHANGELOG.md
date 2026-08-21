@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.23.0.0] - 2026-08-21
+
+### Added
+
+- Maintainers can prove a fresh checkout builds and runs the public Statecraft CLI against the complete 60-cell example matrix before a release, including the four intentional failures, every screenshot, schema-v1 JSON, and offline HTML.
+- GitHub Actions users get a pre-publication workflow guide for installing the pinned CLI and Playwright browser, running scans without implicit downloads, and retaining the complete hidden `.statecraft/` evidence bundle.
+
+### Changed
+
+- The repository CI now runs the release smoke in its own clean-checkout job and retains its full report bundle for seven days when the gate succeeds or fails.
+- Phase 7 is active with release readiness isolated from the deferred package-publication metadata and launch-asset slices.
+
+### Security
+
+- Release evidence uses unique owned temporary directories, bounded child-process shutdown, canonical report parsing, and explicit guidance that public-repository artifacts must be treated as public data.
+
 ## [0.22.0.0] - 2026-08-20
 
 ### Added

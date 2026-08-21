@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 6 are complete, including the polished example application, complete 60-cell scenario matrix, and four-cell known-failure report gate. Keep Phase 7 deferred until the user explicitly initiates it.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 6 are complete. Phase 7 is active with clean-checkout consumer smoke coverage and documented GitHub Actions usage as its first approved slice. Keep package-publication metadata, launch assets, and remaining release polish in focused follow-ups.
 
 ## Skill routing
 

@@ -43,3 +43,5 @@ Repeated unchanged runs should produce stable IDs, paths, statuses, and material
 
 ## Release smoke
 Clean install -> Chromium -> build -> tests -> example app -> scan -> offline report validation.
+
+The dedicated GitHub Actions release-smoke job begins from a fresh checkout, performs the frozen install and pinned browser setup, builds the workspace and production example, resolves the CLI package's declared `bin` target, and invokes it as a bounded separate process from a unique generated project root. It validates through the canonical schema-v1 parser and accepts only exit code `1`, the exact four approved assertion-failure coordinates, 56 passes, 60 non-empty screenshots, established coverage totals, and offline HTML. Unit coverage rejects exit-code drift, failure-coordinate drift, missing, non-file, or empty evidence, screenshot paths that escape the smoke project, readiness failures, and child-process timeouts.

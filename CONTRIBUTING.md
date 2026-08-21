@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft has completed Phase 1 through Phase 6. The example application includes its complete 60-cell route/state/viewport/theme matrix and a real CLI-to-report gate with four intentional failures. Keep Phase 7 deferred until the user explicitly initiates it. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with a clean-checkout release smoke gate and documented GitHub Actions usage. Keep package-publication metadata, launch assets, and remaining release polish in focused follow-ups. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 
@@ -34,6 +34,12 @@ Statecraft has completed Phase 1 through Phase 6. The example application includ
    corepack pnpm build
    node scripts/check-docs.mjs
    node scripts/run-ci.mjs
+   ```
+
+   Release-facing changes also run the built executable against the production example:
+
+   ```bash
+   corepack pnpm release:smoke
    ```
 
 6. Run GStack `review` and resolve the findings.

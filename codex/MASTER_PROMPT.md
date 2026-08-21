@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 6 are complete. The polished Next.js fixture includes its complete 60-cell route/state/viewport/theme matrix and known-failure report gate. Keep Phase 7 deferred until the user explicitly initiates it.
+Phase 1 through Phase 6 are complete. Phase 7 is active. Its first approved slice adds clean-checkout consumer smoke coverage and documented GitHub Actions usage. Keep package-publication metadata, launch assets, and remaining release polish in focused follow-ups.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

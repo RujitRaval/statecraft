@@ -60,3 +60,10 @@ Phase 4 through Phase 6 are complete.
 - [x] `/customers/[id]` meaningful states and long-content coverage
 - [x] Intentional responsive/theme defects
 - [x] Complete 60-cell Statecraft scenario matrix and known-failure report gate
+
+## Phase 7
+- [x] Clean-checkout production build and built-CLI consumer smoke gate
+- [x] Exact known-failure report validation and short-lived CI artifact
+- [x] Copy-ready GitHub Actions usage with exit-code and privacy guidance
+- [ ] Publish-ready package metadata and release automation
+- [ ] Launch README assets and final contributor/release polish
