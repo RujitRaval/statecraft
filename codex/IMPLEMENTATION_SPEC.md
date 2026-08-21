@@ -452,11 +452,11 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 6 are complete. The example application includes
-its visual system, deterministic data contracts and meaningful states,
-focused responsive/theme defects, complete 60-cell
-route/state/viewport/theme matrix, and CLI-to-report known-failure gate.
-Keep Phase 7 deferred until the user explicitly initiates it.
+Phase 1 through Phase 6 are complete. Phase 7 is active. Its first
+approved slice adds clean-checkout consumer smoke coverage for the built
+CLI and documented GitHub Actions usage. Keep package-publication
+metadata, launch assets, and remaining release polish in focused
+follow-ups.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

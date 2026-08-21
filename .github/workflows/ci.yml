@@ -51,3 +51,35 @@ jobs:
         run: corepack pnpm --filter @statecraft/runner-playwright exec playwright install --with-deps chromium
       - name: Run repository checks
         run: node scripts/run-ci.mjs
+
+  release-smoke:
+    name: Release Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.20.0
+      - name: Install dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: corepack pnpm --filter @statecraft/runner-playwright exec playwright install --with-deps chromium
+      - name: Build release artifacts
+        run: corepack pnpm build
+      - name: Run clean-checkout consumer smoke
+        id: release-smoke
+        run: corepack pnpm release:smoke
+      - name: Upload Statecraft evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: statecraft-release-smoke-report
+          path: ${{ steps.release-smoke.outputs.artifact-path }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7

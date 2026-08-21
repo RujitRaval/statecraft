@@ -12,6 +12,7 @@
   "scripts": {
     "build": "corepack pnpm --recursive --if-present build",
     "lint": "eslint . --max-warnings=0",
+    "release:smoke": "node scripts/release-smoke.mjs",
     "test": "corepack pnpm build && vitest run && node --test scripts/*.test.mjs",
     "typecheck": "tsc -p tsconfig.tools.json --noEmit && corepack pnpm --recursive --if-present typecheck"
   },
