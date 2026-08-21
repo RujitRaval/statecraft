@@ -77,6 +77,27 @@ export function releaseTarballName(packageName, packageVersion) {
   return `${packageName.replace(/^@/u, "").replaceAll("/", "-")}-${packageVersion}.tgz`;
 }
 
+export function assertPublishSummaryIdentity(summary, packageName, packageVersion) {
+  assert.equal(
+    summary !== null && typeof summary === "object" && !Array.isArray(summary),
+    true,
+    `npm returned an invalid publish summary for ${packageName}.`,
+  );
+  assert.equal(summary.name, packageName, `npm dry-run reported the wrong package name for ${packageName}.`);
+  assert.equal(
+    summary.version,
+    packageVersion,
+    `npm dry-run reported the wrong package version for ${packageName}.`,
+  );
+  if (summary.id !== undefined) {
+    assert.equal(
+      summary.id,
+      `${packageName}@${packageVersion}`,
+      `npm dry-run reported an inconsistent package id for ${packageName}.`,
+    );
+  }
+}
+
 async function createOutputDirectory(requestedPath) {
   const resolved = path.resolve(requestedPath);
   const parent = await realpath(path.dirname(resolved));
@@ -147,7 +168,7 @@ export async function runReleasePackageSmoke({
       const dryRun = await runCommand("npm", ["publish", tarball, "--dry-run", "--json"], { cwd: root });
       assertCommand(dryRun, `Dry-run publishing ${contract.name}`);
       const publishSummary = JSON.parse(dryRun.stdout);
-      assert.equal(publishSummary.id, `${contract.name}@${packageVersion}`);
+      assertPublishSummaryIdentity(publishSummary, contract.name, packageVersion);
       tarballs.push(tarball);
     }
 
