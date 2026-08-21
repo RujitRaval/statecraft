@@ -258,7 +258,7 @@ export async function runReleaseSmoke({
   keepOutput = process.env["GITHUB_OUTPUT"] !== undefined,
   loadReport = parseBuiltReport,
   log = console.log,
-  outputFile = process.env["GITHUB_OUTPUT"],
+  outputFile = keepOutput ? process.env["GITHUB_OUTPUT"] : undefined,
   readText = readFile,
   recordOutput = recordArtifactPath,
   removeProject = (projectRoot) =>
