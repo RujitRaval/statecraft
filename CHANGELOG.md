@@ -4,6 +4,19 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.22.0.0] - 2026-08-20
+
+### Added
+
+- Developers can run the polished Northline example through a checked-in Statecraft config that expands 15 meaningful route/state combinations across mobile and desktop viewports plus light and dark themes for 60 deterministic cells.
+- Route-level scenarios render every dashboard, orders, and customer state, distinguish 401 from 403 access failures, and assert the approved contrast and narrow-viewport defect boundaries without an expected-failure mode.
+- A production-browser gate runs the public CLI, requires exactly 56 passes and four known assertion failures, and verifies schema-v1 JSON, self-contained HTML, coverage metrics, and non-empty screenshots for all 60 cells.
+
+### Changed
+
+- The example scan is documented as a two-terminal workflow, keeps generated `.statecraft/` evidence local, and completes Phase 6 with ADR 0025 and synchronized project guidance.
+- Vitest keeps the normal workspace suite parallel, then runs the resource-heavy scenario matrix in an isolated project so browser tests retain their default timeout without competing for Chromium resources.
+
 ## [0.21.0.0] - 2026-08-20
 
 ### Added
