@@ -1,4 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
+import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
@@ -7,6 +8,7 @@ import { chromium, type Browser } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { dashboardData } from "../lib/dashboard";
+import { customerData, longCustomerData } from "../lib/customers";
 import { ordersData } from "../lib/orders";
 
 const appDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -80,6 +82,19 @@ afterAll(async () => {
 });
 
 describe("example application states", () => {
+  it("keeps server-only customer details out of browser chunks", async () => {
+    const chunksDirectory = resolve(appDirectory, ".next", "static", "chunks");
+    const chunkNames = (await readdir(chunksDirectory, { recursive: true }))
+      .filter((name) => name.endsWith(".js"));
+    const browserCode = (await Promise.all(
+      chunkNames.map((name) => readFile(resolve(chunksDirectory, name), "utf8")),
+    )).join("\n");
+
+    expect(browserCode).not.toContain(customerData.primaryContact.email);
+    expect(browserCode).not.toContain(customerData.deliveryAddress[0]);
+    expect(browserCode).not.toContain(longCustomerData.note.title);
+  });
+
   it("renders deterministic success content without page or console errors", async () => {
     const page = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
     const errors: string[] = [];
@@ -311,6 +326,159 @@ describe("example application states", () => {
     await page.close();
   });
 
+  it("renders a deterministic customer record with usable account links", async () => {
+    const page = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-customer-state="success"]').waitFor();
+
+    expect(await page.getByRole("heading", { name: customerData.name }).isVisible()).toBe(true);
+    expect(await page.getByRole("link", { name: /Customers/ }).first().getAttribute("aria-current")).toBe("page");
+    expect(await page.getByRole("region", { name: "Customer account summary" }).getByText("$42,876").isVisible()).toBe(true);
+    const recentOrders = page.getByRole("list", { name: "Recent customer orders" });
+    expect(await recentOrders.getByRole("listitem").count()).toBe(3);
+    expect(await recentOrders.getByRole("link").count()).toBe(3);
+    expect(await page.getByRole("status").textContent()).toBe(`Customer record loaded for ${customerData.name}.`);
+    expect(await page.getByRole("link", { name: customerData.primaryContact.email }).getAttribute("href")).toBe(`mailto:${customerData.primaryContact.email}`);
+    expect(errors).toEqual([]);
+    await page.close();
+  });
+
+  it("keeps customer loading, unauthorized, and error states deliberate and recoverable", async () => {
+    const loadingPage = await browser.newPage();
+    await loadingPage.route("**/api/customers/**", () => new Promise(() => undefined));
+    await loadingPage.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    expect(await loadingPage.locator('[data-customer-state="loading"]').isVisible()).toBe(true);
+    await loadingPage.close();
+
+    const unauthorizedPage = await browser.newPage();
+    await unauthorizedPage.route("**/api/customers/**", (route) => route.fulfill({
+      body: JSON.stringify({ message: "Restricted" }),
+      contentType: "application/json",
+      status: 401,
+    }));
+    await unauthorizedPage.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await unauthorizedPage.locator('[data-customer-state="unauthorized"]').waitFor();
+    expect(await unauthorizedPage.getByRole("heading", { name: "This account needs elevated access." }).isVisible()).toBe(true);
+    expect(await unauthorizedPage.getByText("No contact, address, or order details were loaded.").isVisible()).toBe(true);
+    expect(await unauthorizedPage.getByText("401").isVisible()).toBe(true);
+    await unauthorizedPage.close();
+
+    const forbiddenPage = await browser.newPage();
+    await forbiddenPage.route("**/api/customers/**", (route) => route.fulfill({
+      body: JSON.stringify({ message: "Forbidden" }),
+      contentType: "application/json",
+      status: 403,
+    }));
+    await forbiddenPage.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await forbiddenPage.locator('[data-customer-state="unauthorized"]').waitFor();
+    expect(await forbiddenPage.getByText("403").isVisible()).toBe(true);
+    await forbiddenPage.close();
+
+    const missingPage = await browser.newPage();
+    await missingPage.goto(`${baseURL}/customers/not-a-customer`, { waitUntil: "domcontentloaded" });
+    await missingPage.locator('[data-customer-state="not-found"]').waitFor();
+    expect(await missingPage.getByRole("heading", { name: "This customer record was not found." }).isVisible()).toBe(true);
+    await missingPage.close();
+
+    const errorPage = await browser.newPage();
+    const errors: string[] = [];
+    let releaseSuccess = (): void => undefined;
+    const successGate = new Promise<void>((resolveSuccess) => {
+      releaseSuccess = resolveSuccess;
+    });
+    let requestCount = 0;
+    errorPage.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    errorPage.on("pageerror", (error) => errors.push(error.message));
+    await errorPage.route("**/api/customers/**", async (route) => {
+      requestCount += 1;
+      if (requestCount === 1) {
+        await route.fulfill({
+          body: JSON.stringify({ message: "Unavailable" }),
+          contentType: "application/json",
+          status: 503,
+        });
+        return;
+      }
+      await successGate;
+      await route.fulfill({
+        body: JSON.stringify(customerData),
+        contentType: "application/json",
+        status: 200,
+      });
+    });
+    await errorPage.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await errorPage.locator('[data-customer-state="error"]').waitFor();
+    expect(await errorPage.getByRole("heading", { name: "The customer record did not arrive." }).isVisible()).toBe(true);
+    const expectedErrorCount = errors.length;
+    await errorPage.getByRole("button", { name: /Retry profile/ }).click();
+    await errorPage.locator('[data-customer-state="loading"]').waitFor();
+    releaseSuccess();
+    await errorPage.locator('[data-customer-state="success"]').waitFor();
+    expect(requestCount).toBe(2);
+    expect(errors).toHaveLength(expectedErrorCount);
+    await errorPage.close();
+  });
+
+  it("rejects a valid customer payload whose identity does not match the route", async () => {
+    const page = await browser.newPage();
+    await page.route("**/api/customers/**", (route) => route.fulfill({
+      body: JSON.stringify({ ...customerData, id: "cus-different" }),
+      contentType: "application/json",
+      status: 200,
+    }));
+    await page.goto(`${baseURL}/customers/${customerData.id}`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-customer-state="error"]').waitFor();
+    expect(await page.getByText(/mismatched record/).isVisible()).toBe(true);
+    await page.close();
+  });
+
+  it("renders long customer content in dark mode without mobile overflow", async () => {
+    const page = await browser.newPage({ viewport: { height: 844, width: 390 } });
+    const errors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.addInitScript(() => {
+      const apply = (): boolean => {
+        if (document.documentElement === null) return false;
+        document.documentElement.dataset["theme"] = "dark";
+        return true;
+      };
+      if (!apply()) {
+        const observer = new MutationObserver(() => {
+          if (apply()) observer.disconnect();
+        });
+        observer.observe(document, { childList: true, subtree: true });
+      }
+    });
+    await page.route("**/api/customers/**", (route) => route.fulfill({
+      body: JSON.stringify(longCustomerData),
+      contentType: "application/json",
+      status: 200,
+    }));
+    await page.goto(`${baseURL}/customers/${longCustomerData.id}`, { waitUntil: "domcontentloaded" });
+    await page.locator('[data-customer-state="success"]').waitFor();
+
+    expect(await page.locator("html").getAttribute("data-theme")).toBe("dark");
+    expect(await page.getByRole("heading", { name: longCustomerData.name }).isVisible()).toBe(true);
+    expect(await page.getByText(longCustomerData.primaryContact.role).isVisible()).toBe(true);
+    expect(await page.getByText(longCustomerData.note.body).isVisible()).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+    const mobileNavigation = page.getByRole("navigation", { name: "Mobile workspace navigation" });
+    expect(await mobileNavigation.getByRole("link", { name: /Customers/ }).getAttribute("aria-current")).toBe("page");
+    expect(await mobileNavigation.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" "))).toHaveLength(3);
+    expect(errors).toEqual([]);
+    await page.close();
+  });
+
   it("preserves the shared shell across internal workspace navigation", async () => {
     const page = await browser.newPage({ viewport: { height: 1_000, width: 1_440 } });
     await page.goto(`${baseURL}/orders`, { waitUntil: "domcontentloaded" });
@@ -325,6 +493,10 @@ describe("example application states", () => {
 
     await page.getByRole("link", { name: /Orders/ }).first().click();
     await page.locator('[data-orders-state="success"]').waitFor();
+    expect(await page.locator("body").getAttribute("data-shell-marker")).toBe("preserved");
+
+    await page.getByRole("link", { name: /Customers/ }).first().click();
+    await page.locator('[data-customer-state="success"]').waitFor();
     expect(await page.locator("body").getAttribute("data-shell-marker")).toBe("preserved");
     await page.close();
   });
