@@ -1,6 +1,6 @@
 # Contributing to Statecraft
 
-Statecraft has completed Phase 1 through Phase 5. Phase 6 is active, with the example-app foundation plus the dashboard, orders, and customer-detail state surfaces complete. Keep intentional defects, the complete scenario matrix, and Phase 7 in focused follow-ups until the user explicitly advances them. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed Phase 1 through Phase 5. Phase 6 is active, with the example-app foundation, dashboard, orders, customer-detail state surfaces, and focused responsive/theme defects complete. Keep the complete scenario matrix and Phase 7 in focused follow-ups until the user explicitly advances them. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
 
 ## Branch and pull request workflow
 

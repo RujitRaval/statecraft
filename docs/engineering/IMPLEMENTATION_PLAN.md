@@ -26,7 +26,7 @@ Offline HTML, summary, matrix, thumbnails, detail view, filters, responsive/keyb
 ## Phase 6 - Example
 Polished Next.js dashboard with `/dashboard`, `/orders`, `/customers/[id]`; meaningful states and intentional defects.
 **Gate:** report screenshot makes Statecraft's value obvious.
-**Status:** active; the design system, Next.js foundation, deterministic dashboard, orders, and customer data contracts, and the meaningful state surfaces for `/dashboard`, `/orders`, and `/customers/[id]` are complete. Intentional defects and the complete scan matrix remain focused follow-ups.
+**Status:** active; the design system, Next.js foundation, deterministic dashboard, orders, and customer data contracts, the meaningful state surfaces for `/dashboard`, `/orders`, and `/customers/[id]`, and focused responsive/theme defects are complete. The complete scan matrix remains the final focused Phase 6 follow-up.
 
 ## Phase 7 - Release
 README, CI usage, contributor docs, GIF/screenshots, package metadata, smoke tests.

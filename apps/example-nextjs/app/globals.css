@@ -1111,6 +1111,16 @@ a:focus-visible {
   color: #fff7f1;
 }
 
+/*
+ * Intentional Statecraft fixture defect: the dark-theme order error signal
+ * loses all foreground contrast. The following Phase 6 matrix slice will
+ * assert the expected contrast and preserve this cell as a known failure.
+ */
+:root[data-theme="dark"] .orders-error__signal {
+  background: var(--surface);
+  color: var(--surface);
+}
+
 .orders-error__signal span {
   font-size: 8rem;
   font-weight: 380;
@@ -2001,6 +2011,8 @@ a:focus-visible {
   .customer-metrics strong { font-size: clamp(1.45rem, 7vw, 2rem); }
   .customer-sidebar { grid-template-columns: 1fr; }
   .customer-note { grid-column: auto; }
+  /* Intentional fixture defect: long contact emails overflow narrow cards. */
+  .customer-contact-card > a[href^="mailto:"] { white-space: nowrap; }
   .customer-section__heading { align-items: start; flex-direction: column; }
   .customer-section__heading > span { text-align: left; }
   .customer-order {
