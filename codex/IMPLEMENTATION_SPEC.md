@@ -63,7 +63,7 @@ Do not expand scope until the core workflow is excellent.
 ## 4. Developer experience
 
 ``` bash
-npm install -D @statecraft/cli
+npm install -D statecraft-ui
 npx statecraft init
 ```
 
@@ -78,7 +78,7 @@ statecraft/
 Example config:
 
 ``` ts
-import { defineConfig } from "@statecraft/cli";
+import { defineConfig } from "statecraft-ui";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
@@ -103,7 +103,7 @@ export default defineConfig({
 Example scenario:
 
 ``` ts
-import type { StatecraftScenario } from "@statecraft/runner-playwright";
+import type { StatecraftScenario } from "statecraft-ui-runner-playwright";
 
 const scenario: StatecraftScenario = {
   async beforeNavigate({ page }) {
@@ -300,15 +300,15 @@ statecraft/
 
 Do not create empty future packages.
 
-`@statecraft/core`: public types, config validation, matrix expansion,
+`statecraft-ui-core`: public types, config validation, matrix expansion,
 report contracts, shared errors. Avoid browser-specific dependencies.
 
-`@statecraft/runner-playwright`: browser lifecycle, contexts, scenario
+`statecraft-ui-runner-playwright`: browser lifecycle, contexts, scenario
 loading, navigation, readiness, screenshots, diagnostics.
 
-`@statecraft/report`: report transformation, assets, HTML/report UI.
+`statecraft-ui-report`: report transformation, assets, HTML/report UI.
 
-`@statecraft/cli`: commands, config discovery, orchestration, terminal
+`statecraft-ui`: commands, config discovery, orchestration, terminal
 UX, exit codes.
 
 Preferred tools: pnpm workspaces, strict TypeScript, Playwright, Zod,
@@ -452,10 +452,10 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 6 are complete. Phase 7 is active. Its first
-approved slice adds clean-checkout consumer smoke coverage for the built
-CLI and documented GitHub Actions usage. Keep package-publication
-metadata, launch assets, and remaining release polish in focused
+Phase 1 through Phase 6 are complete. Phase 7 is active. Clean-checkout
+consumer smoke coverage for the built CLI, documented GitHub Actions
+usage, publish-ready package metadata, and release automation are
+implemented. Keep launch assets and remaining release polish in focused
 follow-ups.
 
 At each handoff provide: API implemented; behavior; fixture and

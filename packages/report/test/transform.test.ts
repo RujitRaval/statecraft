@@ -1,4 +1,4 @@
-import { parseReport } from "@statecraft/core";
+import { parseReport } from "statecraft-ui-core";
 import { describe, expect, it } from "vitest";
 
 import { transformReport } from "../src/transform.js";

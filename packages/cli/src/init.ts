@@ -15,7 +15,7 @@ const CONFIG_FILENAME = "statecraft.config.ts";
 const SCENARIO_DIRECTORY = join("statecraft", "scenarios", "home");
 const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.ts");
 
-const CONFIG_TEMPLATE = `import { defineConfig } from "@statecraft/cli";
+const CONFIG_TEMPLATE = `import { defineConfig } from "statecraft-ui";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",

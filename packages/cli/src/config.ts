@@ -3,7 +3,7 @@ import { access, open, realpath, stat } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { parseConfig, type StatecraftConfig } from "@statecraft/core";
+import { parseConfig, type StatecraftConfig } from "statecraft-ui-core";
 
 /** Config filenames recognized during default project-root discovery. */
 export const DEFAULT_CONFIG_FILENAMES: readonly string[] = Object.freeze([

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "@statecraft/core";
+import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "statecraft-ui-core";
 import { describe, expect, it } from "vitest";
 
 import { renderReportHtml } from "../src/render.js";

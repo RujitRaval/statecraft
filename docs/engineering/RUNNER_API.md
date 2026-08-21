@@ -1,13 +1,13 @@
-# `@statecraft/runner-playwright` API
+# `statecraft-ui-runner-playwright` API
 
-Phase 3 owns browser-specific execution while `@statecraft/core` remains independent of Playwright. The runner package is private until the CLI and the rest of the Phase 3 lifecycle validate its integration boundary.
+Phase 3 owns browser-specific execution while `statecraft-ui-core` remains independent of Playwright. The runner package is private until the CLI and the rest of the Phase 3 lifecycle validate its integration boundary.
 
 ## Install the pinned browser
 
 After installing workspace dependencies, install the Chromium build paired with the pinned Playwright version:
 
 ```bash
-corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium
+corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
 ```
 
 CI uses the same command with `--with-deps` on Ubuntu.
@@ -17,8 +17,8 @@ CI uses the same command with `--with-deps` on Ubuntu.
 `runExecutionCells(cells, execute, options?)` accepts matrix cells from `expandMatrix` and invokes the callback once for every cell in configured order.
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
-import { runExecutionCells } from "@statecraft/runner-playwright";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { runExecutionCells } from "statecraft-ui-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const cells = expandMatrix(config);
@@ -45,8 +45,8 @@ A rejected cell does not abort later cells. Initial or replacement browser launc
 `runScenarioCells(cells, execute, options?)` layers typed local scenario loading onto the isolated cell lifecycle. Each state's `setup` path is resolved relative to `options.scenarioBaseDirectory`; programmatic callers that omit it use `process.cwd()`.
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
-import { runScenarioCells } from "@statecraft/runner-playwright";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { runScenarioCells } from "statecraft-ui-runner-playwright";
 
 const cells = expandMatrix(parseConfig(unknownConfig));
 const outcomes = await runScenarioCells(
@@ -63,7 +63,7 @@ const outcomes = await runScenarioCells(
 A scenario is trusted local ESM code with an object default export:
 
 ```ts
-import type { StatecraftScenario } from "@statecraft/runner-playwright";
+import type { StatecraftScenario } from "statecraft-ui-runner-playwright";
 
 const scenario: StatecraftScenario = {
   async beforeNavigate({ page }) {
@@ -88,8 +88,8 @@ The runner runtime-checks the default export and the optional `beforeNavigate`, 
 `runNavigatedScenarioCells(cells, execute, options)` owns the normal Phase 3 path through theme setup, hooks, navigation, and deterministic readiness. Its callback runs after readiness, which gives the following screenshot/diagnostics slice a stable capture seam without changing lifecycle order.
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
-import { runNavigatedScenarioCells } from "@statecraft/runner-playwright";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { runNavigatedScenarioCells } from "statecraft-ui-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const outcomes = await runNavigatedScenarioCells(
@@ -127,11 +127,11 @@ Arbitrary theme IDs are intentionally supported through `data-theme`; only the c
 `runCapturedScenarioCells(cells, options)` owns the complete capture lifecycle through assertion and diagnostic failure policy. It returns settled cell outcomes and deliberately has no output-directory or artifact-path option.
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
 import {
   runCapturedScenarioCells,
   ScenarioCaptureError,
-} from "@statecraft/runner-playwright";
+} from "statecraft-ui-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const outcomes = await runCapturedScenarioCells(expandMatrix(config), {
@@ -174,8 +174,8 @@ The runner never reads diagnostic request/response headers, cookies, bodies, or 
 `runPersistedScenarioCells(cells, options)` is the complete programmatic Phase 3 entry point. It runs capture, translates every settled outcome into the core `ExecutionResult` contract, calculates configured-state coverage, validates a schema-v1 `StatecraftReport`, writes deterministic screenshots, and serializes `.statecraft/report/statecraft.json`.
 
 ```ts
-import { expandMatrix, parseConfig } from "@statecraft/core";
-import { runPersistedScenarioCells } from "@statecraft/runner-playwright";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { runPersistedScenarioCells } from "statecraft-ui-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const run = await runPersistedScenarioCells(expandMatrix(config), {
@@ -197,7 +197,7 @@ Each successful capture becomes a passed execution with its deterministic `scree
 
 Publication uses a private staging directory and local run lock inside `.statecraft/`. The lock keeps an immutable process owner plus append-only publishing/recovery markers and is acquired before Chromium launches, so two programmatic runs cannot interleave capture and publication for one project. An abandoned capture-phase lock and its uncommitted staging are recovered when its owner is no longer alive; a small durable claim keyed to that abandoned owner prevents delayed recovery contenders from moving a newer live lock. The publishing marker is created only immediately before the first destructive rename, and publishing or recovery state is preserved for inspection. Once every screenshot plus the validated JSON and rendered HTML payloads are ready, the runner hides the prior report files, replaces the complete `.statecraft/artifacts/` tree so filtered or removed cells cannot leave stale screenshots, then publishes new JSON and HTML. Artifact, JSON, and HTML symbolic links are rejected, and new or existing runner directories/files use owner-only modes where supported. A failed publication restores artifacts before making the previous JSON and HTML visible; if recovery itself fails, the runner preserves staging data and the owned lock for manual recovery instead of deleting the last good copies. Filesystem validation, locking, and publication errors reject the run instead of fabricating per-cell browser failures.
 
-This API does not discover configuration, print terminal output, choose exit codes, or open a report. It delegates browser-independent HTML rendering to `@statecraft/report` so all generated output can share one publication transaction.
+This API does not discover configuration, print terminal output, choose exit codes, or open a report. It delegates browser-independent HTML rendering to `statecraft-ui-report` so all generated output can share one publication transaction.
 
 ## Current boundary
 
@@ -205,4 +205,4 @@ Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenario
 
 ## Dependency decision
 
-Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `@statecraft/report` for deterministic HTML rendering; no browser dependency enters `@statecraft/core` or the report package.
+Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `statecraft-ui-report` for deterministic HTML rendering; no browser dependency enters `statecraft-ui-core` or the report package.

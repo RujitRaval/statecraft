@@ -6,7 +6,7 @@ import type {
   ExecutionFailureCode,
   FailurePolicy,
   MatrixCell,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 import type { ConsoleMessage, Page, Request } from "playwright";
 
 import type { CellExecutionOutcome } from "./lifecycle.js";

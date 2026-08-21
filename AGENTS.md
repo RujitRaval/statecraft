@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 6 are complete. Phase 7 is active. Its first approved slice adds clean-checkout consumer smoke coverage and documented GitHub Actions usage. Keep package-publication metadata, launch assets, and the remaining release polish in focused follow-ups.
+Phase 1 through Phase 6 are complete. Phase 7 is active. Clean-checkout consumer smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation are implemented. Keep launch assets and the remaining release polish in focused follow-ups.
 
 ## Design system
 
@@ -42,9 +42,11 @@ Before handoff, run:
 node scripts/check-docs.mjs
 node --test scripts/*.test.mjs
 node scripts/run-ci.mjs
+corepack pnpm release:check
+corepack pnpm release:package-smoke
 ```
 
-Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. Install the pinned browser with `corepack pnpm --filter @statecraft/runner-playwright exec playwright install chromium` before running browser-backed tests.
+Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. Install the pinned browser with `corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium` before running browser-backed tests.
 
 ## Engineering constraints
 

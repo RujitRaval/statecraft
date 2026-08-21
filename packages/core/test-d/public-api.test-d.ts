@@ -36,7 +36,7 @@ import {
   type StatecraftReport,
   type StatecraftErrorCode,
   type ViewportDefinition,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",

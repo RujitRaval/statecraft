@@ -35,15 +35,14 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("@statecraft/cli package boundary", () => {
-  it("defines a private ESM build with deterministic dist paths", async () => {
+describe("statecraft-ui package boundary", () => {
+  it("defines a publishable ESM build with deterministic dist paths", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
     const manifest = JSON.parse(contents) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "@statecraft/cli",
-      private: true,
+      name: "statecraft-ui",
       type: "module",
       bin: {
         statecraft: "./dist/bin.js",
@@ -55,6 +54,7 @@ describe("@statecraft/cli package boundary", () => {
         },
       },
     });
+    expect(manifest.private).toBeUndefined();
 
     const importPath = manifest.exports?.["."]?.import;
     const typesPath = manifest.exports?.["."]?.types;
@@ -128,11 +128,11 @@ describe("@statecraft/cli package boundary", () => {
         ),
       });
 
-      const packageScope = join(project, "node_modules", "@statecraft");
-      await mkdir(packageScope, { recursive: true });
+      const packageModules = join(project, "node_modules");
+      await mkdir(packageModules, { recursive: true });
       await symlink(
         fileURLToPath(new URL("../", import.meta.url)),
-        join(packageScope, "cli"),
+        join(packageModules, "statecraft-ui"),
         process.platform === "win32" ? "junction" : "dir",
       );
       await writeFile(

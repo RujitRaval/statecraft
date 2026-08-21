@@ -1,7 +1,7 @@
 import type { Browser, BrowserContext, Page } from "playwright";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { expandMatrix, parseConfig } from "@statecraft/core";
+import { expandMatrix, parseConfig } from "statecraft-ui-core";
 
 const playwrightMocks = vi.hoisted(() => ({
   launch: vi.fn(),

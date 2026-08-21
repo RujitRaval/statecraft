@@ -21,16 +21,15 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("@statecraft/report package boundary", () => {
-  it("defines a private ESM build with a small documented API", async () => {
+describe("statecraft-ui-report package boundary", () => {
+  it("defines a publishable ESM build with a small documented API", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const manifest = JSON.parse(
       await readFile(manifestUrl, "utf8"),
     ) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "@statecraft/report",
-      private: true,
+      name: "statecraft-ui-report",
       type: "module",
       exports: {
         ".": {
@@ -39,6 +38,7 @@ describe("@statecraft/report package boundary", () => {
         },
       },
     });
+    expect(manifest.private).toBeUndefined();
 
     const packageRoot = new URL("../", import.meta.url);
     const importUrl = new URL(manifest.exports?.["."]?.import ?? "", packageRoot);

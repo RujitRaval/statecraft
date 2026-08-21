@@ -1,4 +1,4 @@
-import type { MatrixCell } from "@statecraft/core";
+import type { MatrixCell } from "statecraft-ui-core";
 import type { Page, Request } from "playwright";
 
 import {

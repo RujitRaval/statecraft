@@ -1,13 +1,31 @@
 {
-  "name": "@statecraft/report",
-  "version": "0.0.0",
-  "private": true,
+  "name": "statecraft-ui-report",
+  "version": "0.24.0",
   "description": "Deterministic report transformation and offline HTML generation for Statecraft.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "directory": "packages/report"
+  },
+  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "bugs": {
+    "url": "https://github.com/RujitRaval/statecraft/issues"
+  },
+  "keywords": [
+    "ui-testing",
+    "html-report",
+    "state-coverage"
+  ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map"
   ],
   "exports": {
     ".": {
@@ -15,13 +33,21 @@
       "import": "./dist/index.js"
     }
   },
+  "engines": {
+    "node": "^22.20.0 || ^24.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter @statecraft/core build",
+    "pretypecheck": "corepack pnpm --filter statecraft-ui-core build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@statecraft/core": "workspace:*"
+    "statecraft-ui-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

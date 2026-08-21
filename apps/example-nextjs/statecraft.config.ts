@@ -1,4 +1,4 @@
-import { defineConfig } from "@statecraft/cli";
+import { defineConfig } from "statecraft-ui";
 
 const scenario = (route: "customers" | "dashboard" | "orders"): string =>
   `./statecraft/scenarios/${route}.mjs`;

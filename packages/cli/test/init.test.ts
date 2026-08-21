@@ -56,7 +56,7 @@ describe("initProject", () => {
       ),
     });
     await expect(readFile(result.configPath, "utf8")).resolves.toContain(
-      'import { defineConfig } from "@statecraft/cli";',
+      'import { defineConfig } from "statecraft-ui";',
     );
     await expect(readFile(result.configPath, "utf8")).resolves.toContain(
       'setup: "./statecraft/scenarios/home/success.ts"',

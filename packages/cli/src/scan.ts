@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import {
   expandMatrix,
   type StatecraftReport,
-} from "@statecraft/core";
+} from "statecraft-ui-core";
 
 import { loadConfig } from "./config.js";
 
@@ -71,7 +71,7 @@ export async function scanProject(
       options.routeId === undefined ? undefined : [options.routeId],
   });
   const { runPersistedScenarioCells } = await import(
-    "@statecraft/runner-playwright"
+    "statecraft-ui-runner-playwright"
   );
   const run = await runPersistedScenarioCells(cells, {
     baseURL: loaded.config.baseURL,

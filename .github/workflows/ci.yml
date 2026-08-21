@@ -48,7 +48,7 @@ jobs:
           corepack enable
           corepack pnpm install --frozen-lockfile
       - name: Install Chromium
-        run: corepack pnpm --filter @statecraft/runner-playwright exec playwright install --with-deps chromium
+        run: corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install --with-deps chromium
       - name: Run repository checks
         run: node scripts/run-ci.mjs
 
@@ -68,7 +68,7 @@ jobs:
           corepack enable
           corepack pnpm install --frozen-lockfile
       - name: Install Chromium
-        run: corepack pnpm --filter @statecraft/runner-playwright exec playwright install --with-deps chromium
+        run: corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install --with-deps chromium
       - name: Build release artifacts
         run: corepack pnpm build
       - name: Run clean-checkout consumer smoke
@@ -83,3 +83,23 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
+
+  package-smoke:
+    name: Package Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22.20.0
+      - name: Install dependencies
+        run: |
+          corepack enable
+          corepack pnpm install --frozen-lockfile
+      - name: Validate package metadata
+        run: corepack pnpm release:check
+      - name: Pack and test npm artifacts
+        run: corepack pnpm release:package-smoke

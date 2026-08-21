@@ -1,19 +1,45 @@
 {
-  "name": "@statecraft/core",
-  "version": "0.0.0",
-  "private": true,
+  "name": "statecraft-ui-core",
+  "version": "0.24.0",
   "description": "Core contracts for Statecraft UI product-state coverage.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "bugs": {
+    "url": "https://github.com/RujitRaval/statecraft/issues"
+  },
+  "keywords": [
+    "ui-testing",
+    "state-coverage",
+    "typescript"
+  ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": "^22.20.0 || ^24.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",

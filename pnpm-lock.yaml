@@ -48,12 +48,6 @@ importers:
         specifier: 0.0.1
         version: 0.0.1
     devDependencies:
-      '@statecraft/cli':
-        specifier: workspace:*
-        version: link:../../packages/cli
-      '@statecraft/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@types/node':
         specifier: 22.20.1
         version: 22.20.1
@@ -66,6 +60,12 @@ importers:
       playwright:
         specifier: 1.62.1
         version: 1.62.1
+      statecraft-ui:
+        specifier: workspace:*
+        version: link:../../packages/cli
+      statecraft-ui-core:
+        specifier: workspace:*
+        version: link:../../packages/core
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -75,10 +75,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@statecraft/core':
+      statecraft-ui-core:
         specifier: workspace:*
         version: link:../core
-      '@statecraft/runner-playwright':
+      statecraft-ui-runner-playwright:
         specifier: workspace:*
         version: link:../runner-playwright
     devDependencies:
@@ -110,7 +110,7 @@ importers:
 
   packages/report:
     dependencies:
-      '@statecraft/core':
+      statecraft-ui-core:
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -126,15 +126,15 @@ importers:
 
   packages/runner-playwright:
     dependencies:
-      '@statecraft/core':
-        specifier: workspace:*
-        version: link:../core
-      '@statecraft/report':
-        specifier: workspace:*
-        version: link:../report
       playwright:
         specifier: 1.62.1
         version: 1.62.1
+      statecraft-ui-core:
+        specifier: workspace:*
+        version: link:../core
+      statecraft-ui-report:
+        specifier: workspace:*
+        version: link:../report
     devDependencies:
       '@types/node':
         specifier: 22.20.1

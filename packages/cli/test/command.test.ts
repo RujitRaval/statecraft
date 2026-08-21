@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { parseReport } from "@statecraft/core";
+import { parseReport } from "statecraft-ui-core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ScanOptions, ScanResult } from "../src/scan.js";
