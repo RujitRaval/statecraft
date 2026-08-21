@@ -66,4 +66,4 @@ Phase 4 through Phase 6 are complete.
 - [x] Exact known-failure report validation and short-lived CI artifact
 - [x] Copy-ready GitHub Actions usage with exit-code and privacy guidance
 - [x] Publish-ready package metadata and release automation
-- [ ] Launch README assets and final contributor/release polish
+- [x] Launch README assets and final contributor/release polish

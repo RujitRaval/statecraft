@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node scripts/next.mjs build",
     "dev": "node scripts/next.mjs dev",
+    "launch:assets": "node scripts/capture-launch-assets.mjs",
     "prestatecraft:scan": "corepack pnpm --filter statecraft-ui... build",
     "pretypecheck": "corepack pnpm --filter statecraft-ui... build",
     "statecraft:scan": "node ../../packages/cli/dist/bin.js scan",

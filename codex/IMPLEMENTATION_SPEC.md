@@ -452,11 +452,11 @@ Treat this file as the product and architecture specification.
 
 ## 23. Current Codex task
 
-Phase 1 through Phase 6 are complete. Phase 7 is active. Clean-checkout
-consumer smoke coverage for the built CLI, documented GitHub Actions
-usage, publish-ready package metadata, and release automation are
-implemented. Keep launch assets and remaining release polish in focused
-follow-ups.
+Phase 1 through Phase 7 are complete. Clean-checkout consumer smoke
+coverage, documented GitHub Actions usage, public npm packages, protected
+release automation, real report launch assets, and final contributor and
+release guidance are implemented. Keep future work in an explicitly
+approved roadmap slice.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

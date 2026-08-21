@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 6 are complete. Phase 7 is active. Clean-checkout consumer smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation are implemented. Keep launch assets and remaining release polish in focused follow-ups.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. Keep future work in an explicitly approved roadmap slice.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

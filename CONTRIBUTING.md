@@ -1,6 +1,10 @@
 # Contributing to Statecraft
 
-Statecraft has completed Phase 1 through Phase 6. Phase 7 is active with clean-checkout release smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation. Keep launch assets and remaining release polish in focused follow-ups. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code.
+Statecraft has completed Phase 1 through Phase 7. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code. Keep proposals within an approved roadmap slice and preserve the local-first product boundary.
+
+## Where to contribute
+
+Good contribution surfaces include deterministic scenarios, additional fictional examples, report usability, documentation, and narrowly scoped adapters or policies that have an approved issue. Bug reports should include the command, exit code, sanitized terminal output, and the smallest safe reproduction. Never attach a `.statecraft/` bundle until you have checked every screenshot, URL, and diagnostic for sensitive data.
 
 ## Branch and pull request workflow
 

@@ -1,6 +1,6 @@
 # `statecraft-ui-core` API
 
-Phase 2 provides Statecraft's deterministic, browser-independent contracts. The package remains private until the later runner, CLI, and report packages validate its integration boundary.
+`statecraft-ui-core` provides Statecraft's published, deterministic, browser-independent contracts. Most users install `statecraft-ui`; direct consumers can build integrations against this package's stable configuration, matrix, coverage, artifact-path, and report boundaries.
 
 ## Configuration
 
@@ -49,7 +49,7 @@ Configuration and scenario modules are trusted local code running with the user'
 
 ## Matrix planning
 
-`expandMatrix(config, filter?)` expands a validated `StatecraftConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that a future runner will need.
+`expandMatrix(config, filter?)` expands a validated `StatecraftConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that the runner needs.
 
 Expansion follows routes and states in declaration order, viewport keys in deterministic ECMAScript property order, then themes in declaration order. Repeating the same validated input produces the same sequence. For normal named viewport IDs such as `mobile` and `desktop`, property order is declaration order; integer-like IDs are enumerated numerically before other keys. Filters do not change that order:
 
@@ -64,7 +64,7 @@ const cells = expandMatrix(parseConfig(config), {
 });
 ```
 
-`MatrixFilter` selections use exact, case-sensitive IDs. An omitted dimension selects all configured values; an empty selection or an unknown value selects no cells. Duplicate filter values never duplicate cells, and filter array order never reorders the configured matrix. Filtering is selection only: the future CLI owns user-facing validation for unmatched flags.
+`MatrixFilter` selections use exact, case-sensitive IDs. An omitted dimension selects all configured values; an empty selection or an unknown value selects no cells. Duplicate filter values never duplicate cells, and filter array order never reorders the configured matrix. Filtering is selection only: the CLI owns user-facing validation for unmatched flags.
 
 The planner is pure and browser-independent. It does not load scenario modules, access the filesystem, create artifact paths, launch Playwright, or generate reports.
 
@@ -130,7 +130,7 @@ Plain strings are not assignable to `ScreenshotArtifactPath`. Code that reads a 
 
 `parseExecutionResult(input)` strictly validates an unknown record. Passed executions require a screenshot and cannot contain failures. Failed executions require at least one failure and may have a screenshot. Failure codes are a stable schema-v1 union covering navigation, page, console, request, assertion, screenshot, and internal failures.
 
-Diagnostics contain console-error strings, page-error strings, optional navigation status, and failed requests with only `url`, `method`, and sanitized `errorText`. Strict validation rejects headers, cookies, request or response bodies, and every other unknown property. Parsing removes URL credentials and fragments and replaces every query value with `[REDACTED]` while preserving query keys. This applies to the project base URL, route path, execution URL, and failed-request URLs. The future runner is still responsible for sanitizing every free-form diagnostic string before constructing a result.
+Diagnostics contain console-error strings, page-error strings, optional navigation status, and failed requests with only `url`, `method`, and sanitized `errorText`. Strict validation rejects headers, cookies, request or response bodies, and every other unknown property. Parsing removes URL credentials and fragments and replaces every query value with `[REDACTED]` while preserving query keys. This applies to the project base URL, route path, execution URL, and failed-request URLs. The runner remains responsible for sanitizing every free-form diagnostic string before constructing a result.
 
 When `screenshotPath` is present, parsing recomputes `screenshotArtifactPath` from the record's explicit coordinate and requires an exact match. The validated result therefore returns `ScreenshotArtifactPath | null` without trusting an arbitrary serialized string.
 

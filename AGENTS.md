@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 6 are complete. Phase 7 is active. Clean-checkout consumer smoke coverage, documented GitHub Actions usage, publish-ready package metadata, and release automation are implemented. Keep launch assets and the remaining release polish in focused follow-ups.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. Keep future work in an explicitly approved roadmap slice.
 
 ## Design system
 
