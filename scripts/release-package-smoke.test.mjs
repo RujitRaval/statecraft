@@ -59,6 +59,13 @@ test("validates npm publish identities across supported JSON summary shapes", ()
   assert.doesNotThrow(() =>
     assertPublishSummaryIdentity({ id: `${name}@${version}`, name, version }, name, version),
   );
+  assert.doesNotThrow(() =>
+    assertPublishSummaryIdentity(
+      { [name]: { id: `${name}@${version}`, name, version } },
+      name,
+      version,
+    ),
+  );
   assert.throws(
     () => assertPublishSummaryIdentity({ id: "other@1.2.3", name, version }, name, version),
     /inconsistent package id/u,
@@ -70,6 +77,18 @@ test("validates npm publish identities across supported JSON summary shapes", ()
   assert.throws(
     () => assertPublishSummaryIdentity({ name, version: "9.9.9" }, name, version),
     /wrong package version/u,
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ other: { name, version } }, name, version),
+    /wrong package name/u,
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ [name]: { name, version }, extra: {} }, name, version),
+    /wrong package name/u,
+  );
+  assert.throws(
+    () => assertPublishSummaryIdentity({ [name]: null }, name, version),
+    /invalid package summary/u,
   );
   assert.throws(() => assertPublishSummaryIdentity([], name, version), /invalid publish summary/u);
 });

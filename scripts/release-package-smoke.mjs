@@ -83,15 +83,28 @@ export function assertPublishSummaryIdentity(summary, packageName, packageVersio
     true,
     `npm returned an invalid publish summary for ${packageName}.`,
   );
-  assert.equal(summary.name, packageName, `npm dry-run reported the wrong package name for ${packageName}.`);
+  const summaryKeys = Object.keys(summary);
+  const packageSummary = summaryKeys.length === 1 && Object.hasOwn(summary, packageName)
+    ? summary[packageName]
+    : summary;
   assert.equal(
-    summary.version,
+    packageSummary !== null && typeof packageSummary === "object" && !Array.isArray(packageSummary),
+    true,
+    `npm returned an invalid package summary for ${packageName}.`,
+  );
+  assert.equal(
+    packageSummary.name,
+    packageName,
+    `npm dry-run reported the wrong package name for ${packageName}.`,
+  );
+  assert.equal(
+    packageSummary.version,
     packageVersion,
     `npm dry-run reported the wrong package version for ${packageName}.`,
   );
-  if (summary.id !== undefined) {
+  if (packageSummary.id !== undefined) {
     assert.equal(
-      summary.id,
+      packageSummary.id,
       `${packageName}@${packageVersion}`,
       `npm dry-run reported an inconsistent package id for ${packageName}.`,
     );
