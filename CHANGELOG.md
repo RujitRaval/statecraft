@@ -17,6 +17,10 @@ This project uses the four-part version format required by the GStack ship workf
 - The example scan is documented as a two-terminal workflow, keeps generated `.statecraft/` evidence local, and completes Phase 6 with ADR 0025 and synchronized project guidance.
 - Vitest keeps the normal workspace suite parallel, then runs the resource-heavy scenario matrix in an isolated project so browser tests retain their default timeout without competing for Chromium resources.
 
+### Fixed
+
+- Fresh clones now build the CLI workspace package and its dependencies before the example typecheck or scan, so missing generated types and pre-build executable links cannot break the documented workflow.
+
 ## [0.21.0.0] - 2026-08-20
 
 ### Added

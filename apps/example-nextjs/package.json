@@ -7,7 +7,9 @@
   "scripts": {
     "build": "node scripts/next.mjs build",
     "dev": "node scripts/next.mjs dev",
-    "statecraft:scan": "statecraft scan",
+    "prestatecraft:scan": "corepack pnpm --filter @statecraft/cli... build",
+    "pretypecheck": "corepack pnpm --filter @statecraft/cli... build",
+    "statecraft:scan": "node ../../packages/cli/dist/bin.js scan",
     "start": "node scripts/next.mjs start",
     "typecheck": "node scripts/next.mjs typegen && tsc --noEmit"
   },
