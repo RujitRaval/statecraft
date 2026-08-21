@@ -4,6 +4,18 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.2.0] - 2026-08-21
+
+### Changed
+
+- `statecraft init` now creates `statecraft.config.mts` and `.mts` scenario modules so the starter project has unambiguous ESM semantics even after a plain `npm init -y`.
+- CLI, architecture, testing, release, and package documentation now use the module-unambiguous starter filenames while existing `.ts`, `.mts`, `.cts`, `.js`, `.mjs`, and `.cjs` config discovery remains supported.
+
+### Fixed
+
+- The packed-package smoke gate now initializes a real CommonJS-default npm consumer, installs only packed release artifacts, runs the generated four-cell scan against a loopback fixture, and validates contained, non-symlinked screenshot evidence plus schema-v1 JSON and offline HTML.
+- Release-smoke scan timeouts now own the Statecraft CLI process directly instead of an intermediate npm process, ensuring timeout cleanup reaches the browser-backed scan.
+
 ## [0.24.1.0] - 2026-08-21
 
 ### Added

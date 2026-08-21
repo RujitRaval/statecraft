@@ -41,10 +41,10 @@ describe("initProject", () => {
     const result = await initProject({ cwd: project });
 
     expect(result).toEqual({
-      configPath: join(project, "statecraft.config.ts"),
+      configPath: join(project, "statecraft.config.mts"),
       files: [
-        join(project, "statecraft.config.ts"),
-        join(project, "statecraft", "scenarios", "home", "success.ts"),
+        join(project, "statecraft.config.mts"),
+        join(project, "statecraft", "scenarios", "home", "success.mts"),
       ],
       projectRoot: project,
       scenarioPath: join(
@@ -52,14 +52,14 @@ describe("initProject", () => {
         "statecraft",
         "scenarios",
         "home",
-        "success.ts",
+        "success.mts",
       ),
     });
     await expect(readFile(result.configPath, "utf8")).resolves.toContain(
       'import { defineConfig } from "statecraft-ui";',
     );
     await expect(readFile(result.configPath, "utf8")).resolves.toContain(
-      'setup: "./statecraft/scenarios/home/success.ts"',
+      'setup: "./statecraft/scenarios/home/success.mts"',
     );
     await expect(readFile(result.scenarioPath, "utf8")).resolves.toContain(
       "const scenario = {",
@@ -79,19 +79,19 @@ describe("initProject", () => {
 
     await expect(readFile(unrelated, "utf8")).resolves.toBe("keep me");
     await expect(
-      lstat(join(scenarios, "home", "success.ts")),
+      lstat(join(scenarios, "home", "success.mts")),
     ).resolves.toMatchObject({});
   });
 
   it("does not create a scenario when the config already exists", async () => {
     const project = await temporaryProject();
-    const configPath = join(project, "statecraft.config.ts");
+    const configPath = join(project, "statecraft.config.mts");
     const scenarioPath = join(
       project,
       "statecraft",
       "scenarios",
       "home",
-      "success.ts",
+      "success.mts",
     );
     await writeFile(configPath, "existing config", "utf8");
 
@@ -108,13 +108,13 @@ describe("initProject", () => {
   it("does not create files when another supported config already exists", async () => {
     const project = await temporaryProject();
     const existingConfig = join(project, "statecraft.config.mjs");
-    const generatedConfig = join(project, "statecraft.config.ts");
+    const generatedConfig = join(project, "statecraft.config.mts");
     const scenarioPath = join(
       project,
       "statecraft",
       "scenarios",
       "home",
-      "success.ts",
+      "success.mts",
     );
     await writeFile(existingConfig, "export default {};", "utf8");
 
@@ -133,13 +133,13 @@ describe("initProject", () => {
 
   it("does not create a config when the scenario already exists", async () => {
     const project = await temporaryProject();
-    const configPath = join(project, "statecraft.config.ts");
+    const configPath = join(project, "statecraft.config.mts");
     const scenarioPath = join(
       project,
       "statecraft",
       "scenarios",
       "home",
-      "success.ts",
+      "success.mts",
     );
     await mkdir(join(project, "statecraft", "scenarios", "home"), {
       recursive: true,
@@ -201,9 +201,9 @@ describe("initProject", () => {
       const result = await initProject({ cwd: projectLink });
 
       expect(result.projectRoot).toBe(project);
-      expect(result.configPath).toBe(join(project, "statecraft.config.ts"));
+      expect(result.configPath).toBe(join(project, "statecraft.config.mts"));
       expect(result.scenarioPath).toBe(
-        join(project, "statecraft", "scenarios", "home", "success.ts"),
+        join(project, "statecraft", "scenarios", "home", "success.mts"),
       );
     },
   );
@@ -219,7 +219,7 @@ describe("initProject", () => {
     });
     await expect(readFile(boundary, "utf8")).resolves.toBe("keep");
     await expect(
-      lstat(join(project, "statecraft.config.ts")),
+      lstat(join(project, "statecraft.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -240,11 +240,11 @@ describe("initProject", () => {
       status: "rejected",
     });
     await expect(
-      readFile(join(project, "statecraft.config.ts"), "utf8"),
+      readFile(join(project, "statecraft.config.mts"), "utf8"),
     ).resolves.toContain("defineConfig");
     await expect(
       readFile(
-        join(project, "statecraft", "scenarios", "home", "success.ts"),
+        join(project, "statecraft", "scenarios", "home", "success.mts"),
         "utf8",
       ),
     ).resolves.toContain("export default scenario;");
@@ -277,7 +277,7 @@ describe("initProject", () => {
         await chmod(project, 0o700);
       }
       await expect(
-        lstat(join(project, "statecraft.config.ts")),
+        lstat(join(project, "statecraft.config.mts")),
       ).rejects.toMatchObject({ code: "ENOENT" });
     },
   );

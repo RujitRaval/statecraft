@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { once } from "node:events";
 import {
   lstat,
   mkdir,
@@ -10,6 +11,7 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises";
+import { createServer } from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -164,6 +166,7 @@ export async function runReleasePackageSmoke({
     : await createOutputDirectory(output);
   if (output === undefined) await mkdir(packageOutput, { mode: 0o700 });
   const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-package-consumer-"));
+  let fixtureServer;
 
   try {
     const tarballs = [];
@@ -185,10 +188,15 @@ export async function runReleasePackageSmoke({
       tarballs.push(tarball);
     }
 
-    await writeFile(
-      path.join(consumerRoot, "package.json"),
-      `${JSON.stringify({ name: "statecraft-package-consumer", private: true, type: "module" }, null, 2)}\n`,
-      "utf8",
+    const npmInit = await runCommand("npm", ["init", "--yes"], { cwd: consumerRoot });
+    assertCommand(npmInit, "Initializing a default npm consumer");
+    const consumerManifest = JSON.parse(
+      await readFile(path.join(consumerRoot, "package.json"), "utf8"),
+    );
+    assert.notEqual(
+      consumerManifest.type,
+      "module",
+      "npm init must leave the consumer outside package-wide ESM mode.",
     );
     const install = await runCommand(
       "npm",
@@ -203,6 +211,13 @@ export async function runReleasePackageSmoke({
       { cwd: consumerRoot },
     );
     assertCommand(install, "Installing packed packages");
+
+    const chromiumInstall = await runCommand(
+      "npm",
+      ["exec", "--offline", "--", "playwright", "install", "chromium"],
+      { cwd: consumerRoot },
+    );
+    assertCommand(chromiumInstall, "Installing Chromium from the packed consumer");
 
     for (const contract of RELEASE_PACKAGES) {
       await assertInstalledPackage(
@@ -232,6 +247,12 @@ export async function runReleasePackageSmoke({
       await readFile(path.join(consumerRoot, "node_modules", "statecraft-ui", "package.json"), "utf8"),
     );
     assert.equal(cliManifest.bin.statecraft, "./dist/bin.js");
+    const cliBinPath = path.join(
+      consumerRoot,
+      "node_modules",
+      "statecraft-ui",
+      cliManifest.bin.statecraft,
+    );
     const help = await runCommand("npm", ["exec", "--offline", "--", "statecraft", "--help"], {
       cwd: consumerRoot,
     });
@@ -242,14 +263,87 @@ export async function runReleasePackageSmoke({
       cwd: consumerRoot,
     });
     assertCommand(init, "Initializing with the packed CLI");
-    assert.match(await readFile(path.join(consumerRoot, "statecraft.config.ts"), "utf8"), /from "statecraft-ui"/u);
+    const generatedConfigPath = path.join(consumerRoot, "statecraft.config.mts");
+    assert.match(await readFile(generatedConfigPath, "utf8"), /from "statecraft-ui"/u);
     assert.match(
-      await readFile(path.join(consumerRoot, "statecraft", "scenarios", "home", "success.ts"), "utf8"),
+      await readFile(path.join(consumerRoot, "statecraft", "scenarios", "home", "success.mts"), "utf8"),
       /export default scenario/u,
+    );
+
+    fixtureServer = createServer((_request, response) => {
+      response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+      response.end("<!doctype html><html><head><title>Ready</title></head><body><h1>Ready</h1></body></html>");
+    });
+    fixtureServer.listen(0, "127.0.0.1");
+    await once(fixtureServer, "listening");
+    const fixtureAddress = fixtureServer.address();
+    assert.notEqual(fixtureAddress, null);
+    assert.equal(typeof fixtureAddress, "object");
+    const generatedConfig = await readFile(generatedConfigPath, "utf8");
+    assert.match(generatedConfig, /http:\/\/localhost:3000/u);
+    await writeFile(
+      generatedConfigPath,
+      generatedConfig.replace(
+        "http://localhost:3000",
+        `http://127.0.0.1:${fixtureAddress.port}`,
+      ),
+      "utf8",
+    );
+
+    const scan = await runCommand(
+      process.execPath,
+      [cliBinPath, "scan"],
+      { cwd: consumerRoot },
+    );
+    assertCommand(scan, "Scanning the default CommonJS npm consumer");
+    assert.match(scan.stdout, /All 4 executions passed\./u);
+    const report = JSON.parse(
+      await readFile(path.join(consumerRoot, ".statecraft", "report", "statecraft.json"), "utf8"),
+    );
+    assert.equal(report.schemaVersion, 1);
+    assert.deepEqual(
+      {
+        executions: report.summary.executions,
+        failed: report.summary.failed,
+        passed: report.summary.passed,
+      },
+      { executions: 4, failed: 0, passed: 4 },
+    );
+    assert.equal(report.executions.length, 4);
+    const artifactRoot = path.join(consumerRoot, ".statecraft", "artifacts");
+    const artifactPrefix = `${artifactRoot}${path.sep}`;
+    const artifactRealRoot = await realpath(artifactRoot);
+    const artifactRealPrefix = `${artifactRealRoot}${path.sep}`;
+    for (const execution of report.executions) {
+      assert.equal(typeof execution.screenshotPath, "string");
+      const screenshot = path.resolve(consumerRoot, execution.screenshotPath);
+      assert.equal(
+        screenshot.startsWith(artifactPrefix),
+        true,
+        `Screenshot escaped the consumer artifact root: ${execution.screenshotPath}`,
+      );
+      assert.equal(
+        (await realpath(screenshot)).startsWith(artifactRealPrefix),
+        true,
+        `Screenshot resolved outside the consumer artifact root: ${execution.screenshotPath}`,
+      );
+      const screenshotMetadata = await lstat(screenshot);
+      assert.equal(screenshotMetadata.isSymbolicLink(), false);
+      assert.equal(screenshotMetadata.isFile(), true);
+      assert.equal(screenshotMetadata.size > 0, true);
+    }
+    assert.match(
+      await readFile(path.join(consumerRoot, ".statecraft", "report", "index.html"), "utf8"),
+      /UI State Coverage Report/u,
     );
 
     return { packageOutput, packageVersion, tarballs };
   } finally {
+    if (fixtureServer?.listening) {
+      await new Promise((resolve, reject) => {
+        fixtureServer.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
     await rm(consumerRoot, { force: true, recursive: true });
     if (localRoot !== undefined) await rm(localRoot, { force: true, recursive: true });
   }

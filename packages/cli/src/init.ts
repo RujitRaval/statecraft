@@ -11,9 +11,9 @@ import { join, resolve } from "node:path";
 
 import { DEFAULT_CONFIG_FILENAMES } from "./config.js";
 
-const CONFIG_FILENAME = "statecraft.config.ts";
+const CONFIG_FILENAME = "statecraft.config.mts";
 const SCENARIO_DIRECTORY = join("statecraft", "scenarios", "home");
-const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.ts");
+const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.mts");
 
 const CONFIG_TEMPLATE = `import { defineConfig } from "statecraft-ui";
 
@@ -31,7 +31,7 @@ export default defineConfig({
       states: [
         {
           id: "success",
-          setup: "./statecraft/scenarios/home/success.ts",
+          setup: "./statecraft/scenarios/home/success.mts",
         },
       ],
     },

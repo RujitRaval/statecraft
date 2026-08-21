@@ -7,11 +7,11 @@ Create starter config/scenario directory; never silently overwrite; print exact 
 The starter is intentionally small:
 
 ```text
-statecraft.config.ts
+statecraft.config.mts
 statecraft/
   scenarios/
     home/
-      success.ts
+      success.mts
 ```
 
 Existing target files cause a setup error. There is no force flag.
@@ -20,7 +20,7 @@ Existing target files cause a setup error. There is no force flag.
 Validate config, optionally filter, execute matrix, write artifacts/report, print summary, return stable exit code.
 ```bash
 statecraft scan
-statecraft scan --config ./statecraft.config.ts
+statecraft scan --config ./statecraft.config.mts
 statecraft scan --route dashboard
 statecraft scan --headed
 ```
