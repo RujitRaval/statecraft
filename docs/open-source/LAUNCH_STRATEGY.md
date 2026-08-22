@@ -11,7 +11,7 @@ The generated report. The example must visibly catch defects such as long conten
 
 The checked-in assets are generated from the real Northline report:
 
-- `docs/assets/statecraft-report-overview.png` shows the 60-cell coverage summary, filters, and evidence matrix.
+- `docs/assets/statecraft-report-overview.png` shows the kinetic evidence verdict and 60-cell coverage signal.
 - `docs/assets/statecraft-failure-detail.png` shows the approved customer long-content mobile overflow with its assertion and execution metadata.
 
 Regenerate them only from the complete local example scan. Start the production example, run its checked-in Statecraft matrix, confirm the expected 56 passes and four failures, then run `corepack pnpm launch:assets`. Review both PNGs for fictional-only data before committing them. The capture command blocks HTTP and HTTPS requests while opening the self-contained file report.

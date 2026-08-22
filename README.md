@@ -15,7 +15,7 @@ npx statecraft init
 npx statecraft scan
 ```
 
-![Statecraft report showing 60 UI executions, 56 passes, four failures, filters, and the beginning of the evidence matrix](docs/assets/statecraft-report-overview.png)
+![Statecraft report opening with the Evidence over instinct verdict and 93.33 percent coverage for 60 UI executions](docs/assets/statecraft-report-overview.png)
 
 The screenshot above is the real 60-cell Northline example report. Four deliberately broken coordinates remain visible so the release gate proves Statecraft catches narrow-viewport overflow and theme-specific contrast failures.
 

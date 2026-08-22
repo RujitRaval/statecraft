@@ -38,6 +38,8 @@ CLI open tests cover canonical latest-report selection, absent reports, invalid 
 
 Report transformation tests verify deterministic first-seen column and route/state ordering, aligned missing cells, report-relative screenshot references, and rejection of invalid schema input. Renderer tests cover summary/matrix/detail content, empty selections, HTML escaping for report-controlled diagnostics, all five filter contracts, valid identifiers named `all`, no external assets, and an exact embedded-script CSP hash. A real Chromium `file://` test covers AND filtering across route, state, viewport, theme, and status; sparse cells and filtered row-group spans; no-match/reset behavior; query plus hash restoration through browser history; direct-hash focus return; filtered table alignment; keyboard detail opening and Escape return; responsive layout; 44-pixel mobile controls; screenshots; and zero network requests. Runner persistence tests cover coordinated replacement, owner-private file modes, artifact/JSON/HTML symbolic-link boundaries, stable errors, and rollback; report package-boundary tests cover the built renderer API. Browser-backed CLI scan tests prove PNG, JSON, and HTML are produced together and that terminal output points to the offline document.
 
+The kinetic evidence regression also verifies failed and missing signal-fracture markers, viewport-scale dialog semantics, forward and reverse focus containment, Close and Escape cleanup with focus return, 375-, 768-, 1024-, and 1440-pixel layouts, dark color-scheme rendering, and reduced-motion behavior.
+
 ## Determinism
 Repeated unchanged runs should produce stable IDs, paths, statuses, and materially stable screenshots. Remove animations/caret and settle fonts.
 

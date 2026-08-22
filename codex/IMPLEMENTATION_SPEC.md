@@ -246,8 +246,9 @@ inferred from filenames.
 ## 10. HTML report --- highest-priority UX
 
 Do not ship a generic raw table. Header should show Statecraft, report
-title, passed/total executions, and coverage. Summary cards: routes,
-states, executions, passed, failed, coverage, duration.
+title, passed/total executions, and coverage. Present routes, states,
+executions, passed, failed, coverage, and duration as one ruled run tape
+rather than a dashboard-style row of summary cards.
 
 Main matrix rows represent route/state combinations; columns represent
 viewport/theme combinations. Every successful cell shows a screenshot
