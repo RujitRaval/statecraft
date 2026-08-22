@@ -12,6 +12,14 @@ export type {
   LoadedConfig,
 } from "./config.js";
 export { defineConfig } from "statecraft-ui-core";
+export { CheckError, checkPublicSite } from "./check.js";
+export type {
+  CheckDiscoveredRoute,
+  CheckDiscovery,
+  CheckErrorCode,
+  CheckOptions,
+  CheckResult,
+} from "./check.js";
 export { runCli } from "./command.js";
 export type { CliExitCode, RunCliOptions } from "./command.js";
 export { InitError, initProject } from "./init.js";

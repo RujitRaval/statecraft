@@ -18,6 +18,9 @@ Local TypeScript/Node CLI; Playwright; type-safe config/scenarios; arbitrary nam
 ## Non-goals v0.1
 No SaaS, accounts, cloud storage, billing, LLM requirement, automatic route/state discovery, pixel diffing, approval workflow, or broad framework support.
 
+## Approved roadmap exception
+The Public URL Quick Check adds bounded, navigation-only route discovery for authorized public sites. It checks one `public` state across a fixed mobile/desktop by light/dark matrix and does not infer application states or replace explicit configured scans. Discovery, persisted evidence, and `statecraft check <url>` orchestration are implemented; overwrite-safe promotion into permanent config remains the next separate slice.
+
 ## Success
 A new developer can install, configure a few states, run one command, and understand a visually obvious UI problem from the report without author assistance. The report is strong enough to be the primary README/launch asset.
 

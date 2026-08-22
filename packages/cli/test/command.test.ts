@@ -12,6 +12,7 @@ import { join } from "node:path";
 import { parseReport } from "statecraft-ui-core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { CheckOptions, CheckResult } from "../src/check.js";
 import type { ScanOptions, ScanResult } from "../src/scan.js";
 import type {
   OpenReportOptions,
@@ -24,6 +25,10 @@ const openReportMock = vi.hoisted(() =>
 
 const scanProjectMock = vi.hoisted(() =>
   vi.fn<(options?: ScanOptions) => Promise<ScanResult>>(),
+);
+
+const checkPublicSiteMock = vi.hoisted(() =>
+  vi.fn<(options: CheckOptions) => Promise<CheckResult>>(),
 );
 
 vi.mock("../src/init.js", async (importOriginal) => {
@@ -48,6 +53,11 @@ vi.mock("../src/scan.js", async (importOriginal) => {
   return { ...original, scanProject: scanProjectMock };
 });
 
+vi.mock("../src/check.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/check.js")>();
+  return { ...original, checkPublicSite: checkPublicSiteMock };
+});
+
 vi.mock("../src/open.js", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/open.js")>();
   return { ...original, openReport: openReportMock };
@@ -65,7 +75,15 @@ async function temporaryProject(): Promise<string> {
   return project;
 }
 
+function credentialedCheckUrl(): string {
+  const url = new URL("https://example.test");
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.toString();
+}
+
 afterEach(async () => {
+  checkPublicSiteMock.mockReset();
   openReportMock.mockReset();
   scanProjectMock.mockReset();
   await Promise.all(
@@ -133,6 +151,113 @@ function completedScan(
   });
 }
 
+function completedCheck(status: "failed" | "passed"): CheckResult {
+  const passed = status === "passed";
+  return Object.freeze({
+    discovery: Object.freeze({
+      attemptedPages: 2,
+      baseURL: "https://example.test/",
+      routes: Object.freeze([
+        Object.freeze({ path: "/" }),
+        Object.freeze({ path: "/pricing" }),
+      ]),
+      skippedPages: 1,
+      truncatedAnchorPages: 0,
+    }),
+    report: parseReport({
+      executions: [
+        ...["light", "dark"].flatMap((theme) =>
+          ["mobile", "desktop"].map((viewportId) => ({
+            diagnostics: {
+              consoleErrors: [],
+              failedRequests: [],
+              navigationStatus: 200,
+              pageErrors: [],
+            },
+            durationMs: 25,
+            failures: [],
+            routeId: "home-abc",
+            routePath: "/",
+            scenarioSource: "statecraft:public-site",
+            screenshotPath: `.statecraft/artifacts/home-abc/public/${viewportId}-${theme}.png`,
+            stateId: "public",
+            status: "passed" as const,
+            theme,
+            url: "https://example.test/",
+            viewport:
+              viewportId === "mobile"
+                ? { height: 844, width: 390 }
+                : { height: 900, width: 1_440 },
+            viewportId,
+          })),
+        ),
+        {
+          diagnostics: {
+            consoleErrors: [],
+            failedRequests: [],
+            navigationStatus: 200,
+            pageErrors: [],
+          },
+          durationMs: 25,
+          failures: passed
+            ? []
+            : [
+                {
+                  code: "ASSERTION_FAILED",
+                  message: "Page overflows\nby 4px.",
+                },
+              ],
+          routeId: "pricing-def",
+          routePath: "/pricing",
+          scenarioSource: "statecraft:public-site",
+          screenshotPath: ".statecraft/artifacts/pricing-def/public/mobile-light.png",
+          stateId: "public",
+          status,
+          theme: "light",
+          url: "https://example.test/pricing",
+          viewport: { height: 844, width: 390 },
+          viewportId: "mobile",
+        },
+      ],
+      generatedAt: "2026-08-22T18:00:00.000Z",
+      project: { baseURL: "https://example.test/" },
+      schemaVersion: 1,
+      summary: {
+        coverage: {
+          execution: {
+            covered: passed ? 5 : 4,
+            percentage: passed ? 100 : 80,
+            total: 5,
+          },
+          responsive: {
+            covered: passed ? 2 : 1,
+            percentage: passed ? 100 : 50,
+            total: 2,
+          },
+          state: {
+            covered: passed ? 2 : 1,
+            percentage: passed ? 100 : 50,
+            total: 2,
+          },
+          theme: {
+            covered: passed ? 2 : 1,
+            percentage: passed ? 100 : 50,
+            total: 2,
+          },
+        },
+        durationMs: 125,
+        executions: 5,
+        failed: passed ? 0 : 1,
+        passed: passed ? 5 : 4,
+        routes: 2,
+        states: 2,
+      },
+    }),
+    htmlReportPath: ".statecraft/report/index.html",
+    reportPath: ".statecraft/report/statecraft.json",
+  });
+}
+
 function outputCapture(): {
   readonly messages: string[];
   readonly write: (message: string) => void;
@@ -163,6 +288,10 @@ describe("runCli", () => {
       }),
     ).resolves.toBe(0);
     expect(stdout.messages.join("")).toContain("statecraft init");
+    expect(stdout.messages.join("")).toContain("statecraft check <url>");
+    expect(stdout.messages.join("")).toContain(
+      "Check only websites you own or are authorized to test.",
+    );
     expect(stdout.messages.join("")).toContain("statecraft open");
     expect(stdout.messages.join("")).toContain(
       "persist screenshots, JSON, and HTML",
@@ -331,6 +460,120 @@ Targets:
   /project/statecraft.config.mts
   /project/statecraft
 `);
+  });
+
+  it("parses check options and prints a passing public-site summary", async () => {
+    const stdout = outputCapture();
+    const stderr = outputCapture();
+    checkPublicSiteMock.mockResolvedValue(completedCheck("passed"));
+
+    await expect(
+      runCli({
+        args: [
+          "check",
+          "https://example.test/start?private=value#fragment",
+          "--max-pages",
+          "12",
+          "--headed",
+        ],
+        cwd: "/project",
+        stderr: stderr.write,
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(0);
+    expect(checkPublicSiteMock).toHaveBeenCalledWith({
+      cwd: "/project",
+      headed: true,
+      maxPages: 12,
+      url: "https://example.test/start?private=value#fragment",
+    });
+    expect(stdout.messages.join("")).toContain("Statecraft Quick Check");
+    expect(stdout.messages.join("")).toContain(
+      "Site: https://example.test/",
+    );
+    expect(stdout.messages.join("")).toContain(
+      "Pages: 2 discovered · 2 scanned · 1 skipped",
+    );
+    expect(stdout.messages.join("")).toContain(
+      "Report: .statecraft/report/index.html",
+    );
+    expect(stdout.messages.join("")).toContain("All 5 checks passed.");
+    expect(stdout.messages.join("")).toContain("npx statecraft init");
+    expect(stderr.messages).toEqual([]);
+  });
+
+  it("returns exit code 1 and prints sanitized public-site failures", async () => {
+    const stdout = outputCapture();
+    checkPublicSiteMock.mockResolvedValue(completedCheck("failed"));
+
+    await expect(
+      runCli({
+        args: ["check", "https://example.test"],
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(1);
+    expect(stdout.messages.join("")).toContain(
+      "mobile · light · ASSERTION_FAILED: Page overflows\\nby 4px.",
+    );
+    expect(stdout.messages.join("")).toContain("1 issue across 5 checks.");
+    expect(stdout.messages.join("")).toContain("1 of 5 checks failed.");
+    expect(stdout.messages.join("")).not.toContain("Page overflows\nby 4px.");
+  });
+
+  it("prints expected check failures without terminal controls", async () => {
+    const stderr = outputCapture();
+    const { CheckError } = await import("../src/check.js");
+    checkPublicSiteMock.mockRejectedValue(
+      new CheckError(
+        "CHECK_DISCOVERY_FAILED",
+        "Starting page\nwas not ready.\u001b[2J",
+      ),
+    );
+
+    await expect(
+      runCli({
+        args: ["check", "https://example.test"],
+        stderr: stderr.write,
+      }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "Starting page\\nwas not ready.\\u{001b}[2J\n",
+    );
+  });
+
+  it("does not expose unexpected check errors", async () => {
+    const stderr = outputCapture();
+    checkPublicSiteMock.mockRejectedValue(new TypeError("secret internal detail"));
+
+    await expect(
+      runCli({
+        args: ["check", "https://example.test"],
+        stderr: stderr.write,
+      }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "Statecraft check failed unexpectedly.\n",
+    );
+  });
+
+  it.each([
+    [["check"], "The check command requires a public website URL."],
+    [["check", "relative/path"], "The check URL must be a valid absolute HTTP(S) URL."],
+    [["check", "file:///tmp/site"], "The check URL must be absolute HTTP(S) without credentials."],
+    [["check", credentialedCheckUrl()], "The check URL must be absolute HTTP(S) without credentials."],
+    [["check", "https://example.test", "https://other.test"], "The check command accepts exactly one URL."],
+    [["check", "https://example.test", "--max-pages"], "The --max-pages option requires a value."],
+    [["check", "https://example.test", "--max-pages", "0"], "The --max-pages option must be an integer between 1 and 20."],
+    [["check", "https://example.test", "--max-pages", "21"], "The --max-pages option must be an integer between 1 and 20."],
+    [["check", "https://example.test", "--max-pages", "5", "--max-pages", "6"], "The --max-pages option can be specified only once."],
+    [["check", "https://example.test", "--headed", "--headed"], "The --headed option can be specified only once."],
+    [["check", "https://example.test", "--write-config"], "Unknown check option: --write-config"],
+  ] as const)("rejects invalid check arguments %#", async (args, message) => {
+    const stderr = outputCapture();
+
+    await expect(runCli({ args, stderr: stderr.write })).resolves.toBe(2);
+    expect(stderr.messages.join("")).toContain(message);
+    expect(checkPublicSiteMock).not.toHaveBeenCalled();
   });
 
   it("parses scan options and prints a passing terminal summary", async () => {

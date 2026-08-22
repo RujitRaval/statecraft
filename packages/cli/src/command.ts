@@ -3,6 +3,11 @@ import { relative } from "node:path";
 import { ConfigValidationError } from "statecraft-ui-core";
 
 import {
+  CheckError,
+  checkPublicSite,
+  type CheckResult,
+} from "./check.js";
+import {
   ConfigDiscoveryError,
   ConfigLoadError,
 } from "./config.js";
@@ -14,14 +19,19 @@ const HELP = `Statecraft
 
 Usage:
   statecraft init
+  statecraft check <url> [--max-pages <1-20>] [--headed]
   statecraft scan [--config <path>] [--route <id>] [--headed]
   statecraft open
   statecraft --help
 
 Commands:
   init  Create a starter config and scenario without overwriting files
+  check Discover and inspect a public site without configuration
   scan  Execute configured UI states and persist screenshots, JSON, and HTML
   open  Open the latest generated offline HTML report
+
+Safety:
+  Check only websites you own or are authorized to test.
 `;
 
 /** Stable process outcomes exposed by the current command foundation. */
@@ -44,6 +54,12 @@ interface ParsedScanArguments {
   readonly configPath?: string | undefined;
   readonly headed: boolean;
   readonly routeId?: string | undefined;
+}
+
+interface ParsedCheckArguments {
+  readonly headed: boolean;
+  readonly maxPages?: number | undefined;
+  readonly url: string;
 }
 
 function terminalText(value: string): string {
@@ -111,6 +127,65 @@ function parseScanArguments(
   return Object.freeze({ configPath, headed, routeId });
 }
 
+function parseCheckArguments(
+  args: readonly string[],
+): ParsedCheckArguments | string {
+  let headed = false;
+  let maxPages: number | undefined;
+  let url: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    if (argument === "--headed") {
+      if (headed) {
+        return "The --headed option can be specified only once.";
+      }
+      headed = true;
+      continue;
+    }
+    if (argument === "--max-pages") {
+      if (maxPages !== undefined) {
+        return "The --max-pages option can be specified only once.";
+      }
+      const value = args[index + 1];
+      if (value === undefined || value.startsWith("--")) {
+        return "The --max-pages option requires a value.";
+      }
+      if (!/^(?:[1-9]|1[0-9]|20)$/u.test(value)) {
+        return "The --max-pages option must be an integer between 1 and 20.";
+      }
+      maxPages = Number(value);
+      index += 1;
+      continue;
+    }
+    if (argument.startsWith("--")) {
+      return `Unknown check option: ${argument}`;
+    }
+    if (url !== undefined) {
+      return "The check command accepts exactly one URL.";
+    }
+    url = argument;
+  }
+
+  if (url === undefined) {
+    return "The check command requires a public website URL.";
+  }
+  try {
+    const parsedURL = new URL(url);
+    if (
+      (parsedURL.protocol !== "http:" && parsedURL.protocol !== "https:") ||
+      parsedURL.username.length > 0 ||
+      parsedURL.password.length > 0
+    ) {
+      return "The check URL must be absolute HTTP(S) without credentials.";
+    }
+  } catch {
+    return "The check URL must be a valid absolute HTTP(S) URL.";
+  }
+
+  return Object.freeze({ headed, maxPages, url });
+}
+
 function routeTitle(routeId: string): string {
   return routeId
     .split("-")
@@ -148,6 +223,75 @@ export function formatScanSummary(result: ScanResult): string {
     failed === 0
       ? `All ${executions} execution${executions === 1 ? "" : "s"} passed.`
       : `${failed} of ${executions} execution${executions === 1 ? "" : "s"} failed.`,
+  );
+  return `${lines.join("\n")}\n`;
+}
+
+function quantity(
+  count: number,
+  singular: string,
+  plural = `${singular}s`,
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+/** Formats one completed public-site Quick Check without exposing diagnostics. */
+export function formatCheckSummary(result: CheckResult): string {
+  const executions = result.report.executions;
+  const routePaths = [
+    ...new Set(executions.map((execution) => execution.routePath)),
+  ];
+  const issueCount = executions.reduce(
+    (total, execution) => total + execution.failures.length,
+    0,
+  );
+  const lines = [
+    "Statecraft Quick Check",
+    "",
+    `Site: ${terminalText(result.discovery.baseURL)}`,
+    `Pages: ${result.discovery.routes.length} discovered · ${routePaths.length} scanned · ${result.discovery.skippedPages} skipped`,
+    `Discovery: ${quantity(result.discovery.attemptedPages, "page")} attempted · ${quantity(result.discovery.truncatedAnchorPages, "anchor page")} truncated`,
+  ];
+
+  for (const routePath of routePaths) {
+    const routeExecutions = executions.filter(
+      (execution) => execution.routePath === routePath,
+    );
+    const failed = routeExecutions.filter(
+      (execution) => execution.status === "failed",
+    );
+    const routeIssues = failed.reduce(
+      (total, execution) => total + execution.failures.length,
+      0,
+    );
+    lines.push("", terminalText(routePath));
+    if (failed.length === 0) {
+      lines.push(`  ✓ All ${quantity(routeExecutions.length, "check")} passed.`);
+      continue;
+    }
+    lines.push(
+      `  ✗ ${failed.length} of ${quantity(routeExecutions.length, "check")} failed · ${quantity(routeIssues, "issue")}`,
+    );
+    for (const execution of failed) {
+      for (const failure of execution.failures) {
+        lines.push(
+          `      ${terminalText(execution.viewportId)} · ${terminalText(execution.theme)} · ${terminalText(failure.code)}: ${terminalText(failure.message)}`,
+        );
+      }
+    }
+  }
+
+  const { executions: executionCount, failed } = result.report.summary;
+  lines.push(
+    "",
+    `Coverage: ${result.report.summary.coverage.execution.percentage}%`,
+    `Issues: ${quantity(issueCount, "issue")} across ${quantity(executionCount, "check")}.`,
+    `Report: ${result.htmlReportPath}`,
+    failed === 0
+      ? `All ${quantity(executionCount, "check")} passed.`
+      : `${failed} of ${quantity(executionCount, "check")} failed.`,
+    "",
+    "Next: Open the report, then run `npx statecraft init` to model real product states.",
   );
   return `${lines.join("\n")}\n`;
 }
@@ -193,9 +337,36 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
     return 2;
   }
 
-  if (args[0] !== "init" && args[0] !== "scan" && args[0] !== "open") {
+  if (
+    args[0] !== "init" &&
+    args[0] !== "check" &&
+    args[0] !== "scan" &&
+    args[0] !== "open"
+  ) {
     stderr(`Unknown command: ${terminalText(args[0]!)}\n\n${HELP}`);
     return 2;
+  }
+
+  if (args[0] === "check") {
+    const parsed = parseCheckArguments(args.slice(1));
+    if (typeof parsed === "string") {
+      stderr(`${terminalText(parsed)}\n\n${HELP}`);
+      return 2;
+    }
+    try {
+      const result = await checkPublicSite({ cwd: options.cwd, ...parsed });
+      stdout(formatCheckSummary(result));
+      return result.report.summary.failed === 0 ? 0 : 1;
+    } catch (error: unknown) {
+      stderr(
+        `${
+          error instanceof CheckError
+            ? terminalText(error.message)
+            : "Statecraft check failed unexpectedly."
+        }\n`,
+      );
+      return 2;
+    }
   }
 
   if (args[0] === "scan") {

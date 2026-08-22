@@ -33,5 +33,10 @@ README, CI usage, contributor docs, GIF/screenshots, package metadata, smoke tes
 **Gate:** another developer can use it from docs alone.
 **Status:** complete; clean-checkout production build and built-CLI consumer smoke coverage, exact known-failure validation, short-lived report artifacts, documented GitHub Actions usage, public npm packages, artifact-level consumer verification, protected release automation, real report launch assets, and final contributor/release guidance are implemented.
 
+## Approved roadmap - Public URL Quick Check
+Bounded same-origin discovery, a fixed public-site evidence matrix, kinetic report presentation, CLI orchestration, and overwrite-safe promotion into permanent Statecraft setup.
+**Gate:** a developer can point one command at an authorized live site, receive actionable local evidence, and promote the useful surface without hand-authoring boilerplate.
+**Status:** CLI `check <url>` now composes discovery, four-cell-per-page evidence capture, page-level summaries, stable exit codes, and the offline report. Overwrite-safe permanent setup generation remains the next separate slice.
+
 ## Rules
 Keep main buildable; no speculative abstractions/backend/telemetry/LLM; tests accompany capabilities; record important decisions as ADRs; justify major dependencies.

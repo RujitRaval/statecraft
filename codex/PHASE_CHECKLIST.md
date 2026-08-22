@@ -67,3 +67,10 @@ Phase 4 through Phase 6 are complete.
 - [x] Copy-ready GitHub Actions usage with exit-code and privacy guidance
 - [x] Publish-ready package metadata and release automation
 - [x] Launch README assets and final contributor/release polish
+
+## Approved roadmap - Public URL Quick Check
+- [x] Bounded same-origin public route discovery
+- [x] Fixed mobile/desktop by light/dark evidence and persisted report
+- [x] Kinetic evidence report presentation
+- [x] `statecraft check <url>` orchestration, summaries, and exit codes
+- [ ] Overwrite-safe promotion into permanent `.mts` config and scenario files

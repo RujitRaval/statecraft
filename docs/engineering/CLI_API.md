@@ -1,11 +1,12 @@
 # CLI API
 
-`statecraft-ui` exposes deterministic config loading plus executable `init`, `scan`, and `open` workflows. Scan composes the existing core planner, Playwright persistence, and Phase 5 report-generation contracts. Open launches the generated offline HTML report; report transformation and rendering stay owned by `statecraft-ui-report`.
+`statecraft-ui` exposes zero-config public-site checking, deterministic config loading, and executable `init`, `scan`, and `open` workflows. Check composes bounded runner discovery, fixed public-site evidence, and the report-generation contracts. Scan composes the core planner and configured runner. Open launches the generated offline HTML report; report transformation and rendering stay owned by `statecraft-ui-report`.
 
 ## Executable
 
 ```bash
 statecraft init
+statecraft check <url> [--max-pages <1-20>] [--headed]
 statecraft scan [--config <path>] [--route <id>] [--headed]
 statecraft open
 statecraft --help
@@ -22,13 +23,24 @@ The config imports `defineConfig` from the installed `statecraft-ui` package and
 
 No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation, the config is published last, and alternate config names are rechecked before success is reported. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; write failures list the affected targets for inspection before retrying.
 
-Missing or unsupported commands, extra `init` or `open` arguments, malformed scan options, config errors, unknown route IDs, absent/invalid HTML reports, launcher failures, and run-level failures return `2`. Help, successful opens, and all-pass scans return `0`. A completed scan containing failed cells returns `1` after persisting its report.
+Missing or unsupported commands, malformed check/scan options, extra `init` or `open` arguments, invalid public URLs, discovery/config errors, unknown route IDs, absent/invalid HTML reports, launcher failures, and run-level failures return `2`. Help, successful opens, and all-pass checks/scans return `0`. A completed check or scan containing failed cells returns `1` after persisting its report.
 
-## Programmatic command, init, scan, and open API
+## Programmatic command, check, init, scan, and open API
 
 ```ts
-import { initProject, openReport, runCli, scanProject } from "statecraft-ui";
+import {
+  checkPublicSite,
+  initProject,
+  openReport,
+  runCli,
+  scanProject,
+} from "statecraft-ui";
 
+const check = await checkPublicSite({
+  cwd: process.cwd(),
+  maxPages: 5,
+  url: "https://example.com",
+});
 const result = await initProject({ cwd: process.cwd() });
 const exitCode = await runCli({ args: ["init"], cwd: process.cwd() });
 const scan = await scanProject({ cwd: process.cwd(), routeId: "dashboard" });
@@ -36,6 +48,8 @@ const opened = await openReport({ cwd: process.cwd() });
 ```
 
 `initProject` returns canonical absolute `projectRoot`, `configPath`, and `scenarioPath` values plus an immutable `files` list. Expected failures use `InitError` with `INIT_CONFLICT`, `INIT_ROOT_INVALID`, or `INIT_WRITE_FAILED` and expose the affected paths.
+
+`checkPublicSite` canonicalizes the output directory before browser work, calls `discoverPublicRoutes`, passes that immutable discovery result to `runPublicSiteChecks`, and returns discovery metadata plus the validated report and stable JSON/HTML paths. `headed: true` is forwarded to both browser launches, while `maxPages` applies only to discovery. Invalid roots, input, and expected starting-page failures become `CheckError` with `CHECK_ROOT_INVALID`, `CHECK_INVALID_INPUT`, or `CHECK_DISCOVERY_FAILED`; unexpected runner details remain hidden by the executable. The executable summary groups fixed cells by route pathname, prints sanitized failure messages rather than diagnostic payloads, and points to the kinetic offline report.
 
 `scanProject` loads and validates config, verifies an optional exact `routeId`, expands the selected matrix, resolves scenarios relative to the selected config, and persists deterministic output beneath the selected `cwd`. `headed: true` forwards `{ headless: false }` to Playwright. The runner publishes PNG, schema-v1 JSON, and offline HTML as one coordinated output set. `scanProject` returns the canonical config path, validated report, stable `.statecraft/report/statecraft.json` machine-readable path, and `.statecraft/report/index.html` `htmlReportPath`. An unknown route raises `ScanError` with `SCAN_ROUTE_NOT_FOUND` before output creation; unexpected runner or filesystem details remain hidden behind CLI exit code `2`.
 

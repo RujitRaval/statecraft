@@ -11,6 +11,7 @@ Statecraft is a local-first product-state coverage tool. It renders your routes 
 ```bash
 npm install --save-dev statecraft-ui playwright@1.62.1
 npx playwright install chromium
+npx statecraft check https://example.com
 npx statecraft init
 npx statecraft scan
 ```
@@ -31,6 +32,18 @@ Conventional visual regression asks whether an existing screenshot changed. Stat
 | Output | Private local JSON, PNGs, and offline HTML | Usually service- or runner-specific |
 
 Use it for loading, empty, error, unauthorized, long-content, responsive, and theme states—the places where otherwise healthy applications tend to break.
+
+## Check a live website without config
+
+Point Statecraft at a public site you own or are authorized to test:
+
+```bash
+npx statecraft check https://example.com
+```
+
+Statecraft discovers up to five same-origin HTML pages, checks every page at mobile/desktop × light/dark, captures screenshots and sanitized browser evidence, and writes the kinetic offline report to `.statecraft/report/index.html`. Use `--max-pages <1-20>` for a different bounded discovery budget or `--headed` to watch the run. The command exits `0` when every cell passes, `1` when it finds failures, and `2` when usage, discovery, or the run itself cannot complete.
+
+Quick Check covers public success surfaces. Run `statecraft init` when you are ready to model the loading, empty, error, authenticated, and long-content states that a public crawl cannot reach.
 
 ## Quick start
 
@@ -173,7 +186,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [documentation map](codex/MAS
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, and a complete example. The approved [public URL Quick Check design](docs/designs/public-url-quick-check.md) specifies a future zero-config onboarding workflow; `statecraft check` is not implemented in the current release. Other potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the zero-config `statecraft check <url>` path from the approved [public URL Quick Check design](docs/designs/public-url-quick-check.md). Overwrite-safe promotion from a useful Quick Check into permanent config remains the next approved slice. Other potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

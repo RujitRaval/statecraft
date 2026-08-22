@@ -17,7 +17,7 @@ The checked-in assets are generated from the real Northline report:
 Regenerate them only from the complete local example scan. Start the production example, run its checked-in Statecraft matrix, confirm the expected 56 passes and four failures, then run `corepack pnpm launch:assets`. Review both PNGs for fictional-only data before committing them. The capture command blocks HTTP and HTTPS requests while opening the self-contained file report.
 
 ## README above fold
-Name; promise; excellent GIF/screenshot; `npx statecraft scan`; tiny matrix; contrast with conventional visual regression.
+Name; promise; excellent GIF/screenshot; zero-config `npx statecraft check <url>` entry point; configured `npx statecraft scan` workflow; tiny matrix; contrast with conventional visual regression.
 
 ## Distribution after stability
 npm; GitHub Actions workflow; demo repo; posts showing real findings; later Codex/Claude/OpenCode skills.
@@ -33,4 +33,4 @@ No fake activity, AI overclaiming, half-working universal framework, cloud gate,
 
 ## Current status
 
-Phase 7 is complete. The public README, real report assets, npm packages, protected release workflow, consumer smoke gates, GitHub Actions guide, and contributor/release guidance are live. Future launch work should distribute these proofs rather than expand the v0.1 product boundary.
+Phase 7 is complete. The public README, real report assets, npm packages, protected release workflow, consumer smoke gates, GitHub Actions guide, contributor/release guidance, and zero-config `statecraft check <url>` path are live. Overwrite-safe Quick Check promotion remains a separate approved slice; other launch work should distribute these proofs rather than expand the product boundary.
