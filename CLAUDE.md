@@ -1,6 +1,6 @@
 # Statecraft
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 are complete. Keep future work in an explicitly approved roadmap slice.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 are complete. The approved Public URL Quick Check roadmap now includes `statecraft check <url>`; overwrite-safe promotion into permanent config remains the next separate slice. Keep future work in an explicitly approved roadmap slice.
 
 ## Skill routing
 

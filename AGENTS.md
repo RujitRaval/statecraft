@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. Keep future work in an explicitly approved roadmap slice.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap now includes bounded discovery, fixed-matrix evidence, kinetic reporting, and `statecraft check <url>` orchestration; overwrite-safe promotion into permanent config remains the next separate slice. Keep future work in an explicitly approved roadmap slice.
 
 ## Design system
 
