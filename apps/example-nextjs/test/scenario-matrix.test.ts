@@ -252,8 +252,10 @@ describe("complete example scenario matrix", () => {
     );
 
     const html = await readFile(htmlPath, "utf8");
-    expect(html).toContain("Execution coverage");
-    expect(html).toContain("93.33%");
+    expect(html).toContain('data-brand-system="kinetic-evidence-v1"');
+    expect(html).toContain("Evidence<br>over instinct.");
+    expect(html).toContain("4 states broke. Open the evidence.");
+    expect(html).toContain("<strong>93.33<span>%</span></strong>");
     expect(html).toContain("<span>Failed</span><strong>4</strong>");
   }, 180_000);
 });

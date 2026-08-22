@@ -273,8 +273,10 @@ describe("runPersistedScenarioCells", () => {
       ).href;
 
       for (const viewport of [
+        { height: 812, width: 375 },
+        { height: 1_024, width: 768 },
+        { height: 768, width: 1_024 },
         { height: 900, width: 1_440 },
-        { height: 844, width: 390 },
       ]) {
         const context = await browser.newContext({ viewport });
         try {
@@ -295,6 +297,11 @@ describe("runPersistedScenarioCells", () => {
           expect(await page.locator("[data-detail]:visible").count()).toBe(0);
           expect(await page.locator("[data-detail-target]:visible").count()).toBe(10);
           expect(await page.locator("[data-matrix-row]:visible").count()).toBe(3);
+          expect(await page.locator('[data-signal-fracture="failed"]:visible').count()).toBe(2);
+          expect(await page.locator('[data-signal-fracture="missing"]:visible').count()).toBe(2);
+          expect(
+            await page.locator(".matrix-cell--passed:visible").first().getAttribute("data-signal-fracture"),
+          ).toBeNull();
 
           if (viewport.width > 1_000) {
             expect(
@@ -309,12 +316,23 @@ describe("runPersistedScenarioCells", () => {
             ).toEqual(["", "clean-after", "page-error", "nonfatal"]);
           }
 
-          const heroColumns = await page.locator(".hero").evaluate((hero) =>
-            getComputedStyle(hero).gridTemplateColumns.split(" ").length,
+          expect(
+            await page.locator(".hero").evaluate((hero) => getComputedStyle(hero).display),
+          ).toBe("block");
+          const verdictColumns = await page.locator(".hero-verdict").evaluate((verdict) =>
+            getComputedStyle(verdict).gridTemplateColumns.split(" ").length,
           );
-          expect(heroColumns).toBe(viewport.width > 1_000 ? 2 : 1);
+          expect(verdictColumns).toBe(viewport.width > 1_000 ? 2 : 1);
 
           if (viewport.width > 1_000) {
+            await page.emulateMedia({ colorScheme: "dark" });
+            expect(
+              await page.locator("html").evaluate((html) =>
+                getComputedStyle(html).getPropertyValue("--bg").trim(),
+              ),
+            ).toBe("#11140f");
+            await page.emulateMedia({ colorScheme: "light" });
+
             await page.keyboard.press("Tab");
             expect(
               await page.locator(".skip-link").evaluate(
@@ -392,6 +410,21 @@ describe("runPersistedScenarioCells", () => {
               ),
             ).toBe(true);
             const visibleDetail = page.locator("[data-detail]:visible");
+            const detailElement = page.locator(new URL(page.url()).hash);
+            expect(await visibleDetail.getAttribute("role")).toBe("dialog");
+            expect(await visibleDetail.getAttribute("aria-modal")).toBe("true");
+            expect(await page.locator("body").getAttribute("class")).toContain("detail-open");
+            expect(
+              await firstCell.evaluate((cell) => getComputedStyle(cell).transitionDuration),
+            ).toBe("0s");
+            const detailClose = visibleDetail.locator(".detail-close");
+            const detailBack = visibleDetail.locator(".back-link");
+            await detailBack.focus();
+            await page.keyboard.press("Tab");
+            expect(await detailClose.evaluate((link) => link === document.activeElement)).toBe(true);
+            await page.keyboard.press("Shift+Tab");
+            expect(await detailBack.evaluate((link) => link === document.activeElement)).toBe(true);
+            await visibleDetail.focus();
             const diagnosticCounts = await visibleDetail
               .locator("details summary strong")
               .allTextContents();
@@ -400,8 +433,11 @@ describe("runPersistedScenarioCells", () => {
             const consoleDisclosure = visibleDetail.locator("details").nth(1);
             await consoleDisclosure.locator("summary").click();
             expect(await consoleDisclosure.getAttribute("open")).not.toBeNull();
-            await visibleDetail.locator("[data-close-detail]").click();
+            await detailClose.click();
             expect(await page.locator("[data-detail]:visible").count()).toBe(0);
+            expect(await page.locator("body").getAttribute("class")).not.toContain("detail-open");
+            expect(await detailElement.getAttribute("role")).toBeNull();
+            expect(await detailElement.getAttribute("aria-modal")).toBeNull();
             expect(await firstCell.evaluate((cell) => cell === document.activeElement)).toBe(
               true,
             );

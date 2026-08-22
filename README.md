@@ -15,7 +15,7 @@ npx statecraft init
 npx statecraft scan
 ```
 
-![Statecraft report showing 60 UI executions, 56 passes, four failures, filters, and the beginning of the evidence matrix](docs/assets/statecraft-report-overview.png)
+![Statecraft report opening with the Evidence over instinct verdict and 93.33 percent coverage for 60 UI executions](docs/assets/statecraft-report-overview.png)
 
 The screenshot above is the real 60-cell Northline example report. Four deliberately broken coordinates remain visible so the release gate proves Statecraft catches narrow-viewport overflow and theme-specific contrast failures.
 
@@ -152,7 +152,7 @@ configure → expand matrix → run isolated browser cells → persist evidence 
 - Console, page, and request diagnostics are sanitized before persistence.
 - `.statecraft/` is ignored because reports may contain sensitive application data.
 
-Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), and [report UX specification](docs/product/REPORT_UX_SPEC.md) for the detailed contracts.
+Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), [report UX specification](docs/product/REPORT_UX_SPEC.md), and [brand research](docs/design/BRAND_RESEARCH.md) for the detailed contracts. The repository-level [design system](DESIGN.md) is the visual source of truth.
 
 ## Develop and contribute
 
