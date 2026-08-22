@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.7.0] - 2026-08-22
+
+### Added
+
+- Anyone can now run `statecraft check <url>` against an authorized public website to discover a bounded same-origin surface, capture the fixed mobile/desktop × light/dark evidence matrix, and persist schema-v1 JSON plus the kinetic offline report under `.statecraft/`.
+- The command supports `--max-pages <1-20>` and `--headed`, prints page-grouped results and actionable issue totals, and ends with the exact `npx statecraft init` adoption step.
+- CLI, package-boundary, and real-browser regressions cover argument validation, stable exit codes, sanitized unexpected failures, canonical output roots, query redaction, screenshot persistence, report rendering, and known-failure behavior.
+
+### Changed
+
+- Public CLI types now expose a small structural discovery contract instead of leaking Playwright runner implementation types to npm consumers.
+
+### Security
+
+- Public-site checks reject invalid URLs, credentials, unsafe page budgets, missing roots, and non-directory output roots before browser work, while unexpected internal browser errors remain on the generic sanitized CLI path.
+
 ## [0.24.6.0] - 2026-08-22
 
 ### Added

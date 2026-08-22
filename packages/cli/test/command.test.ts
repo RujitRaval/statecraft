@@ -75,6 +75,13 @@ async function temporaryProject(): Promise<string> {
   return project;
 }
 
+function credentialedCheckUrl(): string {
+  const url = new URL("https://example.test");
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.toString();
+}
+
 afterEach(async () => {
   checkPublicSiteMock.mockReset();
   openReportMock.mockReset();
@@ -553,7 +560,7 @@ Targets:
     [["check"], "The check command requires a public website URL."],
     [["check", "relative/path"], "The check URL must be a valid absolute HTTP(S) URL."],
     [["check", "file:///tmp/site"], "The check URL must be absolute HTTP(S) without credentials."],
-    [["check", "https://user:pass@example.test"], "The check URL must be absolute HTTP(S) without credentials."],
+    [["check", credentialedCheckUrl()], "The check URL must be absolute HTTP(S) without credentials."],
     [["check", "https://example.test", "https://other.test"], "The check command accepts exactly one URL."],
     [["check", "https://example.test", "--max-pages"], "The --max-pages option requires a value."],
     [["check", "https://example.test", "--max-pages", "0"], "The --max-pages option must be an integer between 1 and 20."],

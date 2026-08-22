@@ -55,6 +55,13 @@ function report() {
   });
 }
 
+function credentialedUrl(): string {
+  const url = new URL("https://example.test");
+  url.username = "fixture-user";
+  url.password = "fixture-password";
+  return url.toString();
+}
+
 beforeEach(() => {
   discoverPublicRoutesMock.mockReset();
   runPublicSiteChecksMock.mockReset();
@@ -162,7 +169,7 @@ describe("checkPublicSite options", () => {
 
   it.each([
     "ftp://example.test",
-    "https://user:secret@example.test",
+    credentialedUrl(),
   ])("rejects the unsafe public URL %s before discovery", async (url) => {
     await expect(checkPublicSite({ url })).rejects.toMatchObject({
       code: "CHECK_INVALID_INPUT",

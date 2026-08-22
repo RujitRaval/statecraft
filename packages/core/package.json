@@ -1,6 +1,6 @@
 {
   "name": "statecraft-ui-core",
-  "version": "0.24.6",
+  "version": "0.24.7",
   "description": "Core contracts for Statecraft UI product-state coverage.",
   "license": "MIT",
   "repository": {
