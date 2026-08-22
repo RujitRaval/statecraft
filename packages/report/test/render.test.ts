@@ -18,11 +18,13 @@ describe("renderReportHtml", () => {
     expect(html).toContain("UI State Coverage Report");
     expect(html).toContain('data-brand-system="kinetic-evidence-v1"');
     expect(html).toContain("Evidence<br>over instinct.");
+    expect(html).toContain("1 state broke. Open the evidence.");
     expect(html).toContain("Coverage matrix");
     expect(html).toContain("../artifacts/dashboard/success/desktop-light.png");
     expect(html).toContain('href="#execution-1"');
     expect(html).toContain('id="execution-2"');
     expect(html).toContain('data-signal-fracture="failed"');
+    expect(html).toContain('data-signal-fracture="missing"');
     expect(html).toContain("Inspection room / execution-2");
     expect(html).toContain("@media(prefers-color-scheme:dark)");
     expect(html).toContain("@media(prefers-reduced-motion:reduce)");
@@ -53,6 +55,7 @@ describe("renderReportHtml", () => {
     expect(html).toContain('data-viewport="mobile"');
     expect(html).toContain('data-theme="dark"');
     expect(html).toContain('data-status="failed"');
+    expect(html).toContain("2 states broke. Open the evidence.");
     expect(script).toBeDefined();
     expect(cspHash).toBe(
       createHash("sha256").update(script ?? "").digest("base64"),
@@ -61,6 +64,8 @@ describe("renderReportHtml", () => {
 
   it("keeps the valid identifier 'all' distinct from each wildcard option", () => {
     const html = renderReportHtml(allIdentifierReportFixture());
+
+    expect(html).toContain("Every captured state held.");
 
     for (const name of ["route", "state", "viewport", "theme"]) {
       const select = html.match(
