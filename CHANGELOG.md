@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.9.0] - 2026-08-22
+
+### Added
+
+- Maintainers and release automation can now prove the complete public URL adoption journey from an empty `npm init -y` project using only published npm registry packages: evidence-only `check`, overwrite-safe `check --write-config`, then untouched `scan`.
+- The final launch guide explains installation, bounded same-origin discovery, local evidence, promotion, exit codes, privacy, authorization, and how Quick Check grows into product-state coverage.
+- The release workflow now runs the registry-only journey in a dependent, read-only job after all four packages publish, requiring the exact eight-cell matrix, screenshots, schema-v1 JSON, kinetic offline HTML, generated imports, and byte-stable project source.
+
+### Changed
+
+- Registry propagation and transient install failures use bounded retries whose command, delay, browser, and CLI budgets fit inside the independent 15-minute release-job ceiling.
+- The consumer gate derives Playwright's exact version from the runner package contract and provisions Linux browser dependencies only when release CI requests them.
+
+### Security
+
+- Registry smoke evidence must resolve inside the private temporary consumer and artifact boundaries, shell-free commands use explicit arguments, and cleanup removes the consumer even when fixture shutdown fails.
+
 ## [0.24.8.0] - 2026-08-22
 
 ### Added
