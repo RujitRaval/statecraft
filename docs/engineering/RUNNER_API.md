@@ -14,7 +14,7 @@ CI uses the same command with `--with-deps` on Ubuntu.
 
 ## Public URL route discovery
 
-`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. It is the discovery half of the planned `statecraft check <url>` command; CLI parsing, terminal orchestration, exit codes, and config generation remain follow-up slices.
+`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. The CLI composes it with `runPublicSiteChecks` through `statecraft check <url>`; overwrite-safe permanent config generation remains a follow-up slice.
 
 ```ts
 import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
@@ -284,7 +284,7 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery plus runner-owned fixed-matrix evidence. CLI `statecraft check` orchestration and permanent setup generation remain follow-up slices.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery, runner-owned fixed-matrix evidence, and CLI `statecraft check` orchestration. Permanent setup generation remains the follow-up slice.
 
 ## Dependency decision
 

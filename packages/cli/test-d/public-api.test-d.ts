@@ -1,7 +1,9 @@
 import {
+  CheckError,
   ConfigDiscoveryError,
   ConfigLoadError,
   DEFAULT_CONFIG_FILENAMES,
+  checkPublicSite,
   discoverConfig,
   defineConfig,
   initProject,
@@ -12,6 +14,10 @@ import {
   InitError,
   OpenReportError,
   ScanError,
+  type CheckErrorCode,
+  type CheckDiscovery,
+  type CheckOptions,
+  type CheckResult,
   type ConfigDiscoveryErrorCode,
   type ConfigDiscoveryOptions,
   type ConfigLoadErrorCode,
@@ -28,6 +34,20 @@ import {
   type ScanOptions,
   type ScanResult,
 } from "statecraft-ui";
+
+const checkOptions: CheckOptions = {
+  cwd: "/tmp/example",
+  headed: false,
+  maxPages: 5,
+  url: "https://example.com",
+};
+const checkResult: Promise<CheckResult> = checkPublicSite(checkOptions);
+const checkDiscovery: Promise<CheckDiscovery> = checkResult.then(
+  (result) => result.discovery,
+);
+const checkCode: CheckErrorCode = "CHECK_DISCOVERY_FAILED";
+const checkRootCode: CheckErrorCode = "CHECK_ROOT_INVALID";
+const checkError: Error = new CheckError(checkCode, "Discovery failed.");
 
 const options: ConfigDiscoveryOptions = {
   configPath: "./config/statecraft.config.mjs",
@@ -86,6 +106,10 @@ const typedConfig = defineConfig({
 });
 
 void configPath;
+void checkResult;
+void checkDiscovery;
+void checkError;
+void checkRootCode;
 void loadedConfig;
 void filenames;
 void discoveryError;

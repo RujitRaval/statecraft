@@ -74,12 +74,14 @@ describe("statecraft-ui package boundary", () => {
     );
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule).sort()).toEqual([
+      "CheckError",
       "ConfigDiscoveryError",
       "ConfigLoadError",
       "DEFAULT_CONFIG_FILENAMES",
       "InitError",
       "OpenReportError",
       "ScanError",
+      "checkPublicSite",
       "defineConfig",
       "discoverConfig",
       "initProject",
