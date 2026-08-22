@@ -21,13 +21,30 @@ export interface ScenarioContext {
   readonly viewport: MatrixCell["viewport"];
 }
 
+/** Main-document metadata supplied to post-capture assertion hooks. */
+export interface ScenarioNavigationMetadata {
+  readonly requestedUrl: string;
+  readonly status: number | null;
+  readonly url: string;
+}
+
+/** Scenario context available after built-in navigation and readiness. */
+export interface AssertionScenarioContext extends ScenarioContext {
+  readonly navigation: ScenarioNavigationMetadata;
+}
+
 /** One asynchronous scenario lifecycle hook. */
 export type ScenarioHook = (context: ScenarioContext) => Promise<void>;
+
+/** One post-capture assertion hook with final navigation metadata. */
+export type ScenarioAssertionHook = (
+  context: AssertionScenarioContext,
+) => Promise<void>;
 
 /** Trusted local scenario code loaded from a state's setup module. */
 export interface StatecraftScenario {
   readonly afterNavigate?: ScenarioHook | undefined;
-  readonly assert?: ScenarioHook | undefined;
+  readonly assert?: ScenarioAssertionHook | undefined;
   readonly beforeNavigate?: ScenarioHook | undefined;
 }
 
@@ -118,6 +135,14 @@ function normalizeScenario(
       scenarioPath,
     ),
   });
+}
+
+/** @internal Runtime-validates a trusted in-memory scenario override. */
+export function validateScenario(
+  scenario: unknown,
+  scenarioSource: string,
+): StatecraftScenario {
+  return normalizeScenario({ default: scenario }, scenarioSource);
 }
 
 /** Imports and runtime-validates one trusted local scenario module. */

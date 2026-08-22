@@ -11,13 +11,17 @@ import {
   assertPageOrigin,
   defaultNavigationTimeoutMs,
   defaultReadinessTimeoutMs,
+  guardDocumentNavigation,
   positiveSafeInteger,
   settleDeterministicReadiness,
+  type DocumentNavigationGuard,
 } from "./readiness.js";
 import {
   loadScenario,
   scenarioContextForExecution,
+  validateScenario,
   type RunScenarioCellsOptions,
+  type ScenarioNavigationMetadata,
   type ScenarioContext,
   type StatecraftScenario,
 } from "./scenario.js";
@@ -36,16 +40,12 @@ export interface RunNavigatedScenarioCellsOptions
   readonly baseURL: string;
   readonly navigationTimeoutMs?: number | undefined;
   readonly readiness?: DeterministicReadinessOptions | undefined;
+  /** Trusted in-memory scenario used for every cell instead of loading setup paths. */
+  readonly scenario?: StatecraftScenario | undefined;
 }
 
 /** Stable navigation metadata available after deterministic readiness. */
-export interface NavigationMetadata {
-  readonly requestedUrl: string;
-  /** HTTP status returned by the built-in navigation to requestedUrl. */
-  readonly status: number | null;
-  /** Final URL on success; last validated same-origin URL in failure evidence. */
-  readonly url: string;
-}
+export type NavigationMetadata = ScenarioNavigationMetadata;
 
 /** Scenario context exposed only after built-in navigation and readiness. */
 export interface NavigatedScenarioContext extends ScenarioContext {
@@ -62,10 +62,12 @@ interface NavigationSettings {
   readonly navigationTimeoutMs: number;
   readonly readinessSelector?: string | undefined;
   readonly readinessTimeoutMs: number;
+  readonly scenario?: StatecraftScenario | undefined;
 }
 
 /** @internal Lets higher-level runner stages surround the navigation lifecycle. */
 export interface NavigatedScenarioLifecycle {
+  readonly assertNavigationStable: () => void;
   readonly context: ScenarioContext;
   readonly navigate: () => Promise<NavigatedScenarioLifecycleResult>;
   readonly navigationSnapshot: () => NavigationMetadata | null;
@@ -115,6 +117,10 @@ function navigationSettings(
       defaultReadinessTimeoutMs,
       "readiness.timeoutMs",
     ),
+    scenario:
+      options.scenario === undefined
+        ? undefined
+        : validateScenario(options.scenario, "programmatic scenario override"),
   });
 }
 
@@ -194,6 +200,7 @@ export async function runNavigatedScenarioLifecycleCells<Value>(
       let navigationStarted = false;
       let navigationSnapshot: NavigationMetadata | null = null;
       let navigationStatusSnapshot: number | null = null;
+      let documentNavigationGuard: DocumentNavigationGuard | undefined;
 
       const navigate = async (): Promise<NavigatedScenarioLifecycleResult> => {
         if (navigationStarted) {
@@ -205,9 +212,11 @@ export async function runNavigatedScenarioLifecycleCells<Value>(
           settings.baseURL,
           execution.cell.route.path,
         );
-        const scenario = await loadScenario(execution.cell.state.setup, {
-          baseDirectory: options.scenarioBaseDirectory,
-        });
+        const scenario =
+          settings.scenario ??
+          (await loadScenario(execution.cell.state.setup, {
+            baseDirectory: options.scenarioBaseDirectory,
+          }));
         await applyTheme(context.page, context.theme);
         await scenario.beforeNavigate?.(context);
         const response = await context.page.goto(requestedUrl.href, {
@@ -223,11 +232,16 @@ export async function runNavigatedScenarioLifecycleCells<Value>(
         });
         await scenario.afterNavigate?.(context);
         assertPageOrigin(context.page, settings.baseURL);
+        documentNavigationGuard = guardDocumentNavigation(
+          context.page,
+          settings.baseURL,
+        );
         await settleDeterministicReadiness(context.page, {
           baseURL: settings.baseURL,
           selector: settings.readinessSelector,
           timeoutMs: settings.readinessTimeoutMs,
         });
+        documentNavigationGuard.assertStable();
         assertPageOrigin(context.page, settings.baseURL);
 
         navigationSnapshot = Object.freeze({
@@ -241,15 +255,23 @@ export async function runNavigatedScenarioLifecycleCells<Value>(
         });
       };
 
-      return execute(
-        Object.freeze({
-          context,
-          navigate,
-          navigationSnapshot: () => navigationSnapshot,
-          navigationStatusSnapshot: () => navigationStatusSnapshot,
-          startedAt: executionStartedAt(execution),
-        }),
-      );
+      const lifecycle = Object.freeze({
+        assertNavigationStable: (): void => {
+          documentNavigationGuard?.assertStable();
+        },
+        context,
+        navigate,
+        navigationSnapshot: () => navigationSnapshot,
+        navigationStatusSnapshot: () => navigationStatusSnapshot,
+        startedAt: executionStartedAt(execution),
+      });
+      try {
+        const value = await execute(lifecycle);
+        documentNavigationGuard?.assertStable();
+        return value;
+      } finally {
+        documentNavigationGuard?.stop();
+      }
     },
     lifecycleOptions(options),
   );

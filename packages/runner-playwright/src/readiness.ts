@@ -18,6 +18,24 @@ export interface DeterministicReadinessSettings {
   readonly timeoutMs: number;
 }
 
+/** @internal A live guard against replacement main-frame documents. */
+export interface DocumentNavigationGuard {
+  assertStable(): void;
+  stop(): void;
+}
+
+/** A main-frame document changed during a deterministic evidence window. */
+export class DocumentNavigationError extends Error {
+  constructor(origin: string | undefined) {
+    super(
+      origin === undefined
+        ? "Navigation cannot change the document during deterministic evidence capture."
+        : `Navigation must stay on the configured origin (received ${origin}).`,
+    );
+    this.name = "DocumentNavigationError";
+  }
+}
+
 export function positiveSafeInteger(
   value: number | undefined,
   defaultValue: number,
@@ -39,6 +57,39 @@ export function assertPageOrigin(page: Page, baseURL: URL): void {
       `Navigation must stay on the configured origin (received ${pageOrigin}).`,
     );
   }
+}
+
+/** @internal Watches until stopped and reports any replacement document request. */
+export function guardDocumentNavigation(
+  page: Page,
+  baseURL: URL,
+): DocumentNavigationGuard {
+  let replacementOrigin: string | undefined;
+  let replacementStarted = false;
+  const track = (request: Request): void => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+      replacementStarted = true;
+      try {
+        const origin = new URL(request.url()).origin;
+        if (origin !== baseURL.origin) {
+          replacementOrigin = origin;
+        }
+      } catch {
+        replacementOrigin = "[invalid origin]";
+      }
+    }
+  };
+  page.on("request", track);
+  return Object.freeze({
+    assertStable(): void {
+      if (replacementStarted) {
+        throw new DocumentNavigationError(replacementOrigin);
+      }
+    },
+    stop(): void {
+      page.off("request", track);
+    },
+  });
 }
 
 export async function settleDeterministicReadiness(

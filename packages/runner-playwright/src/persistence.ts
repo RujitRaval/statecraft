@@ -38,6 +38,7 @@ import {
   type ScenarioCaptureEvidence,
 } from "./capture.js";
 import type { CellExecutionOutcome } from "./lifecycle.js";
+import { DocumentNavigationError } from "./readiness.js";
 
 const statecraftDirectoryName = ".statecraft";
 const artifactsDirectoryName = "artifacts";
@@ -185,6 +186,18 @@ export function executionArtifactForOutcome(
         outcome.reason.failures,
       ),
       screenshot: outcome.reason.evidence.screenshot,
+    });
+  }
+
+  if (outcome.reason instanceof DocumentNavigationError) {
+    return Object.freeze({
+      result: resultInput(outcome.cell, baseURL, "failed", null, [
+        Object.freeze({
+          code: "NAVIGATION_FAILED",
+          message: diagnosticErrorMessage(outcome.reason),
+        }),
+      ]),
+      screenshot: null,
     });
   }
 

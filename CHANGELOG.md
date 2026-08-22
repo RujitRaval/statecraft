@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.5.0] - 2026-08-22
+
+### Added
+
+- The Playwright runner now exposes `runPublicSiteChecks`, expanding every discovered public route across a fixed mobile/desktop × light/dark matrix with deterministic, collision-resistant cell and artifact identities.
+- Public-site checks capture a screenshot for every stable outcome, retain sanitized console, page, and request diagnostics, assert HTTP health and horizontal overflow, and persist schema-v1 JSON plus a self-contained offline HTML report under `.statecraft/`.
+- Browser-backed regressions cover the complete 16-cell evidence flow, exact response and overflow boundaries, diagnostic redaction, package/type exports, and navigation replacement attacks during custom assertions.
+
+### Changed
+
+- Programmatic runner callers can supply a validated in-memory scenario without weakening path-based scenario loading for configuration-driven scans.
+- Assertion hooks receive navigation metadata, allowing public-site policies to evaluate the final response without duplicating browser navigation.
+
+### Security
+
+- A main-frame document-navigation guard spans readiness, screenshot capture, and assertions; any replacement navigation fails the cell as `NAVIGATION_FAILED`, discards the potentially untrusted screenshot, and records only sanitized diagnostics.
+
 ## [0.24.4.0] - 2026-08-22
 
 ### Added
