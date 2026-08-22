@@ -81,6 +81,10 @@ export async function captureLaunchAssets({
     const detailId = await failure.getAttribute("aria-controls");
     const detailSelector = launchDetailSelector(detailId);
     await failure.click();
+    await page.addStyleTag({
+      content:
+        ".filter-rail{position:static!important}body.detail-open{overflow:visible!important}.js .detail.is-active{position:static!important;overflow:visible!important;animation:none!important}",
+    });
     await page.locator(detailSelector).screenshot({ path: targetFailurePath });
   } finally {
     await browser.close();

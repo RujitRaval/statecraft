@@ -308,7 +308,7 @@ test("orchestrates the built bin target and always cleans local output", async (
     readText: async (filePath) =>
       filePath.endsWith("statecraft.json")
         ? JSON.stringify(report)
-        : "Execution coverage 93.33% <span>Failed</span><strong>4</strong>",
+        : 'data-brand-system="kinetic-evidence-v1" Evidence<br>over instinct. 4 states broke. Open the evidence. <strong>93.33<span>%</span></strong> <span>Failed</span><strong>4</strong>',
     recordOutput: async (...args) => recorded.push(args),
     removeProject: async (removedRoot) => removed.push(removedRoot),
     spawnProcess: () => server,

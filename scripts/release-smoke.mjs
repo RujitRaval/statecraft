@@ -330,8 +330,10 @@ export async function runReleaseSmoke({
     await validateReport(report, { projectRoot: smokeProjectRoot });
 
     const html = await readText(path.join(reportDirectory, "index.html"), "utf8");
-    assert.match(html, /Execution coverage/u);
-    assert.match(html, /93\.33%/u);
+    assert.match(html, /data-brand-system="kinetic-evidence-v1"/u);
+    assert.match(html, /Evidence<br>over instinct\./u);
+    assert.match(html, /4 states broke\. Open the evidence\./u);
+    assert.match(html, /<strong>93\.33<span>%<\/span><\/strong>/u);
     assert.match(html, /<span>Failed<\/span><strong>4<\/strong>/u);
     log(
       "Release smoke passed: built CLI produced 56 passes, four known failures, 60 screenshots, schema-v1 JSON, and offline HTML.",

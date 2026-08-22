@@ -35,6 +35,7 @@ test("captureLaunchAssets captures the offline overview and approved failure", a
   await writeFile(sourceReportPath, "<!doctype html><title>Report</title>");
 
   const screenshots = [];
+  const styles = [];
   const events = [];
   let routeHandler;
   const failure = {
@@ -50,6 +51,9 @@ test("captureLaunchAssets captures the offline overview and approved failure", a
     },
   };
   const page = {
+    async addStyleTag(options) {
+      styles.push(options.content);
+    },
     async goto(url) {
       assert.equal(url, pathToFileURL(sourceReportPath).href);
     },
@@ -115,6 +119,10 @@ test("captureLaunchAssets captures the offline overview and approved failure", a
     path.join(targetAssetsRoot, "statecraft-report-overview.png"),
     path.join(targetAssetsRoot, "statecraft-failure-detail.png"),
   ]);
+  assert.equal(styles.length, 1);
+  assert.match(styles[0], /\.filter-rail\{position:static!important\}/u);
+  assert.match(styles[0], /body\.detail-open\{overflow:visible!important\}/u);
+  assert.match(styles[0], /\.detail\.is-active\{position:static!important/u);
   assert.deepEqual(events, ["failure-clicked", "browser-closed"]);
 });
 
