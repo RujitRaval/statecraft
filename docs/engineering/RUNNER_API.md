@@ -40,6 +40,12 @@ Discovery:
 
 An initial navigation or readiness failure, missing HTTP response, or non-HTML document rejects with a sanitized `PublicRouteDiscoveryError`. An initial HTML response is accepted regardless of HTTP status so a later check can report the status. For subsequent candidates, a navigation/readiness failure keeps the requested same-origin path as a leaf; a non-HTML response or cross-origin redirect is skipped. A redirected external destination may receive its ordinary GET before Playwright exposes the final URL, but Statecraft extracts and follows no links from it.
 
+`PublicRouteDiscoveryError.code` is one of:
+
+- `initial-navigation-failed`
+- `initial-response-missing`
+- `initial-response-not-html`
+
 The immutable result contains:
 
 - `baseURL`: the canonical origin with a trailing slash.
@@ -49,6 +55,8 @@ The immutable result contains:
 - `truncatedAnchorPages`: pages whose rendered anchor count exceeded 1,000.
 
 This is navigation-only discovery. Loading a public page executes its scripts and ordinary requests, so callers should use it only on sites they own or are authorized to test. It does not click controls, submit forms, retain cross-page cookies or storage, or claim coverage of application states.
+
+See [ADR 0029](../decisions/0029-public-url-route-discovery.md) for the discovery boundary and redirect rationale.
 
 ## Programmatic lifecycle
 
