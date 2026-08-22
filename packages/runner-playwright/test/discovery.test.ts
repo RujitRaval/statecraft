@@ -225,6 +225,49 @@ describe("discoverPublicRoutes", () => {
     }
   });
 
+  it("keeps same-origin double-slash paths on the canonical origin", async () => {
+    let externalHits = 0;
+    const external = await loopbackServer((_request, response) => {
+      externalHits += 1;
+      html(response, "must not load");
+    });
+    const externalHost = new URL(external.origin).host;
+    let server: LoopbackServer | undefined;
+    const requested: string[] = [];
+    try {
+      server = await loopbackServer((request, response) => {
+        requested.push(request.url ?? "");
+        if (request.url === "/") {
+          html(
+            response,
+            `<a href="${server!.origin}//${externalHost}/private">path</a>`,
+          );
+          return;
+        }
+        html(response, "same-origin leaf");
+      });
+
+      await expect(
+        discoverPublicRoutes(server.origin, {
+          maxPages: 2,
+          navigationTimeoutMs: 2_000,
+          readinessTimeoutMs: 2_000,
+        }),
+      ).resolves.toEqual({
+        attemptedPages: 2,
+        baseURL: `${server.origin}/`,
+        routes: [{ path: "/" }, { path: `//${externalHost}/private` }],
+        skippedPages: 0,
+        truncatedAnchorPages: 0,
+      });
+      expect(requested).toContain(`//${externalHost}/private`);
+      expect(externalHits).toBe(0);
+    } finally {
+      await server?.close();
+      await external.close();
+    }
+  });
+
   it("counts failed and skipped candidates against the hard attempt budget", async () => {
     const external = await loopbackServer((_request, response) => {
       html(response, "outside");
@@ -320,11 +363,53 @@ describe("discoverPublicRoutes", () => {
     }
   });
 
+  it("requires an exact HTML MIME type for initial and candidate pages", async () => {
+    const server = await loopbackServer((request, response) => {
+      const pathname = new URL(request.url ?? "/", "http://fixture").pathname;
+      if (pathname === "/") {
+        html(response, '<a href="/htmlish">not HTML</a>');
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/htmlish" });
+      response.end('<a href="/must-not-expand">not HTML</a>');
+    });
+
+    try {
+      await expect(
+        discoverPublicRoutes(`${server.origin}/htmlish`, {
+          navigationTimeoutMs: 2_000,
+          readinessTimeoutMs: 2_000,
+        }),
+      ).rejects.toEqual(
+        new PublicRouteDiscoveryError(
+          "initial-response-not-html",
+          "The starting page did not return an HTML document.",
+        ),
+      );
+      await expect(
+        discoverPublicRoutes(server.origin, {
+          maxPages: 3,
+          navigationTimeoutMs: 2_000,
+          readinessTimeoutMs: 2_000,
+        }),
+      ).resolves.toEqual({
+        attemptedPages: 2,
+        baseURL: `${server.origin}/`,
+        routes: [{ path: "/" }],
+        skippedPages: 1,
+        truncatedAnchorPages: 0,
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("caps rendered anchor extraction and sanitizes initial failures", async () => {
     const requested: string[] = [];
     const anchors = [
+      `<a href="/${"x".repeat(8_192)}">oversized</a>`,
       '<a href="/downloaded" download>download</a>',
-      ...Array.from({ length: 999 }, () => '<a href="/within">within</a>'),
+      ...Array.from({ length: 998 }, () => '<a href="/within">within</a>'),
       '<a href="/overflow">overflow</a>',
     ].join("");
     const htmlServer = await loopbackServer((request, response) => {
@@ -362,6 +447,7 @@ describe("discoverPublicRoutes", () => {
         truncatedAnchorPages: 1,
       });
       expect(requested).not.toContain("/overflow");
+      expect(requested.every((request) => request.length < 8_192)).toBe(true);
     } finally {
       await htmlServer.close();
       await textServer.close();

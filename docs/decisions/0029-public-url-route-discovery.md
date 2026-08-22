@@ -16,7 +16,7 @@ Discovery must bound browser work and untrusted page input, preserve privacy, av
 - Validate absolute HTTP(S) input without credentials and bounded positive-integer options before launching Chromium. Remove the supplied query and fragment before the first request.
 - Reuse one Chromium process, but create a fresh browser context for every attempted page.
 - Let the initial redirect chain establish the canonical origin. Require the starting page to finish as an HTML HTTP(S) document and pass deterministic readiness.
-- Discover unique same-origin pathnames sequentially in first-seen breadth-first order. Strip query strings and fragments, ignore download and common non-document links, and inspect at most the first 1,000 rendered anchors per page.
+- Discover unique same-origin pathnames sequentially in first-seen breadth-first order. Strip query strings and fragments, ignore download and common non-document links, inspect at most the first 1,000 rendered anchors per page without materializing the complete anchor set, and ignore candidate URLs longer than 8,192 characters.
 - Default to five attempts and permit at most twenty. Failed and skipped candidates consume the same hard budget as accepted pages.
 - Keep a later navigation or readiness failure as the requested path without extracting links. Skip later non-HTML pages and cross-origin redirects; do not extract or follow links from an external destination.
 - Return only the canonical base URL, accepted paths, and bounded aggregate counts. Use stable sanitized errors for initial discovery failures.

@@ -16,6 +16,7 @@ import {
 const defaultMaxPages = 5;
 const maximumPages = 20;
 const maximumAnchorsPerPage = 1_000;
+const maximumCandidateURLCharacters = 8_192;
 const nonDocumentExtensions = new Set([
   ".7z",
   ".avi",
@@ -174,7 +175,8 @@ function httpURL(value: string): URL | undefined {
 }
 
 function isHtmlDocument(contentType: string): boolean {
-  return contentType.toLowerCase().includes("html");
+  const normalized = contentType.toLowerCase();
+  return normalized === "text/html" || normalized === "application/xhtml+xml";
 }
 
 async function documentContentType(page: Page): Promise<string> {
@@ -182,20 +184,42 @@ async function documentContentType(page: Page): Promise<string> {
 }
 
 async function extractedAnchors(page: Page): Promise<ExtractedAnchors> {
-  const result = await page.locator("a[href]").evaluateAll(
-    (anchors, limit) => {
-      const examined = anchors.slice(0, limit);
-      const eligible = examined.filter(
-        (anchor) => !anchor.hasAttribute("download"),
+  const result = await page.evaluate(
+    ({ limit, maximumURLCharacters }) => {
+      const hrefs: string[] = [];
+      const walker = document.createTreeWalker(
+        document.documentElement,
+        NodeFilter.SHOW_ELEMENT,
       );
-      return {
-        hrefs: eligible.map(
-          (anchor) => (anchor as HTMLAnchorElement).href,
-        ),
-        truncated: anchors.length > limit,
-      };
+      let anchorsSeen = 0;
+      let node: Node | null;
+      while ((node = walker.nextNode()) !== null) {
+        if (!(node instanceof HTMLAnchorElement) || !node.hasAttribute("href")) {
+          continue;
+        }
+        anchorsSeen += 1;
+        if (anchorsSeen > limit) {
+          return { hrefs, truncated: true };
+        }
+        const rawHref = node.getAttribute("href");
+        if (
+          node.hasAttribute("download") ||
+          rawHref === null ||
+          rawHref.length > maximumURLCharacters
+        ) {
+          continue;
+        }
+        const resolvedHref = node.href;
+        if (resolvedHref.length <= maximumURLCharacters) {
+          hrefs.push(resolvedHref);
+        }
+      }
+      return { hrefs, truncated: false };
     },
-    maximumAnchorsPerPage,
+    {
+      limit: maximumAnchorsPerPage,
+      maximumURLCharacters: maximumCandidateURLCharacters,
+    },
   );
   return Object.freeze({
     hrefs: Object.freeze(result.hrefs),
@@ -220,6 +244,9 @@ function normalizedCandidate(
   href: string,
   canonicalOrigin: string,
 ): string | undefined {
+  if (href.length > maximumCandidateURLCharacters) {
+    return undefined;
+  }
   const url = httpURL(href);
   if (
     url === undefined ||
@@ -407,10 +434,12 @@ export async function discoverPublicRoutes(
       if (acceptedPaths.has(requestedPath)) {
         continue;
       }
+      const requestedURL = new URL(canonicalBaseURL);
+      requestedURL.pathname = requestedPath;
       attemptedPages += 1;
       const candidate = await candidatePage(
         browser,
-        new URL(requestedPath, canonicalBaseURL),
+        requestedURL,
         canonicalBaseURL,
         settings,
       );

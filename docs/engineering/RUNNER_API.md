@@ -34,7 +34,7 @@ Discovery:
 
 1. Launches one Chromium process and creates a fresh browser context for every attempted page.
 2. Lets the initial redirect establish the canonical origin, then stays on that origin.
-3. Extracts at most the first 1,000 rendered anchors from each ready HTML page.
+3. Traverses at most the first 1,000 rendered anchors from each ready HTML page without materializing the complete anchor set, and ignores candidate URLs longer than 8,192 characters.
 4. Removes query strings and fragments, ignores downloads and common non-document resources, and visits unique paths sequentially in first-seen breadth-first order.
 5. Counts every navigation attempt against `maxPages`, including failed and skipped pages.
 
