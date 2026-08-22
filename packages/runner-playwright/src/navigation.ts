@@ -1,5 +1,5 @@
 import type { MatrixCell } from "statecraft-ui-core";
-import type { Page, Request } from "playwright";
+import type { Page } from "playwright";
 
 import {
   executionStartedAt,
@@ -8,23 +8,19 @@ import {
   type RunExecutionCellsOptions,
 } from "./lifecycle.js";
 import {
+  assertPageOrigin,
+  defaultNavigationTimeoutMs,
+  defaultReadinessTimeoutMs,
+  positiveSafeInteger,
+  settleDeterministicReadiness,
+} from "./readiness.js";
+import {
   loadScenario,
   scenarioContextForExecution,
   type RunScenarioCellsOptions,
   type ScenarioContext,
   type StatecraftScenario,
 } from "./scenario.js";
-
-const defaultNavigationTimeoutMs = 30_000;
-const defaultReadinessTimeoutMs = 10_000;
-const stabilityStyles = `
-*, *::before, *::after {
-  animation: none !important;
-  caret-color: transparent !important;
-  scroll-behavior: auto !important;
-  transition: none !important;
-}
-`;
 
 /** Optional deterministic readiness gates applied after afterNavigate. */
 export interface DeterministicReadinessOptions {
@@ -88,20 +84,6 @@ export type NavigatedScenarioLifecycleExecutor<Value> = (
   lifecycle: NavigatedScenarioLifecycle,
 ) => Promise<Value>;
 
-function positiveTimeout(
-  value: number | undefined,
-  defaultValue: number,
-  label: string,
-): number {
-  if (value === undefined) {
-    return defaultValue;
-  }
-  if (!Number.isSafeInteger(value) || value <= 0) {
-    throw new TypeError(`${label} must be a positive safe integer.`);
-  }
-  return value;
-}
-
 function navigationSettings(
   options: RunNavigatedScenarioCellsOptions,
 ): NavigationSettings {
@@ -122,13 +104,13 @@ function navigationSettings(
 
   return Object.freeze({
     baseURL,
-    navigationTimeoutMs: positiveTimeout(
+    navigationTimeoutMs: positiveSafeInteger(
       options.navigationTimeoutMs,
       defaultNavigationTimeoutMs,
       "navigationTimeoutMs",
     ),
     readinessSelector: selector,
-    readinessTimeoutMs: positiveTimeout(
+    readinessTimeoutMs: positiveSafeInteger(
       options.readiness?.timeoutMs,
       defaultReadinessTimeoutMs,
       "readiness.timeoutMs",
@@ -147,15 +129,6 @@ function routeUrl(baseURL: URL, routePath: string): URL {
     throw new TypeError(`Route path must stay on the configured origin: ${routePath}.`);
   }
   return url;
-}
-
-function assertPageOrigin(page: Page, baseURL: URL): void {
-  const pageOrigin = new URL(page.url()).origin;
-  if (pageOrigin !== baseURL.origin) {
-    throw new TypeError(
-      `Navigation must stay on the configured origin (received ${pageOrigin}).`,
-    );
-  }
 }
 
 function colorScheme(theme: string): "dark" | "light" | "no-preference" {
@@ -193,56 +166,6 @@ async function applyTheme(page: Page, theme: string): Promise<void> {
     },
     { colorScheme: scheme, theme },
   );
-}
-
-async function settleReadiness(
-  page: Page,
-  settings: NavigationSettings,
-): Promise<void> {
-  let documentNavigationRequested = false;
-  const trackDocumentNavigation = (request: Request): void => {
-    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
-      documentNavigationRequested = true;
-    }
-  };
-  const rejectDocumentNavigation = (): never => {
-    assertPageOrigin(page, settings.baseURL);
-    throw new TypeError(
-      "Navigation cannot change the document during deterministic readiness.",
-    );
-  };
-
-  page.on("request", trackDocumentNavigation);
-  try {
-    try {
-      await page.addStyleTag({ content: stabilityStyles });
-      await page.waitForLoadState("load", {
-        timeout: settings.readinessTimeoutMs,
-      });
-      if (settings.readinessSelector !== undefined) {
-        await page.locator(settings.readinessSelector).waitFor({
-          state: "visible",
-          timeout: settings.readinessTimeoutMs,
-        });
-      }
-      await page.waitForFunction(
-        () => !("fonts" in document) || document.fonts.status === "loaded",
-        undefined,
-        { timeout: settings.readinessTimeoutMs },
-      );
-    } catch (cause: unknown) {
-      if (documentNavigationRequested) {
-        rejectDocumentNavigation();
-      }
-      throw cause;
-    }
-
-    if (documentNavigationRequested) {
-      rejectDocumentNavigation();
-    }
-  } finally {
-    page.off("request", trackDocumentNavigation);
-  }
 }
 
 function lifecycleOptions(
@@ -300,7 +223,11 @@ export async function runNavigatedScenarioLifecycleCells<Value>(
         });
         await scenario.afterNavigate?.(context);
         assertPageOrigin(context.page, settings.baseURL);
-        await settleReadiness(context.page, settings);
+        await settleDeterministicReadiness(context.page, {
+          baseURL: settings.baseURL,
+          selector: settings.readinessSelector,
+          timeoutMs: settings.readinessTimeoutMs,
+        });
         assertPageOrigin(context.page, settings.baseURL);
 
         navigationSnapshot = Object.freeze({

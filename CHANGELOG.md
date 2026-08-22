@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.4.0] - 2026-08-22
+
+### Added
+
+- The Playwright runner now exposes a typed `discoverPublicRoutes` API for deterministic, first-seen breadth-first discovery of a bounded public website surface.
+- Browser-backed regressions cover option validation, query and fragment removal, context isolation, redirect canonicalization, failed and non-HTML pages, anchor and navigation budgets, sanitized initial failures, and package/type boundaries.
+- ADR 0029 and the runner API reference document the navigation-only authorization model and the honest external-redirect boundary.
+
+### Changed
+
+- Deterministic readiness primitives are shared by configured navigation and public-route discovery without expanding the public API.
+
+### Security
+
+- Discovery uses a fresh browser context per page, rejects credential-bearing or unsupported starting URLs before launch, keeps same-origin double-slash paths on the canonical origin, expands only exact `text/html` or `application/xhtml+xml` documents, traverses at most 1,000 rendered anchors incrementally, ignores candidate URLs longer than 8,192 characters, and never extracts or follows links from cross-origin redirect destinations.
+
 ## [0.24.3.0] - 2026-08-22
 
 ### Added

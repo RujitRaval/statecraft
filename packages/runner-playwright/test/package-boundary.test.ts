@@ -56,6 +56,8 @@ describe("statecraft-ui-runner-playwright package boundary", () => {
     await expect(access(typesUrl)).resolves.toBeUndefined();
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule)).toEqual([
+      "discoverPublicRoutes",
+      "PublicRouteDiscoveryError",
       "runExecutionCells",
       "runCapturedScenarioCells",
       "ScenarioCaptureError",

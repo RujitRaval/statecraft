@@ -1,4 +1,6 @@
 import {
+  discoverPublicRoutes,
+  PublicRouteDiscoveryError,
   loadScenario,
   runCapturedScenarioCells,
   runExecutionCells,
@@ -10,6 +12,9 @@ import {
   ScenarioCaptureError,
   type AssertionStatus,
   type CapturedScenarioCell,
+  type DiscoveredPublicRoute,
+  type DiscoverPublicRoutesOptions,
+  type PublicRouteDiscovery,
   type CellExecutionContext,
   type CellExecutionOutcome,
   type CellExecutor,
@@ -33,6 +38,7 @@ import {
   type ScenarioHook,
   type ScenarioLoadErrorCode,
   type StatecraftScenario,
+  type PublicRouteDiscoveryErrorCode,
 } from "statecraft-ui-runner-playwright";
 
 declare const execution: CellExecutionContext;
@@ -44,6 +50,23 @@ const options: RunExecutionCellsOptions = {
 };
 const outcomes: Promise<readonly CellExecutionOutcome<string>[]> =
   runExecutionCells([execution.cell], executor, options);
+const discoveryOptions: DiscoverPublicRoutesOptions = {
+  launchOptions: { headless: true },
+  maxPages: 5,
+  navigationTimeoutMs: 30_000,
+  readinessTimeoutMs: 10_000,
+};
+const discovery: Promise<PublicRouteDiscovery> = discoverPublicRoutes(
+  "https://statecraft.invalid",
+  discoveryOptions,
+);
+const discoveryRoute: Promise<DiscoveredPublicRoute | undefined> =
+  discovery.then((result) => result.routes[0]);
+const discoveryError = new PublicRouteDiscoveryError(
+  "initial-response-missing",
+  "No response.",
+);
+const discoveryErrorCode: PublicRouteDiscoveryErrorCode = discoveryError.code;
 declare const scenarioContext: ScenarioContext;
 declare const scenario: StatecraftScenario;
 const hook: ScenarioHook = async (context) => {
@@ -159,6 +182,10 @@ void outcomes.then((result) => {
 });
 
 void outcomes;
+void discovery;
+void discoveryRoute;
+void discoveryError;
+void discoveryErrorCode;
 void assertionStatus;
 void captureFailures;
 void captureOutcomes;

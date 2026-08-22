@@ -1,6 +1,12 @@
 # statecraft-ui-runner-playwright
 
-The Playwright execution engine for Statecraft: isolated browser contexts, typed scenario hooks, deterministic navigation/readiness, screenshots, sanitized diagnostics, assertions, and coordinated local report persistence.
+The Playwright execution engine for Statecraft: isolated browser contexts, typed scenario hooks, deterministic navigation/readiness, screenshots, sanitized diagnostics, assertions, coordinated local report persistence, and bounded public-route discovery.
+
+```ts
+import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
+
+const publicSurface = await discoverPublicRoutes("https://example.com");
+```
 
 ```ts
 import type { StatecraftScenario } from "statecraft-ui-runner-playwright";
