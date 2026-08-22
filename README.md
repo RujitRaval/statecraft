@@ -173,7 +173,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [documentation map](codex/MAS
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, and a complete example. Potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, and a complete example. The approved [public URL Quick Check design](docs/designs/public-url-quick-check.md) specifies a future zero-config onboarding workflow; `statecraft check` is not implemented in the current release. Other potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 
