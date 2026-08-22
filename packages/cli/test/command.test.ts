@@ -151,7 +151,10 @@ function completedScan(
   });
 }
 
-function completedCheck(status: "failed" | "passed"): CheckResult {
+function completedCheck(
+  status: "failed" | "passed",
+  setup = false,
+): CheckResult {
   const passed = status === "passed";
   return Object.freeze({
     discovery: Object.freeze({
@@ -255,6 +258,20 @@ function completedCheck(status: "failed" | "passed"): CheckResult {
     }),
     htmlReportPath: ".statecraft/report/index.html",
     reportPath: ".statecraft/report/statecraft.json",
+    ...(setup
+      ? {
+          setup: Object.freeze({
+            configPath: "/project/statecraft.config.mts",
+            files: Object.freeze([
+              "/project/statecraft.config.mts",
+              "/project/statecraft/scenarios/public/default.mts",
+            ]),
+            projectRoot: "/project",
+            scenarioPath:
+              "/project/statecraft/scenarios/public/default.mts",
+          }),
+        }
+      : {}),
   });
 }
 
@@ -486,6 +503,7 @@ Targets:
       headed: true,
       maxPages: 12,
       url: "https://example.test/start?private=value#fragment",
+      writeConfig: false,
     });
     expect(stdout.messages.join("")).toContain("Statecraft Quick Check");
     expect(stdout.messages.join("")).toContain(
@@ -498,7 +516,45 @@ Targets:
       "Report: .statecraft/report/index.html",
     );
     expect(stdout.messages.join("")).toContain("All 5 checks passed.");
-    expect(stdout.messages.join("")).toContain("npx statecraft init");
+    expect(stdout.messages.join("")).toContain(
+      "npx statecraft check https://example.test/ --write-config",
+    );
+    expect(stderr.messages).toEqual([]);
+  });
+
+  it("writes the discovered project setup and prints the configured-scan handoff", async () => {
+    const stdout = outputCapture();
+    const stderr = outputCapture();
+    checkPublicSiteMock.mockResolvedValue(completedCheck("passed", true));
+
+    await expect(
+      runCli({
+        args: ["check", "https://example.test", "--write-config"],
+        cwd: "/project",
+        stderr: stderr.write,
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(0);
+    expect(checkPublicSiteMock).toHaveBeenCalledWith({
+      cwd: "/project",
+      headed: false,
+      maxPages: undefined,
+      url: "https://example.test",
+      writeConfig: true,
+    });
+    expect(stdout.messages.join("")).toContain(
+      "Saved the discovered public surface.",
+    );
+    expect(stdout.messages.join("")).toContain("statecraft.config.mts");
+    expect(stdout.messages.join("")).toContain(
+      "statecraft/scenarios/public/default.mts",
+    );
+    expect(stdout.messages.join("")).toContain(
+      "Next: add real product states, then run `npx statecraft scan`.",
+    );
+    expect(stdout.messages.join("")).not.toContain(
+      "npx statecraft check https://example.test/ --write-config",
+    );
     expect(stderr.messages).toEqual([]);
   });
 
@@ -567,7 +623,7 @@ Targets:
     [["check", "https://example.test", "--max-pages", "21"], "The --max-pages option must be an integer between 1 and 20."],
     [["check", "https://example.test", "--max-pages", "5", "--max-pages", "6"], "The --max-pages option can be specified only once."],
     [["check", "https://example.test", "--headed", "--headed"], "The --headed option can be specified only once."],
-    [["check", "https://example.test", "--write-config"], "Unknown check option: --write-config"],
+    [["check", "https://example.test", "--write-config", "--write-config"], "The --write-config option can be specified only once."],
   ] as const)("rejects invalid check arguments %#", async (args, message) => {
     const stderr = outputCapture();
 

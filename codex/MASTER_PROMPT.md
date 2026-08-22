@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap now includes bounded discovery, fixed-matrix evidence, kinetic reporting, and `statecraft check <url>` orchestration; overwrite-safe promotion into permanent config remains the next separate slice. Keep future work in an explicitly approved roadmap slice.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap now includes bounded discovery, fixed-matrix evidence, kinetic reporting, `statecraft check <url>` orchestration, and overwrite-safe `--write-config` promotion. Public launch guidance and the registry-only check → promotion → scan gate remain the next separate slice. Keep future work in an explicitly approved roadmap slice.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

@@ -35,6 +35,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./public-site-scenario": {
+      "types": "./dist/public-site-scenario.d.ts",
+      "import": "./dist/public-site-scenario.js"
     }
   },
   "engines": {

@@ -8,6 +8,6 @@
     "types": []
   },
   "include": [
-    "public-api.test-d.ts"
+    "*.test-d.ts"
   ]
 }

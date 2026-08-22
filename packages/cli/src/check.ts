@@ -3,20 +3,39 @@ import { resolve } from "node:path";
 
 import type { StatecraftReport } from "statecraft-ui-core";
 
+import { ProjectFileError } from "./project-files.js";
+import {
+  planPublicSiteSetup,
+  publishPublicSiteSetup,
+  type PublicSiteSetupResult,
+} from "./public-site-setup.js";
+
 /** Stable categories for expected public-site check failures. */
 export type CheckErrorCode =
   | "CHECK_DISCOVERY_FAILED"
   | "CHECK_INVALID_INPUT"
-  | "CHECK_ROOT_INVALID";
+  | "CHECK_ROOT_INVALID"
+  | "CHECK_SETUP_CONFLICT"
+  | "CHECK_SETUP_WRITE_FAILED";
+
+interface CheckErrorOptions {
+  readonly paths?: readonly string[] | undefined;
+}
 
 /** An expected public-site check failure safe to present to terminal users. */
 export class CheckError extends Error {
   readonly code: CheckErrorCode;
+  readonly paths: readonly string[];
 
-  constructor(code: CheckErrorCode, message: string) {
+  constructor(
+    code: CheckErrorCode,
+    message: string,
+    options: CheckErrorOptions = {},
+  ) {
     super(message);
     this.name = "CheckError";
     this.code = code;
+    this.paths = Object.freeze([...(options.paths ?? [])]);
   }
 }
 
@@ -30,6 +49,8 @@ export interface CheckOptions {
   readonly maxPages?: number | undefined;
   /** Absolute, credential-free HTTP(S) starting URL. */
   readonly url: string;
+  /** Save the discovered routes as an overwrite-safe permanent setup. */
+  readonly writeConfig?: boolean | undefined;
 }
 
 /** One accepted local pathname from public-site discovery. */
@@ -52,6 +73,7 @@ export interface CheckResult {
   readonly htmlReportPath: ".statecraft/report/index.html";
   readonly report: StatecraftReport;
   readonly reportPath: ".statecraft/report/statecraft.json";
+  readonly setup?: PublicSiteSetupResult | undefined;
 }
 
 function validateOptions(options: CheckOptions): void {
@@ -88,6 +110,39 @@ function validateOptions(options: CheckOptions): void {
       "maxPages must be an integer between 1 and 20.",
     );
   }
+  if (
+    options.writeConfig !== undefined &&
+    typeof options.writeConfig !== "boolean"
+  ) {
+    throw new CheckError(
+      "CHECK_INVALID_INPUT",
+      "writeConfig must be a boolean when provided.",
+    );
+  }
+}
+
+function setupError(error: ProjectFileError): CheckError {
+  if (error.code === "PROJECT_FILE_ROOT_INVALID") {
+    return new CheckError(
+      "CHECK_ROOT_INVALID",
+      "The Statecraft check project directory is invalid.",
+      { paths: error.paths },
+    );
+  }
+  if (error.code === "PROJECT_FILE_CONFLICT") {
+    return new CheckError(
+      "CHECK_SETUP_CONFLICT",
+      `Statecraft setup conflicts with existing paths:\n${error.paths
+        .map((path) => `  ${path}`)
+        .join("\n")}\nNo existing file was overwritten.`,
+      { paths: error.paths },
+    );
+  }
+  return new CheckError(
+    "CHECK_SETUP_WRITE_FAILED",
+    "Statecraft could not save the discovered public surface. Existing paths were preserved; inspect the reported targets before retrying.",
+    { paths: error.paths },
+  );
 }
 
 /**
@@ -109,6 +164,17 @@ export async function checkPublicSite(
       "CHECK_ROOT_INVALID",
       "The Statecraft check project directory is invalid.",
     );
+  }
+  let setupPlan: Awaited<ReturnType<typeof planPublicSiteSetup>> | undefined;
+  if (options.writeConfig === true) {
+    try {
+      setupPlan = await planPublicSiteSetup(projectDirectory);
+    } catch (error: unknown) {
+      if (error instanceof ProjectFileError) {
+        throw setupError(error);
+      }
+      throw error;
+    }
   }
   const runner = await import("statecraft-ui-runner-playwright");
   const launchOptions =
@@ -133,10 +199,26 @@ export async function checkPublicSite(
     ...(launchOptions === undefined ? {} : { launchOptions }),
     projectDirectory,
   });
+  let setup: PublicSiteSetupResult | undefined;
+  if (setupPlan !== undefined) {
+    try {
+      setup = await publishPublicSiteSetup(
+        setupPlan,
+        discovery,
+        run.report,
+      );
+    } catch (error: unknown) {
+      if (error instanceof ProjectFileError) {
+        throw setupError(error);
+      }
+      throw error;
+    }
+  }
   return Object.freeze({
     discovery,
     htmlReportPath: run.htmlReportPath,
     report: run.report,
     reportPath: run.reportPath,
+    ...(setup === undefined ? {} : { setup }),
   });
 }

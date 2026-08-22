@@ -1,7 +1,16 @@
 import http from "node:http";
-import { access, mkdtemp, readFile, realpath, rm } from "node:fs/promises";
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  realpath,
+  rm,
+  symlink,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { parseReport } from "statecraft-ui-core";
 import { afterEach, describe, expect, it } from "vitest";
@@ -71,7 +80,7 @@ afterEach(async () => {
 
 describe("statecraft check", () => {
   it(
-    "discovers a public surface and persists four evidence cells per page",
+    "promotes a public surface into a configured scan without changing its evidence matrix",
     async () => {
       const fixture = await fixtureServer();
       const project = await realpath(
@@ -87,6 +96,7 @@ describe("statecraft check", () => {
             `${fixture.origin}/start?private=value#fragment`,
             "--max-pages",
             "2",
+            "--write-config",
           ],
           cwd: project,
           stderr: (message) => {
@@ -103,6 +113,10 @@ describe("statecraft check", () => {
         expect(stdout).toContain("Pages: 2 discovered · 2 scanned · 0 skipped");
         expect(stdout).toContain("4 of 8 checks failed.");
         expect(stdout).toContain("Report: .statecraft/report/index.html");
+        expect(stdout).toContain("Saved the discovered public surface.");
+        expect(stdout).toContain(
+          "Next: add real product states, then run `npx statecraft scan`.",
+        );
         const reportPath = join(
           project,
           ".statecraft",
@@ -160,6 +174,66 @@ describe("statecraft check", () => {
         );
         expect(html).toContain('data-brand-system="kinetic-evidence-v1"');
         expect(html).toContain("4 states broke. Open the evidence.");
+
+        const config = await readFile(
+          join(project, "statecraft.config.mts"),
+          "utf8",
+        );
+        expect(config).toContain(`baseURL: "${fixture.origin}/"`);
+        expect(config.indexOf('path: "/start"')).toBeLessThan(
+          config.indexOf('path: "/overflow"'),
+        );
+        await expect(
+          readFile(
+            join(
+              project,
+              "statecraft",
+              "scenarios",
+              "public",
+              "default.mts",
+            ),
+            "utf8",
+          ),
+        ).resolves.toContain(
+          'from "statecraft-ui/public-site-scenario"',
+        );
+
+        const packageModules = join(project, "node_modules");
+        await mkdir(packageModules, { recursive: true });
+        await symlink(
+          fileURLToPath(new URL("../", import.meta.url)),
+          join(packageModules, "statecraft-ui"),
+          process.platform === "win32" ? "junction" : "dir",
+        );
+        let scanStderr = "";
+        let scanStdout = "";
+        const scanExitCode = await runCli({
+          args: ["scan"],
+          cwd: project,
+          stderr: (message) => {
+            scanStderr += message;
+          },
+          stdout: (message) => {
+            scanStdout += message;
+          },
+        });
+        expect(scanExitCode).toBe(1);
+        expect(scanStderr).toBe("");
+        expect(scanStdout).toContain("4 of 8 executions failed.");
+        const promotedReport = parseReport(
+          JSON.parse(await readFile(reportPath, "utf8")),
+        );
+        expect(
+          promotedReport.executions.map(
+            ({ routePath, status, theme, viewportId }) =>
+              `${routePath}:${viewportId}:${theme}:${status}`,
+          ),
+        ).toEqual(
+          report.executions.map(
+            ({ routePath, status, theme, viewportId }) =>
+              `${routePath}:${viewportId}:${theme}:${status}`,
+          ),
+        );
       } finally {
         await fixture.close();
       }

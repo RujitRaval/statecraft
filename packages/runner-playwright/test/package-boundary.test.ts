@@ -16,6 +16,10 @@ interface PackageManifest {
       import?: string;
       types?: string;
     };
+    "./public-site-contract"?: {
+      import?: string;
+      types?: string;
+    };
   };
   name?: string;
   private?: boolean;
@@ -40,6 +44,10 @@ describe("statecraft-ui-runner-playwright package boundary", () => {
         ".": {
           import: "./dist/index.js",
           types: "./dist/index.d.ts",
+        },
+        "./public-site-contract": {
+          import: "./dist/public-site-contract.js",
+          types: "./dist/public-site-contract.d.ts",
         },
       },
     });
@@ -71,6 +79,31 @@ describe("statecraft-ui-runner-playwright package boundary", () => {
       "runPublicSiteChecks",
       "runNavigatedScenarioCells",
     ]);
+
+    const contractExport = manifest.exports?.["./public-site-contract"];
+    const contractImportUrl = new URL(
+      contractExport?.import ?? "",
+      packageRoot,
+    );
+    const contractTypesUrl = new URL(
+      contractExport?.types ?? "",
+      packageRoot,
+    );
+    await expect(access(contractTypesUrl)).resolves.toBeUndefined();
+    const { PUBLIC_SITE_CHECK_CONTRACT } = await import(contractImportUrl.href);
+    expect(PUBLIC_SITE_CHECK_CONTRACT).toEqual({
+      failOn: {
+        consoleError: false,
+        failedRequest: false,
+        pageError: true,
+      },
+      themes: ["light", "dark"],
+      viewports: {
+        mobile: { height: 844, width: 390 },
+        desktop: { height: 900, width: 1_440 },
+      },
+    });
+    expect(Object.isFrozen(PUBLIC_SITE_CHECK_CONTRACT)).toBe(true);
   });
 
   it(

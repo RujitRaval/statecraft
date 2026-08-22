@@ -6,7 +6,7 @@
 
 ```bash
 statecraft init
-statecraft check <url> [--max-pages <1-20>] [--headed]
+statecraft check <url> [--max-pages <1-20>] [--headed] [--write-config]
 statecraft scan [--config <path>] [--route <id>] [--headed]
 statecraft open
 statecraft --help
@@ -40,6 +40,7 @@ const check = await checkPublicSite({
   cwd: process.cwd(),
   maxPages: 5,
   url: "https://example.com",
+  writeConfig: true,
 });
 const result = await initProject({ cwd: process.cwd() });
 const exitCode = await runCli({ args: ["init"], cwd: process.cwd() });
@@ -49,7 +50,11 @@ const opened = await openReport({ cwd: process.cwd() });
 
 `initProject` returns canonical absolute `projectRoot`, `configPath`, and `scenarioPath` values plus an immutable `files` list. Expected failures use `InitError` with `INIT_CONFLICT`, `INIT_ROOT_INVALID`, or `INIT_WRITE_FAILED` and expose the affected paths.
 
-`checkPublicSite` canonicalizes the output directory before browser work, calls `discoverPublicRoutes`, passes that immutable discovery result to `runPublicSiteChecks`, and returns discovery metadata plus the validated report and stable JSON/HTML paths. `headed: true` is forwarded to both browser launches, while `maxPages` applies only to discovery. Invalid roots, input, and expected starting-page failures become `CheckError` with `CHECK_ROOT_INVALID`, `CHECK_INVALID_INPUT`, or `CHECK_DISCOVERY_FAILED`; unexpected runner details remain hidden by the executable. The executable summary groups fixed cells by route pathname, prints sanitized failure messages rather than diagnostic payloads, and points to the kinetic offline report.
+`checkPublicSite` canonicalizes the output directory before browser work, calls `discoverPublicRoutes`, passes that immutable discovery result to `runPublicSiteChecks`, and returns discovery metadata plus the validated report and stable JSON/HTML paths. `headed: true` is forwarded to both browser launches, while `maxPages` applies only to discovery.
+
+With `writeConfig: true`, it preflights all supported config names, the public scenario target, and real directory boundaries before importing the runner. After a completed persisted check, it creates `statecraft/scenarios/public/default.mts` exclusively and publishes `statecraft.config.mts` last. The returned optional `setup` contains canonical generated paths. Setup conflicts and write failures use stable `CHECK_SETUP_*` codes; unexpected runner details remain hidden by the executable. The summary either prints the exact promotion command or the configured-scan handoff.
+
+Generated scenarios import `publicSiteScenario` from the documented `statecraft-ui/public-site-scenario` subpath. This narrow helper retains the runner-owned public assertions without adding Playwright types to the main CLI API or eagerly loading the runner when consumers import `statecraft-ui`.
 
 `scanProject` loads and validates config, verifies an optional exact `routeId`, expands the selected matrix, resolves scenarios relative to the selected config, and persists deterministic output beneath the selected `cwd`. `headed: true` forwards `{ headless: false }` to Playwright. The runner publishes PNG, schema-v1 JSON, and offline HTML as one coordinated output set. `scanProject` returns the canonical config path, validated report, stable `.statecraft/report/statecraft.json` machine-readable path, and `.statecraft/report/index.html` `htmlReportPath`. An unknown route raises `ScanError` with `SCAN_ROUTE_NOT_FOUND` before output creation; unexpected runner or filesystem details remain hidden behind CLI exit code `2`.
 

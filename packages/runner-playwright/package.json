@@ -31,6 +31,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./public-site-contract": {
+      "types": "./dist/public-site-contract.d.ts",
+      "import": "./dist/public-site-contract.js"
     }
   },
   "engines": {

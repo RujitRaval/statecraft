@@ -1,17 +1,11 @@
-import { constants } from "node:fs";
+import { join } from "node:path";
+
 import {
-  access,
-  lstat,
-  mkdir,
-  open,
-  realpath,
-  stat,
-} from "node:fs/promises";
-import { join, resolve } from "node:path";
+  planConfigPublication,
+  ProjectFileError,
+  publishConfigLast,
+} from "./project-files.js";
 
-import { DEFAULT_CONFIG_FILENAMES } from "./config.js";
-
-const CONFIG_FILENAME = "statecraft.config.mts";
 const SCENARIO_DIRECTORY = join("statecraft", "scenarios", "home");
 const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.mts");
 
@@ -87,105 +81,35 @@ export interface InitResult {
   readonly scenarioPath: string;
 }
 
-function isMissing(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "ENOENT"
-  );
-}
-
-async function canonicalProjectRoot(cwd: string | undefined): Promise<string> {
-  const projectRoot = resolve(cwd ?? process.cwd());
-
-  try {
-    const metadata = await stat(projectRoot);
-    if (!metadata.isDirectory()) {
-      throw new InitError(
-        "INIT_ROOT_INVALID",
-        `Initialization root is not a directory: ${projectRoot}`,
-        { paths: [projectRoot] },
-      );
-    }
-    await access(projectRoot, constants.R_OK | constants.W_OK | constants.X_OK);
-    return await realpath(projectRoot);
-  } catch (error: unknown) {
-    if (error instanceof InitError) {
-      throw error;
-    }
-    throw new InitError(
-      "INIT_ROOT_INVALID",
-      `Initialization root does not exist or cannot be used: ${projectRoot}`,
-      { cause: error, paths: [projectRoot] },
+function initializationError(error: unknown): InitError {
+  if (!(error instanceof ProjectFileError)) {
+    return new InitError(
+      "INIT_WRITE_FAILED",
+      "Statecraft could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
+      { cause: error },
     );
   }
-}
-
-async function existingPath(path: string): Promise<boolean> {
-  try {
-    await lstat(path);
-    return true;
-  } catch (error: unknown) {
-    if (isMissing(error)) {
-      return false;
-    }
-    throw error;
+  if (error.code === "PROJECT_FILE_ROOT_INVALID") {
+    return new InitError(
+      "INIT_ROOT_INVALID",
+      `Initialization root does not exist or cannot be used: ${error.paths[0] ?? "unknown"}`,
+      { cause: error, paths: error.paths },
+    );
   }
-}
-
-async function preflightDirectories(paths: readonly string[]): Promise<void> {
-  for (const path of paths) {
-    try {
-      const metadata = await lstat(path);
-      if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
-        throw new InitError(
-          "INIT_CONFLICT",
-          `Initialization path must be a real directory: ${path}`,
-          { paths: [path] },
-        );
-      }
-    } catch (error: unknown) {
-      if (error instanceof InitError) {
-        throw error;
-      }
-      if (!isMissing(error)) {
-        throw new InitError(
-          "INIT_WRITE_FAILED",
-          `Initialization path cannot be inspected: ${path}`,
-          { cause: error, paths: [path] },
-        );
-      }
-    }
+  if (error.code === "PROJECT_FILE_CONFLICT") {
+    return new InitError(
+      "INIT_CONFLICT",
+      `Statecraft initialization conflicts with existing paths:\n${error.paths
+        .map((path) => `  ${path}`)
+        .join("\n")}\nNo existing file was overwritten.`,
+      { cause: error, paths: error.paths },
+    );
   }
-}
-
-async function createDirectory(
-  path: string,
-): Promise<void> {
-  try {
-    await mkdir(path, { mode: 0o755 });
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
-      throw error;
-    }
-    const metadata = await lstat(path);
-    if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
-      throw error;
-    }
-  }
-}
-
-async function createFile(
-  path: string,
-  contents: string,
-): Promise<void> {
-  const handle = await open(path, "wx", 0o644);
-  try {
-    await handle.writeFile(contents, "utf8");
-  } finally {
-    await handle.close();
-  }
+  return new InitError(
+    "INIT_WRITE_FAILED",
+    "Statecraft could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
+    { cause: error, paths: error.paths },
+  );
 }
 
 /**
@@ -196,98 +120,21 @@ async function createFile(
 export async function initProject(
   options: InitOptions = {},
 ): Promise<InitResult> {
-  const projectRoot = await canonicalProjectRoot(options.cwd);
-  const configPath = join(projectRoot, CONFIG_FILENAME);
-  const scenarioPath = join(projectRoot, SCENARIO_FILENAME);
-  const directories = [
-    join(projectRoot, "statecraft"),
-    join(projectRoot, "statecraft", "scenarios"),
-    join(projectRoot, SCENARIO_DIRECTORY),
-  ];
-
-  await preflightDirectories(directories);
-
-  const conflicts: string[] = [];
-  const candidatePaths = [
-    ...DEFAULT_CONFIG_FILENAMES.map((filename) => join(projectRoot, filename)),
-    scenarioPath,
-  ];
-  for (const path of candidatePaths) {
-    try {
-      if (await existingPath(path)) {
-        conflicts.push(path);
-      }
-    } catch (error: unknown) {
-      throw new InitError(
-        "INIT_WRITE_FAILED",
-        `Initialization target cannot be inspected: ${path}`,
-        { cause: error, paths: [path] },
-      );
-    }
-  }
-  if (conflicts.length > 0) {
-    throw new InitError(
-      "INIT_CONFLICT",
-      `Statecraft initialization conflicts with existing paths:\n${conflicts
-        .map((path) => `  ${path}`)
-        .join("\n")}`,
-      { paths: conflicts },
-    );
-  }
-
+  let plan;
   try {
-    for (const directory of directories) {
-      await createDirectory(directory);
-    }
-    await createFile(scenarioPath, SCENARIO_TEMPLATE);
-    await createFile(configPath, CONFIG_TEMPLATE);
-  } catch (cause: unknown) {
-    if ((cause as NodeJS.ErrnoException).code === "EEXIST") {
-      throw new InitError(
-        "INIT_CONFLICT",
-        "Statecraft initialization stopped because a target changed during creation. No existing file was overwritten.",
-        { cause, paths: [configPath, scenarioPath] },
-      );
-    }
-    throw new InitError(
-      "INIT_WRITE_FAILED",
-      "Statecraft could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
-      { cause, paths: [configPath, scenarioPath] },
-    );
-  }
-
-  const lateConfigConflicts: string[] = [];
-  for (const filename of DEFAULT_CONFIG_FILENAMES) {
-    if (filename === CONFIG_FILENAME) {
-      continue;
-    }
-    const path = join(projectRoot, filename);
-    try {
-      if (await existingPath(path)) {
-        lateConfigConflicts.push(path);
-      }
-    } catch (error: unknown) {
-      throw new InitError(
-        "INIT_WRITE_FAILED",
-        `Initialization target cannot be rechecked: ${path}`,
-        { cause: error, paths: [path] },
-      );
-    }
-  }
-  if (lateConfigConflicts.length > 0) {
-    throw new InitError(
-      "INIT_CONFLICT",
-      `Statecraft initialization detected configuration paths created concurrently:\n${lateConfigConflicts
-        .map((path) => `  ${path}`)
-        .join("\n")}\nThe generated starter files were preserved for inspection.`,
-      { paths: lateConfigConflicts },
-    );
+    plan = await planConfigPublication(options.cwd, SCENARIO_FILENAME);
+    await publishConfigLast(plan, {
+      config: CONFIG_TEMPLATE,
+      scenario: SCENARIO_TEMPLATE,
+    });
+  } catch (error: unknown) {
+    throw initializationError(error);
   }
 
   return Object.freeze({
-    configPath,
-    files: Object.freeze([configPath, scenarioPath]),
-    projectRoot,
-    scenarioPath,
+    configPath: plan.configPath,
+    files: Object.freeze([plan.configPath, plan.scenarioPath]),
+    projectRoot: plan.projectRoot,
+    scenarioPath: plan.scenarioPath,
   });
 }

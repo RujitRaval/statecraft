@@ -23,11 +23,12 @@ Discover a bounded public surface, execute a fixed responsive/theme matrix, pers
 statecraft check https://example.com
 statecraft check https://example.com --max-pages 12
 statecraft check https://example.com --headed
+statecraft check https://example.com --write-config
 ```
 
 The URL must be absolute HTTP(S) and contain no credentials. Discovery removes its query and fragment, follows same-origin HTML pages in deterministic first-seen order, attempts at most five pages by default, and accepts an explicit integer budget from 1 through 20. Each accepted page receives exactly four checks: mobile `390x844` light/dark and desktop `1440x900` light/dark. HTTP errors, missing main-document responses, uncaught page errors, and horizontal overflow greater than one CSS pixel fail a cell; sanitized console and subordinate-request diagnostics remain warning evidence.
 
-The summary reports canonical site, discovered/scanned/skipped counts, per-page failures, issue totals, coverage, and `.statecraft/report/index.html`. It prints no raw diagnostic payloads. A completed all-pass check exits `0`; a completed check with failed cells exits `1`; invalid usage, discovery failure, or a run-level failure exits `2`. `--write-config` is not part of this slice; permanent setup generation remains a separate roadmap step.
+The summary reports canonical site, discovered/scanned/skipped counts, per-page failures, issue totals, coverage, and `.statecraft/report/index.html`. It prints no raw diagnostic payloads. Without `--write-config`, it prints the exact command that promotes the canonical discovered surface. With `--write-config`, it preflights every supported config and generated path before browser work, persists evidence, then exclusively publishes the shared scenario and config-last entrypoint. A completed all-pass check exits `0`; a completed check with failed cells exits `1`; invalid usage, discovery failure, setup conflict/write failure, or a run-level failure exits `2`.
 
 ### `statecraft scan`
 Validate config, optionally filter, execute matrix, write artifacts/report, print summary, return stable exit code.

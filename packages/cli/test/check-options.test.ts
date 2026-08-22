@@ -1,6 +1,7 @@
 import {
   mkdir,
   mkdtemp,
+  readFile,
   realpath,
   rm,
   writeFile,
@@ -51,6 +52,52 @@ function report() {
       passed: 0,
       routes: 0,
       states: 0,
+    },
+  });
+}
+
+function discoveredReport() {
+  const executions = [
+    { routeId: "start-41ec", routePath: "/start" },
+    { routeId: "pricing-78b2", routePath: "/pricing" },
+  ].map(({ routeId, routePath }) => ({
+    diagnostics: {
+      consoleErrors: [],
+      failedRequests: [],
+      navigationStatus: 200,
+      pageErrors: [],
+    },
+    durationMs: 10,
+    failures: [],
+    routeId,
+    routePath,
+    scenarioSource: "statecraft:public-site",
+    screenshotPath: `.statecraft/artifacts/${routeId}/public/mobile-light.png`,
+    stateId: "public",
+    status: "passed" as const,
+    theme: "light",
+    url: `https://example.test${routePath}`,
+    viewport: { height: 844, width: 390 },
+    viewportId: "mobile",
+  }));
+  return parseReport({
+    executions,
+    generatedAt: "2026-08-22T18:00:00.000Z",
+    project: { baseURL: "https://example.test/" },
+    schemaVersion: 1,
+    summary: {
+      coverage: {
+        execution: { covered: 2, percentage: 100, total: 2 },
+        responsive: { covered: 2, percentage: 100, total: 2 },
+        state: { covered: 2, percentage: 100, total: 2 },
+        theme: { covered: 2, percentage: 100, total: 2 },
+      },
+      durationMs: 20,
+      executions: 2,
+      failed: 0,
+      passed: 2,
+      routes: 2,
+      states: 2,
     },
   });
 }
@@ -165,6 +212,177 @@ describe("checkPublicSite options", () => {
     });
     expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
     expect(runPublicSiteChecksMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-boolean writeConfig value before discovery", async () => {
+    await expect(
+      checkPublicSite({
+        url: "https://example.test",
+        writeConfig: "yes",
+      } as unknown as Parameters<typeof checkPublicSite>[0]),
+    ).rejects.toMatchObject({
+      code: "CHECK_INVALID_INPUT",
+      message: "writeConfig must be a boolean when provided.",
+    });
+    expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
+    expect(runPublicSiteChecksMock).not.toHaveBeenCalled();
+  });
+
+  it("preflights every setup conflict before browser-backed discovery", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "statecraft-cli-check-conflicts-")),
+    );
+    projects.push(project);
+    await writeFile(join(project, "statecraft.config.mjs"), "keep", "utf8");
+    await writeFile(join(project, "statecraft.config.ts"), "keep", "utf8");
+
+    await expect(
+      checkPublicSite({
+        cwd: project,
+        url: "https://example.test",
+        writeConfig: true,
+      }),
+    ).rejects.toMatchObject({
+      code: "CHECK_SETUP_CONFLICT",
+      paths: [
+        join(project, "statecraft.config.ts"),
+        join(project, "statecraft.config.mjs"),
+      ],
+    });
+    expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
+    expect(runPublicSiteChecksMock).not.toHaveBeenCalled();
+    await expect(
+      readFile(join(project, "statecraft.config.mjs"), "utf8"),
+    ).resolves.toBe("keep");
+  });
+
+  it("publishes a deterministic config and shared scenario after persisted evidence", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "statecraft-cli-check-setup-")),
+    );
+    projects.push(project);
+    const discovery = Object.freeze({
+      attemptedPages: 2,
+      baseURL: "https://example.test/",
+      routes: Object.freeze([
+        Object.freeze({ path: "/start" }),
+        Object.freeze({ path: "/pricing" }),
+      ]),
+      skippedPages: 0,
+      truncatedAnchorPages: 0,
+    });
+    discoverPublicRoutesMock.mockResolvedValue(discovery);
+    const persisted = Object.freeze({
+      htmlReportPath: ".statecraft/report/index.html",
+      report: discoveredReport(),
+      reportPath: ".statecraft/report/statecraft.json",
+    });
+    runPublicSiteChecksMock.mockResolvedValue(persisted);
+
+    const result = await checkPublicSite({
+      cwd: project,
+      url: "https://example.test/start",
+      writeConfig: true,
+    });
+
+    expect(result.setup).toEqual({
+      configPath: join(project, "statecraft.config.mts"),
+      files: [
+        join(project, "statecraft.config.mts"),
+        join(project, "statecraft", "scenarios", "public", "default.mts"),
+      ],
+      projectRoot: project,
+      scenarioPath: join(
+        project,
+        "statecraft",
+        "scenarios",
+        "public",
+        "default.mts",
+      ),
+    });
+    const config = await readFile(
+      join(project, "statecraft.config.mts"),
+      "utf8",
+    );
+    expect(config).toContain('baseURL: "https://example.test/"');
+    expect(config.indexOf('path: "/start"')).toBeLessThan(
+      config.indexOf('path: "/pricing"'),
+    );
+    expect(config).toContain('id: "start-41ec"');
+    expect(config).toContain('id: "pricing-78b2"');
+    expect(config).toContain('"mobile": {');
+    expect(config).toContain('"height": 844');
+    expect(config).toContain('"width": 390');
+    expect(config).toContain('"desktop": {');
+    expect(config).toContain('"height": 900');
+    expect(config).toContain('"width": 1440');
+    expect(config).toContain('themes: [\n    "light",\n    "dark"\n  ]');
+    expect(config).toContain('"consoleError": false');
+    expect(config).toContain('"failedRequest": false');
+    expect(config).toContain('"pageError": true');
+    await expect(
+      readFile(
+        join(project, "statecraft", "scenarios", "public", "default.mts"),
+        "utf8",
+      ),
+    ).resolves.toBe(`import { publicSiteScenario } from "statecraft-ui/public-site-scenario";
+
+export default publicSiteScenario;
+`);
+  });
+
+  it("preserves a late scenario collision and leaves the config unpublished", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "statecraft-cli-check-late-race-")),
+    );
+    projects.push(project);
+    const scenarioPath = join(
+      project,
+      "statecraft",
+      "scenarios",
+      "public",
+      "default.mts",
+    );
+    discoverPublicRoutesMock.mockResolvedValue(
+      Object.freeze({
+        attemptedPages: 2,
+        baseURL: "https://example.test/",
+        routes: Object.freeze([
+          Object.freeze({ path: "/start" }),
+          Object.freeze({ path: "/pricing" }),
+        ]),
+        skippedPages: 0,
+        truncatedAnchorPages: 0,
+      }),
+    );
+    runPublicSiteChecksMock.mockImplementation(async () => {
+      await mkdir(join(project, "statecraft", "scenarios", "public"), {
+        recursive: true,
+      });
+      await writeFile(scenarioPath, "created by another process", "utf8");
+      return Object.freeze({
+        htmlReportPath: ".statecraft/report/index.html",
+        report: discoveredReport(),
+        reportPath: ".statecraft/report/statecraft.json",
+      });
+    });
+
+    await expect(
+      checkPublicSite({
+        cwd: project,
+        url: "https://example.test",
+        writeConfig: true,
+      }),
+    ).rejects.toMatchObject({
+      code: "CHECK_SETUP_CONFLICT",
+      paths: [scenarioPath],
+    });
+    await expect(readFile(scenarioPath, "utf8")).resolves.toBe(
+      "created by another process",
+    );
+    await expect(
+      readFile(join(project, "statecraft.config.mts"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it.each([

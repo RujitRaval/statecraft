@@ -62,10 +62,10 @@ Do not expand scope until the core workflow is excellent.
 
 The later approved Public URL Quick Check roadmap adds bounded,
 navigation-only route discovery as an onboarding path. It now includes
-runner-owned discovery and fixed-matrix evidence plus `statecraft check
-<url>` orchestration. It does not infer application states or replace the
-explicit configured `statecraft scan` workflow. Overwrite-safe promotion
-into permanent config remains the next separate roadmap slice.
+runner-owned discovery and fixed-matrix evidence, `statecraft check <url>`
+orchestration, and overwrite-safe `--write-config` promotion. It does not
+infer application states or replace the explicit configured `statecraft
+scan` workflow.
 
 ## 4. Developer experience
 
@@ -473,9 +473,10 @@ coverage, documented GitHub Actions usage, public npm packages, protected
 release automation, real report launch assets, and final contributor and
 release guidance are implemented. The approved Public URL Quick Check
 roadmap now includes bounded discovery, fixed-matrix evidence, kinetic
-reporting, and `statecraft check <url>` orchestration. Overwrite-safe
-promotion into permanent config remains the next separate slice. Keep
-future work in an explicitly approved roadmap slice.
+reporting, `statecraft check <url>` orchestration, and overwrite-safe
+`--write-config` promotion. Public launch guidance and the registry-only
+check → promotion → scan gate remain the next separate slice. Keep future
+work in an explicitly approved roadmap slice.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved

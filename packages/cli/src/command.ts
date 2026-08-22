@@ -19,7 +19,7 @@ const HELP = `Statecraft
 
 Usage:
   statecraft init
-  statecraft check <url> [--max-pages <1-20>] [--headed]
+  statecraft check <url> [--max-pages <1-20>] [--headed] [--write-config]
   statecraft scan [--config <path>] [--route <id>] [--headed]
   statecraft open
   statecraft --help
@@ -60,6 +60,7 @@ interface ParsedCheckArguments {
   readonly headed: boolean;
   readonly maxPages?: number | undefined;
   readonly url: string;
+  readonly writeConfig: boolean;
 }
 
 function terminalText(value: string): string {
@@ -133,6 +134,7 @@ function parseCheckArguments(
   let headed = false;
   let maxPages: number | undefined;
   let url: string | undefined;
+  let writeConfig = false;
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
@@ -156,6 +158,13 @@ function parseCheckArguments(
       }
       maxPages = Number(value);
       index += 1;
+      continue;
+    }
+    if (argument === "--write-config") {
+      if (writeConfig) {
+        return "The --write-config option can be specified only once.";
+      }
+      writeConfig = true;
       continue;
     }
     if (argument.startsWith("--")) {
@@ -183,7 +192,7 @@ function parseCheckArguments(
     return "The check URL must be a valid absolute HTTP(S) URL.";
   }
 
-  return Object.freeze({ headed, maxPages, url });
+  return Object.freeze({ headed, maxPages, url, writeConfig });
 }
 
 function routeTitle(routeId: string): string {
@@ -290,9 +299,23 @@ export function formatCheckSummary(result: CheckResult): string {
     failed === 0
       ? `All ${quantity(executionCount, "check")} passed.`
       : `${failed} of ${quantity(executionCount, "check")} failed.`,
-    "",
-    "Next: Open the report, then run `npx statecraft init` to model real product states.",
   );
+  if (result.setup === undefined) {
+    lines.push(
+      "",
+      `Next: Open the report, then save this surface with \`npx statecraft check ${terminalText(result.discovery.baseURL)} --write-config\`.`,
+    );
+  } else {
+    lines.push(
+      "",
+      "Saved the discovered public surface.",
+      "Created:",
+      `  ${displayPath(result.setup.projectRoot, result.setup.configPath)}`,
+      `  ${displayPath(result.setup.projectRoot, result.setup.scenarioPath)}`,
+      "",
+      "Next: add real product states, then run `npx statecraft scan`.",
+    );
+  }
   return `${lines.join("\n")}\n`;
 }
 
@@ -358,13 +381,17 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
       stdout(formatCheckSummary(result));
       return result.report.summary.failed === 0 ? 0 : 1;
     } catch (error: unknown) {
-      stderr(
-        `${
-          error instanceof CheckError
-            ? terminalText(error.message)
-            : "Statecraft check failed unexpectedly."
-        }\n`,
-      );
+      if (error instanceof CheckError) {
+        const targets =
+          error.code === "CHECK_SETUP_WRITE_FAILED" && error.paths.length > 0
+            ? `\n\nTargets:\n${error.paths
+                .map((path) => `  ${terminalText(path)}`)
+                .join("\n")}`
+            : "";
+        stderr(`${terminalText(error.message)}${targets}\n`);
+      } else {
+        stderr("Statecraft check failed unexpectedly.\n");
+      }
       return 2;
     }
   }
