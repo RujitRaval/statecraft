@@ -129,4 +129,14 @@ test("keeps bootstrap token auth conditional so trusted publishing can use OIDC"
   );
   assert.equal((workflow.match(/NODE_AUTH_TOKEN:/gu) ?? []).length, 1);
   assert.match(workflow, /id-token: write/u);
+  const publishIndex = workflow.indexOf("- name: Publish npm artifacts");
+  const registryGateIndex = workflow.indexOf("verify-public-url:");
+  assert.equal(publishIndex >= 0, true);
+  assert.equal(registryGateIndex > publishIndex, true);
+  assert.match(
+    workflow.slice(registryGateIndex),
+    /node scripts\/public-url-registry-smoke\.mjs --tag "\$RELEASE_TAG" --with-deps/u,
+  );
+  assert.match(workflow.slice(registryGateIndex), /needs: publish-npm/u);
+  assert.match(workflow.slice(registryGateIndex), /timeout-minutes: 15/u);
 });

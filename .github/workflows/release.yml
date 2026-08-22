@@ -62,3 +62,25 @@ jobs:
         run: node scripts/publish-release-packages.mjs --input "$PACKAGE_OUTPUT" --tag "$RELEASE_TAG"
         env:
           PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
+
+  verify-public-url:
+    name: Verify published public URL journey
+    needs: publish-npm
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+      - name: Set up the registry-consumer runtime
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.1.0
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+      - name: Run the registry-only consumer gate
+        run: node scripts/public-url-registry-smoke.mjs --tag "$RELEASE_TAG" --with-deps

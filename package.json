@@ -1,6 +1,6 @@
 {
   "name": "statecraft",
-  "version": "0.24.8",
+  "version": "0.24.9",
   "private": true,
   "description": "Find, render, and report the UI states your product forgot.",
   "license": "MIT",
@@ -15,6 +15,7 @@
     "launch:assets": "corepack pnpm --filter @statecraft/example-nextjs launch:assets",
     "release:check": "node scripts/check-release-packages.mjs",
     "release:package-smoke": "corepack pnpm build && node scripts/release-package-smoke.mjs",
+    "release:registry-public-url-smoke": "node scripts/public-url-registry-smoke.mjs",
     "release:smoke": "node scripts/release-smoke.mjs",
     "release:sync-version": "node scripts/check-release-packages.mjs --sync",
     "test": "corepack pnpm build && vitest run && node --test scripts/*.test.mjs",

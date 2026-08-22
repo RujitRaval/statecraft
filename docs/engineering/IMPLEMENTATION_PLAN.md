@@ -36,7 +36,7 @@ README, CI usage, contributor docs, GIF/screenshots, package metadata, smoke tes
 ## Approved roadmap - Public URL Quick Check
 Bounded same-origin discovery, a fixed public-site evidence matrix, kinetic report presentation, CLI orchestration, and overwrite-safe promotion into permanent Statecraft setup.
 **Gate:** a developer can point one command at an authorized live site, receive actionable local evidence, and promote the useful surface without hand-authoring boilerplate.
-**Status:** CLI `check <url>` now composes discovery, four-cell-per-page evidence capture, page-level summaries, stable exit codes, the offline report, and overwrite-safe `--write-config` promotion. Public launch guidance and the registry-only check → promotion → scan gate remain the final separate slice.
+**Status:** complete; CLI `check <url>` composes discovery, four-cell-per-page evidence capture, page-level summaries, stable exit codes, the offline report, and overwrite-safe `--write-config` promotion. The public launch guide and post-publication registry-only check → promotion → scan consumer gate prove the documented journey from an empty npm project.
 
 ## Rules
 Keep main buildable; no speculative abstractions/backend/telemetry/LLM; tests accompany capabilities; record important decisions as ADRs; justify major dependencies.
