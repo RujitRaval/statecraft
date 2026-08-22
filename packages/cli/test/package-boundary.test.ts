@@ -29,6 +29,10 @@ interface PackageManifest {
       import?: string;
       types?: string;
     };
+    "./public-site-scenario"?: {
+      import?: string;
+      types?: string;
+    };
   };
   name?: string;
   private?: boolean;
@@ -52,27 +56,44 @@ describe("statecraft-ui package boundary", () => {
           import: "./dist/index.js",
           types: "./dist/index.d.ts",
         },
+        "./public-site-scenario": {
+          import: "./dist/public-site-scenario.js",
+          types: "./dist/public-site-scenario.d.ts",
+        },
       },
     });
     expect(manifest.private).toBeUndefined();
 
     const importPath = manifest.exports?.["."]?.import;
     const typesPath = manifest.exports?.["."]?.types;
+    const scenarioImportPath =
+      manifest.exports?.["./public-site-scenario"]?.import;
+    const scenarioTypesPath =
+      manifest.exports?.["./public-site-scenario"]?.types;
     const binPath = manifest.bin?.statecraft;
     expect(importPath).toBeDefined();
     expect(typesPath).toBeDefined();
     expect(binPath).toBeDefined();
+    expect(scenarioImportPath).toBeDefined();
+    expect(scenarioTypesPath).toBeDefined();
 
     const packageRoot = new URL("../", import.meta.url);
     const importUrl = new URL(importPath ?? "", packageRoot);
     const typesUrl = new URL(typesPath ?? "", packageRoot);
     const binUrl = new URL(binPath ?? "", packageRoot);
+    const scenarioImportUrl = new URL(scenarioImportPath ?? "", packageRoot);
+    const scenarioTypesUrl = new URL(scenarioTypesPath ?? "", packageRoot);
     await expect(access(typesUrl)).resolves.toBeUndefined();
+    await expect(access(scenarioTypesUrl)).resolves.toBeUndefined();
     await expect(access(binUrl)).resolves.toBeUndefined();
     await expect(readFile(binUrl, "utf8")).resolves.toMatch(
       /^#!\/usr\/bin\/env node\n/,
     );
     const builtModule = await import(importUrl.href);
+    const scenarioModule = await import(scenarioImportUrl.href);
+    expect(scenarioModule.publicSiteScenario).toMatchObject({
+      assert: expect.any(Function),
+    });
     expect(Object.keys(builtModule).sort()).toEqual([
       "CheckError",
       "ConfigDiscoveryError",

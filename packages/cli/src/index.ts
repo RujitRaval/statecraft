@@ -20,6 +20,7 @@ export type {
   CheckOptions,
   CheckResult,
 } from "./check.js";
+export type { PublicSiteSetupResult } from "./public-site-setup.js";
 export { runCli } from "./command.js";
 export type { CliExitCode, RunCliOptions } from "./command.js";
 export { InitError, initProject } from "./init.js";

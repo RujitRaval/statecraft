@@ -1,6 +1,6 @@
 {
   "name": "statecraft-ui",
-  "version": "0.24.7",
+  "version": "0.24.8",
   "description": "Zero-config public-site checks and configured UI state coverage for Statecraft.",
   "license": "MIT",
   "repository": {
@@ -35,6 +35,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./public-site-scenario": {
+      "types": "./dist/public-site-scenario.d.ts",
+      "import": "./dist/public-site-scenario.js"
     }
   },
   "engines": {

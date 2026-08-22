@@ -33,4 +33,4 @@ No fake activity, AI overclaiming, half-working universal framework, cloud gate,
 
 ## Current status
 
-Phase 7 is complete. The public README, real report assets, npm packages, protected release workflow, consumer smoke gates, GitHub Actions guide, contributor/release guidance, and zero-config `statecraft check <url>` path are live. Overwrite-safe Quick Check promotion remains a separate approved slice; other launch work should distribute these proofs rather than expand the product boundary.
+Phase 7 is complete. The public README, real report assets, npm packages, protected release workflow, consumer smoke gates, GitHub Actions guide, contributor/release guidance, zero-config `statecraft check <url>` path, and overwrite-safe `--write-config` promotion are implemented. The next approved slice should publish the final guidance and exercise the exact registry-only check → promotion → scan consumer journey; other launch work should distribute these proofs rather than expand the product boundary.

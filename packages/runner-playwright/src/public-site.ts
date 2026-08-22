@@ -8,6 +8,7 @@ import {
 import type { LaunchOptions } from "playwright";
 
 import type { PublicRouteDiscovery } from "./discovery.js";
+import { PUBLIC_SITE_CHECK_CONTRACT } from "./public-site-contract.js";
 import {
   runPersistedScenarioCells,
   type PersistedScenarioRun,
@@ -123,11 +124,8 @@ export function publicSiteMatrix(
       path,
       states: [{ id: "public", setup: publicSiteScenarioSource }],
     })),
-    themes: ["light", "dark"],
-    viewports: {
-      mobile: { height: 844, width: 390 },
-      desktop: { height: 900, width: 1_440 },
-    },
+    themes: PUBLIC_SITE_CHECK_CONTRACT.themes,
+    viewports: PUBLIC_SITE_CHECK_CONTRACT.viewports,
   });
   return Object.freeze(expandMatrix(config));
 }
@@ -146,11 +144,7 @@ export async function runPublicSiteChecks(
       : { timeoutMs: options.readinessTimeoutMs };
   const persistenceOptions: RunPersistedScenarioCellsOptions = {
     baseURL: discovery.baseURL,
-    failOn: {
-      consoleError: false,
-      failedRequest: false,
-      pageError: true,
-    },
+    failOn: PUBLIC_SITE_CHECK_CONTRACT.failOn,
     ...(options.generatedAt === undefined
       ? {}
       : { generatedAt: options.generatedAt }),

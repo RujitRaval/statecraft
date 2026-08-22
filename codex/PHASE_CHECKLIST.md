@@ -73,4 +73,5 @@ Phase 4 through Phase 6 are complete.
 - [x] Fixed mobile/desktop by light/dark evidence and persisted report
 - [x] Kinetic evidence report presentation
 - [x] `statecraft check <url>` orchestration, summaries, and exit codes
-- [ ] Overwrite-safe promotion into permanent `.mts` config and scenario files
+- [x] Overwrite-safe promotion into permanent `.mts` config and scenario files
+- [ ] Public launch guidance and registry-only check → promotion → scan gate

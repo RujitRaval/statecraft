@@ -14,7 +14,7 @@ CI uses the same command with `--with-deps` on Ubuntu.
 
 ## Public URL route discovery
 
-`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. The CLI composes it with `runPublicSiteChecks` through `statecraft check <url>`; overwrite-safe permanent config generation remains a follow-up slice.
+`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. The CLI composes it with `runPublicSiteChecks` through `statecraft check <url>` and can preserve the accepted surface through explicit overwrite-safe `--write-config` promotion.
 
 ```ts
 import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
@@ -91,7 +91,9 @@ The trusted `publicSiteScenario` fails on a final main-document HTTP status of 4
 
 The result uses the existing schema-v1 JSON and self-contained HTML report under `.statecraft/`. Output remains private local evidence. Callers must check only sites they own or are authorized to test because normal page loads execute the site's JavaScript and requests.
 
-The runner's navigated, captured, and persisted option shapes also accept a trusted in-memory `scenario` override for programmatic orchestration. When supplied, it is runtime-validated once and used for every cell instead of importing each state's `setup` path. The exported `publicSiteScenario` can also be the default export of a trusted local scenario module; this lets the later permanent Quick Check setup reuse the exact same assertions instead of copying them.
+The runner's navigated, captured, and persisted option shapes also accept a trusted in-memory `scenario` override for programmatic orchestration. When supplied, it is runtime-validated once and used for every cell instead of importing each state's `setup` path. The exported `publicSiteScenario` is the default export behind the generated trusted local scenario module, so promoted configured scans reuse the exact same assertions instead of copying them.
+
+`statecraft-ui-runner-playwright/public-site-contract` is a lightweight export containing the frozen Quick Check viewports, themes, and diagnostic failure policy. The runner and CLI config generator share it so a promoted scan reproduces the same fixed matrix without importing Playwright at setup-render time.
 
 See [ADR 0030](../decisions/0030-public-site-check-evidence.md) for the fixed matrix, assertion precision, and evidence decisions.
 
@@ -284,7 +286,7 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery, runner-owned fixed-matrix evidence, and CLI `statecraft check` orchestration. Permanent setup generation remains the follow-up slice.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery, runner-owned fixed-matrix evidence, CLI `statecraft check` orchestration, and overwrite-safe permanent setup generation.
 
 ## Dependency decision
 

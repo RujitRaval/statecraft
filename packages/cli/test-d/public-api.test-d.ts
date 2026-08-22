@@ -29,6 +29,7 @@ import {
   type OpenReportErrorCode,
   type OpenReportOptions,
   type OpenReportResult,
+  type PublicSiteSetupResult,
   type RunCliOptions,
   type ScanErrorCode,
   type ScanOptions,
@@ -40,11 +41,14 @@ const checkOptions: CheckOptions = {
   headed: false,
   maxPages: 5,
   url: "https://example.com",
+  writeConfig: true,
 };
 const checkResult: Promise<CheckResult> = checkPublicSite(checkOptions);
 const checkDiscovery: Promise<CheckDiscovery> = checkResult.then(
   (result) => result.discovery,
 );
+const publicSiteSetup: Promise<PublicSiteSetupResult | undefined> =
+  checkResult.then((result) => result.setup);
 const checkCode: CheckErrorCode = "CHECK_DISCOVERY_FAILED";
 const checkRootCode: CheckErrorCode = "CHECK_ROOT_INVALID";
 const checkError: Error = new CheckError(checkCode, "Discovery failed.");
@@ -108,6 +112,7 @@ const typedConfig = defineConfig({
 void configPath;
 void checkResult;
 void checkDiscovery;
+void publicSiteSetup;
 void checkError;
 void checkRootCode;
 void loadedConfig;
