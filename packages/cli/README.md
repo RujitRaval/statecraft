@@ -16,4 +16,4 @@ npx statecraft scan
 
 The package also exports `defineConfig`, `checkPublicSite`, config discovery/loading, initialization, scan orchestration, and report-opening APIs for TypeScript consumers. Generated public-site scenarios import the narrow `statecraft-ui/public-site-scenario` helper so they retain the same assertions as Quick Check without copying implementation code.
 
-See the [Statecraft repository](https://github.com/RujitRaval/statecraft) for configuration, scenario, CI, privacy, and contribution guidance.
+See the [public website Quick Check guide](https://github.com/RujitRaval/statecraft/blob/main/docs/open-source/PUBLIC_URL_QUICK_CHECK.md) for the complete first-run and promotion journey. The [Statecraft repository](https://github.com/RujitRaval/statecraft) contains configuration, scenario, CI, privacy, release-proof, and contribution guidance.

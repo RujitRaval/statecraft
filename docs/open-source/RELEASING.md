@@ -38,6 +38,14 @@ corepack pnpm release:smoke
 
 `release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, creates a CommonJS-default consumer with `npm init -y`, installs the exact tarballs, imports all public APIs, installs Chromium, and runs the generated `.mts` starter through a complete four-cell scan. Temporary tarballs, screenshots, and reports stay inside removed temporary directories; `*.tgz` and `.statecraft/` remain ignored.
 
+After npm publication, repeat the exact live-registry Quick Check journey for the released version:
+
+```bash
+corepack pnpm release:registry-public-url-smoke -- --version 0.24.9
+```
+
+This creates another empty `npm init -y` consumer, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, and generated-source stability before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry.
+
 ## First publication bootstrap (completed for v0.24.0)
 
 npm requires each package to exist before a trusted publisher can be configured. For the first release only:
@@ -61,8 +69,8 @@ The workflow configures token authentication only when that bootstrap secret exi
 3. Merge the fully green pull request through GitHub.
 4. Create a non-prerelease `vMAJOR.MINOR.PATCH` GitHub Release from the merged commit on `main`.
 5. Approve the `npm-publish` Environment deployment.
-6. Confirm the `Release` workflow is green and verify all four package versions on npm.
+6. Confirm the `Release` workflow is green and verify all four package versions on npm. Its final release job runs the exact registry-only public URL consumer journey after publication with an independent 15-minute budget.
 
 The workflow serializes all npm releases, checks out the release event's commit, proves the named tag still resolves to that exact commit on `main`, rejects prereleases, reruns the complete repository and browser-backed release gates, and packs artifacts once. It publishes missing versions directly to `latest` in dependency order, with the CLI last so its exact supporting dependencies already exist before the primary consumer package moves. A rerun skips a package only when npm reports the same integrity and that exact version is already `latest`; it fails before publication if an existing version has different bytes, a matching version has inconsistent dist-tags, or the requested version is older than any package's current `latest`. npm trusted publishing does not authorize separate dist-tag mutations, so the release path intentionally uses only OIDC-supported publish operations.
 
-Publishing is intentionally absent from pull-request, push, and manual-dispatch workflows.
+Publishing is intentionally absent from pull-request, push, and manual-dispatch workflows. The registry-only public URL gate is also release-only because candidate versions do not exist on npm during pull-request CI.

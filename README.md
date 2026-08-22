@@ -45,6 +45,8 @@ Statecraft discovers up to five same-origin HTML pages, checks every page at mob
 
 Quick Check covers public success surfaces. After promotion, edit the generated config and add loading, empty, error, authenticated, and long-content scenarios that a public crawl cannot reach. Without `--write-config`, Quick Check creates only ignored `.statecraft/` evidence and prints the exact promotion command.
 
+The [public website Quick Check guide](docs/open-source/PUBLIC_URL_QUICK_CHECK.md) walks through the two-minute first run, interpreting the report, safe promotion, privacy boundaries, and the registry-only release proof behind this workflow.
+
 ## Quick start
 
 Statecraft supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x.
@@ -182,11 +184,11 @@ corepack pnpm build
 
 The Northline scan intentionally exits `1` with exactly 56 passes and four failures. To regenerate the checked-in launch images after producing that report, run `corepack pnpm launch:assets`.
 
-Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [documentation map](codex/MASTER_PROMPT.md), [implementation specification](codex/IMPLEMENTATION_SPEC.md), [release guide](docs/open-source/RELEASING.md), and [launch strategy](docs/open-source/LAUNCH_STRATEGY.md) explain the product boundary and workflow.
+Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open-source/PUBLIC_URL_QUICK_CHECK.md), [documentation map](codex/MASTER_PROMPT.md), [implementation specification](codex/IMPLEMENTATION_SPEC.md), [release guide](docs/open-source/RELEASING.md), and [launch strategy](docs/open-source/LAUNCH_STRATEGY.md) explain the product boundary and workflow.
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the zero-config `statecraft check <url>` path with overwrite-safe `--write-config` promotion from the approved [public URL Quick Check design](docs/designs/public-url-quick-check.md). The remaining approved Quick Check launch slice is public guidance plus an exact registry-only check → promotion → configured-scan consumer gate. Other potential follow-ups include Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the completed [public URL Quick Check](docs/designs/public-url-quick-check.md) with overwrite-safe promotion and a registry-only check → promotion → configured-scan release gate. Potential follow-ups include launch feedback, Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

@@ -472,11 +472,11 @@ Phase 1 through Phase 7 are complete. Clean-checkout consumer smoke
 coverage, documented GitHub Actions usage, public npm packages, protected
 release automation, real report launch assets, and final contributor and
 release guidance are implemented. The approved Public URL Quick Check
-roadmap now includes bounded discovery, fixed-matrix evidence, kinetic
-reporting, `statecraft check <url>` orchestration, and overwrite-safe
-`--write-config` promotion. Public launch guidance and the registry-only
-check → promotion → scan gate remain the next separate slice. Keep future
-work in an explicitly approved roadmap slice.
+roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic
+reporting, `statecraft check <url>` orchestration, overwrite-safe
+`--write-config` promotion, public launch guidance, and the registry-only
+check → promotion → scan release gate are implemented. Keep future work in
+an explicitly approved roadmap slice.
 
 At each handoff provide: API implemented; behavior; fixture and
 integration tests added; build/test commands; assumptions; unresolved
