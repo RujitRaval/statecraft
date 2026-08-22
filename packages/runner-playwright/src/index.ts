@@ -37,14 +37,22 @@ export {
   ScenarioLoadError,
 } from "./scenario.js";
 export type {
+  AssertionScenarioContext,
   LoadScenarioOptions,
   RunScenarioCellsOptions,
   ScenarioCellExecutor,
   ScenarioContext,
+  ScenarioAssertionHook,
   ScenarioHook,
   ScenarioLoadErrorCode,
   StatecraftScenario,
 } from "./scenario.js";
+export {
+  PUBLIC_SITE_OVERFLOW_TOLERANCE_PX,
+  publicSiteScenario,
+} from "./public-site-scenario.js";
+export { runPublicSiteChecks } from "./public-site.js";
+export type { RunPublicSiteChecksOptions } from "./public-site.js";
 export { runNavigatedScenarioCells } from "./navigation.js";
 export type {
   DeterministicReadinessOptions,

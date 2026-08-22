@@ -9,6 +9,7 @@ import {
   runCapturedScenarioCells,
   ScenarioCaptureError,
   type CapturedScenarioCell,
+  type StatecraftScenario,
 } from "../src/index.js";
 import { sanitizeDiagnosticText } from "../src/capture.js";
 
@@ -295,6 +296,43 @@ describe("runCapturedScenarioCells", () => {
     } finally {
       Reflect.deleteProperty(globalThis, eventKey);
     }
+  });
+
+  it("discards a screenshot when an assertion replaces the main document", async () => {
+    const scenario: StatecraftScenario = {
+      async beforeNavigate({ page }) {
+        await page.route("**/*", async (route) => {
+          await route.fulfill({
+            body: "<!doctype html><html><body>fixture</body></html>",
+            contentType: "text/html",
+            status: 200,
+          });
+        });
+      },
+      async assert({ page }) {
+        await page.goto(
+          "https://outside.invalid/private?token=visible#fragment",
+        );
+      },
+    };
+
+    const outcomes = await runCapturedScenarioCells(
+      captureCells(["clean-after"]),
+      { baseURL, scenario },
+    );
+    const reason = captureReason(outcomes[0]!);
+
+    expect(reason.failures).toEqual([
+      {
+        code: "NAVIGATION_FAILED",
+        message:
+          "Navigation must stay on the configured origin (received https://outside.invalid/).",
+      },
+    ]);
+    expect(reason.evidence.assertionStatus).toBe("passed");
+    expect(reason.evidence.screenshot).toBeNull();
+    expect(JSON.stringify(reason.evidence)).not.toContain("replacement");
+    expect(JSON.stringify(reason)).not.toMatch(/visible|private/u);
   });
 
   it("retains response metadata when a post-navigation hook fails", async () => {

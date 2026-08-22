@@ -15,7 +15,11 @@ import {
   type NavigationMetadata,
   type RunNavigatedScenarioCellsOptions,
 } from "./navigation.js";
-import { ScenarioLoadError, type StatecraftScenario } from "./scenario.js";
+import {
+  ScenarioLoadError,
+  type AssertionScenarioContext,
+  type StatecraftScenario,
+} from "./scenario.js";
 
 const maxDiagnosticLength = 2_000;
 const maxDiagnosticsPerCategory = 100;
@@ -410,15 +414,47 @@ export async function runCapturedScenarioCells(
       const { context } = lifecycle;
       const startedAt = lifecycle.startedAt;
       const collector = new DiagnosticCollector(context.page);
-      let navigation: NavigationMetadata | null;
+      let navigation: NavigationMetadata | null = null;
+      let assertionContext: AssertionScenarioContext | undefined;
       let scenario: StatecraftScenario;
       let screenshot: Uint8Array | null = null;
       collector.start();
+
+      const assertNavigationStable = (
+        assertionStatus: AssertionStatus,
+      ): void => {
+        try {
+          lifecycle.assertNavigationStable();
+        } catch (cause: unknown) {
+          screenshot = null;
+          const currentEvidence = evidence(
+            assertionStatus,
+            collector,
+            startedAt,
+            navigation,
+            navigation?.status ?? lifecycle.navigationStatusSnapshot(),
+            screenshot,
+          );
+          throw captureError(
+            [
+              failure("NAVIGATION_FAILED", diagnosticErrorMessage(cause)),
+              ...policyFailures(
+                currentEvidence.diagnostics,
+                currentEvidence.droppedDiagnostics,
+                policy,
+              ),
+            ],
+            currentEvidence,
+            cause,
+          );
+        }
+      };
 
       try {
         try {
           const navigated = await lifecycle.navigate();
           navigation = navigated.context.navigation;
+          assertionContext = navigated.context;
           scenario = navigated.scenario;
         } catch (cause: unknown) {
           navigation = lifecycle.navigationSnapshot();
@@ -469,13 +505,17 @@ export async function runCapturedScenarioCells(
           ];
           throw captureError(failures, currentEvidence, cause);
         }
+        assertNavigationStable("not-run");
 
         let assertionStatus: AssertionStatus = "not-configured";
         let assertionFailure: ExecutionFailure | undefined;
         let assertionCause: unknown;
         if (scenario?.assert !== undefined) {
           try {
-            await scenario.assert(context);
+            if (assertionContext === undefined) {
+              throw new Error("Assertion context is unavailable after navigation.");
+            }
+            await scenario.assert(assertionContext);
             assertionStatus = "passed";
           } catch (cause: unknown) {
             assertionStatus = "failed";
@@ -486,6 +526,7 @@ export async function runCapturedScenarioCells(
             );
           }
         }
+        assertNavigationStable(assertionStatus);
 
         const currentEvidence = evidence(
           assertionStatus,
