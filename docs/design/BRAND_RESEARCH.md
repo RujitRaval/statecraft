@@ -56,7 +56,7 @@ Acid marks selection and healthy completion. Vermilion marks failure. Cobalt is 
 - Evidence labels: IBM Plex Mono.
 - Offline report fallback: Georgia for display; system sans and system monospace for everything else. The generated report must not request a font from the network.
 
-The display scale is intentionally extreme: `clamp(4rem, 12vw, 11rem)` for the report verdict. Labels stay between 11 and 13 pixels with strong tracking. Body text stays at 16 pixels or larger.
+The display scale is intentionally extreme: `clamp(4rem, 12vw, 11rem)` for the report verdict. Labels stay between 12 and 13 pixels with strong tracking. Body text stays at 16 pixels or larger.
 
 ### Composition
 

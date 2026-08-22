@@ -214,6 +214,7 @@ const interactions = `
   const noResults = document.querySelector("#no-results");
   const reset = form.querySelector("[type=reset]");
   const matrixScroll = document.querySelector(".matrix-scroll");
+  const focusableSelector = "a[href],button:not([disabled]),summary,[tabindex]:not([tabindex='-1'])";
   let activeDetail = null;
   let activeTrigger = null;
   let lastTrigger = null;
@@ -387,6 +388,25 @@ const interactions = `
     if (event.key === "Escape" && activeDetail !== null) {
       event.preventDefault();
       closeDetail(true, true);
+      return;
+    }
+    if (event.key === "Tab" && activeDetail instanceof HTMLElement) {
+      const focusable = Array.from(activeDetail.querySelectorAll(focusableSelector)).filter((element) => element instanceof HTMLElement && !element.hidden);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!(first instanceof HTMLElement) || !(last instanceof HTMLElement)) {
+        event.preventDefault();
+        activeDetail.focus();
+      } else if (event.shiftKey && (document.activeElement === first || document.activeElement === activeDetail)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      } else if (!activeDetail.contains(document.activeElement)) {
+        event.preventDefault();
+        first.focus();
+      }
     }
   });
   window.addEventListener("hashchange", syncDetailFromHash);

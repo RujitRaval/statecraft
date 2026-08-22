@@ -28,6 +28,8 @@ describe("renderReportHtml", () => {
     expect(html).toContain("@media(prefers-reduced-motion:reduce)");
     expect(html).toContain('detail.setAttribute("role", "dialog")');
     expect(html).toContain('detail.setAttribute("aria-modal", "true")');
+    expect(html).toContain('event.key === "Tab"');
+    expect(html).toContain("activeDetail.querySelectorAll(focusableSelector)");
     expect(html).toMatch(/<tbody\b[\s\S]*scope="rowgroup"[\s\S]*<\/tbody>/);
     expect(html).toContain("No network or server required");
     expect(html).toContain("default-src 'none'");
