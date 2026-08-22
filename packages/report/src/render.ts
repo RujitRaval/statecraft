@@ -99,10 +99,10 @@ function matrixCell(
   stateId: string,
 ): string {
   if (cell === null) {
-    return `<div class="matrix-cell matrix-cell--missing" data-cell aria-label="${escapeHtml(`${routeId} ${stateId}, ${column.viewportId}, ${column.theme}: not captured`)}">Not captured</div>`;
+    return `<div class="matrix-cell matrix-cell--missing" data-cell data-signal-fracture="missing" aria-label="${escapeHtml(`${routeId} ${stateId}, ${column.viewportId}, ${column.theme}: not captured`)}">Not captured</div>`;
   }
   const status = cell.execution.status;
-  return `<a class="matrix-cell matrix-cell--${status}" data-cell data-detail-target="${escapeHtml(cell.detailId)}" href="#${escapeHtml(cell.detailId)}" aria-controls="${escapeHtml(cell.detailId)}" aria-label="${escapeHtml(`${routeId} ${stateId}, ${column.viewportId}, ${column.theme}: ${status}`)}">
+  return `<a class="matrix-cell matrix-cell--${status}" data-cell${status === "failed" ? ' data-signal-fracture="failed"' : ""} data-detail-target="${escapeHtml(cell.detailId)}" href="#${escapeHtml(cell.detailId)}" aria-controls="${escapeHtml(cell.detailId)}" aria-label="${escapeHtml(`${routeId} ${stateId}, ${column.viewportId}, ${column.theme}: ${status}`)}">
     <span class="cell-status"><span class="status-dot" aria-hidden="true"></span>${escapeHtml(status)}</span>
     ${screenshot(cell, "thumbnail")}
   </a>`;
@@ -113,7 +113,7 @@ function filters(view: ReportViewModel): string {
     return "";
   }
   const executions = view.executions.map((cell) => cell.execution);
-  return `<section class="panel filters" aria-labelledby="filters-title">
+  return `<section class="filter-rail filters" aria-labelledby="filters-title">
     <div class="filters-heading">
       <div><p class="eyebrow">Focus the evidence</p><h2 id="filters-title">Filter executions</h2></div>
       <p id="filter-results" aria-live="polite">Showing ${executions.length} of ${executions.length} executions.</p>
@@ -155,8 +155,8 @@ function matrix(view: ReportViewModel): string {
         .join("")}</tbody>`,
     )
     .join("");
-  return `<section class="panel matrix-panel" aria-labelledby="matrix-title">
-    <div class="section-heading"><div><p class="eyebrow">Configured product states</p><h2 id="matrix-title">Coverage matrix</h2></div><p>Open a cell to inspect its evidence and diagnostics.</p></div>
+  return `<section class="matrix-panel" aria-labelledby="matrix-title">
+    <div class="section-heading"><div><p class="eyebrow">Evidence field / 01</p><h2 id="matrix-title">Coverage matrix</h2></div><p>Every configured state. Select a frame to enter the inspection room.</p></div>
     <div class="matrix-scroll" tabindex="0" aria-label="Scrollable coverage matrix">
       <table><caption class="sr-only">Execution status and screenshot evidence by route, state, viewport, and theme.</caption><thead><tr><th scope="col">Route</th><th scope="col">State</th>${heading}</tr></thead>${bodies}</table>
     </div>
@@ -168,7 +168,8 @@ function detail(cell: ReportCellView): string {
   const execution = cell.execution;
   const navigationStatus = execution.diagnostics.navigationStatus;
   const detailTitleId = `${cell.detailId}-title`;
-  return `<article class="panel detail" id="${escapeHtml(cell.detailId)}" data-detail data-route="${escapeHtml(execution.routeId)}" data-state="${escapeHtml(execution.stateId)}" data-viewport="${escapeHtml(execution.viewportId)}" data-theme="${escapeHtml(execution.theme)}" data-status="${execution.status}" tabindex="-1" aria-labelledby="${escapeHtml(detailTitleId)}">
+  return `<article class="detail" id="${escapeHtml(cell.detailId)}" data-detail data-route="${escapeHtml(execution.routeId)}" data-state="${escapeHtml(execution.stateId)}" data-viewport="${escapeHtml(execution.viewportId)}" data-theme="${escapeHtml(execution.theme)}" data-status="${execution.status}" tabindex="-1" aria-labelledby="${escapeHtml(detailTitleId)}">
+    <div class="detail-utility"><span>Inspection room / ${escapeHtml(cell.detailId)}</span><a class="detail-close" data-close-detail href="#matrix-title">Close <span aria-hidden="true">×</span></a></div>
     <div class="detail-heading">
       <div><p class="eyebrow">${escapeHtml(words(execution.routeId))} / ${escapeHtml(words(execution.stateId))}</p><h2 id="${escapeHtml(detailTitleId)}">${escapeHtml(words(execution.viewportId))} · ${escapeHtml(words(execution.theme))}</h2></div>
       <span class="status-badge status-badge--${execution.status}">${escapeHtml(execution.status)}</span>
@@ -264,7 +265,10 @@ const interactions = `
     if (activeDetail instanceof HTMLElement) {
       activeDetail.hidden = true;
       activeDetail.classList.remove("is-active");
+      activeDetail.removeAttribute("role");
+      activeDetail.removeAttribute("aria-modal");
     }
+    document.body.classList.remove("detail-open");
     if (activeTrigger instanceof HTMLElement) activeTrigger.removeAttribute("aria-current");
     activeDetail = null;
     activeTrigger = null;
@@ -278,6 +282,9 @@ const interactions = `
     closeDetail(false, false);
     detail.hidden = false;
     detail.classList.add("is-active");
+    detail.setAttribute("role", "dialog");
+    detail.setAttribute("aria-modal", "true");
+    document.body.classList.add("detail-open");
     activeDetail = detail;
     const currentTrigger = triggerById.get(id);
     if (currentTrigger instanceof HTMLElement) {
@@ -402,6 +409,46 @@ const styles = `
 @media(max-width:1000px){.hero,.detail-layout{grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}.score{max-width:420px}.section-heading{align-items:start;flex-direction:column}.section-heading>p{text-align:left}.diagnostics{grid-template-columns:1fr}}
 @media(max-width:700px){.shell{width:min(100% - 20px,1600px);padding-top:28px}.hero h1{font-size:3rem}.summary{grid-template-columns:repeat(2,1fr)}.filters,.matrix-panel,.detail{padding:14px}.filters-heading,.detail-heading{align-items:start;flex-direction:column}.filters-heading{gap:8px}#report-filters{grid-template-columns:1fr}.reset-filters{width:100%}.run-meta{display:grid;gap:6px}.metric{padding:14px}.matrix-scroll{overflow:visible;border:0}.matrix-scroll>table{display:block;width:100%;max-width:100%;min-width:0;table-layout:fixed;background:transparent}.matrix-scroll thead,.matrix-scroll .route-heading{display:none!important}.matrix-scroll tbody{display:block;width:100%}.matrix-scroll tbody+tbody{margin-top:12px}.matrix-scroll tr{display:grid;width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#0d1117}.matrix-scroll tr+tr{margin-top:8px}.matrix-scroll .state-heading{display:block;grid-column:1/-1;min-width:0;padding:2px 2px 9px;border:0;background:transparent}.state-heading:before{content:attr(data-mobile-route);display:block;margin-bottom:3px;color:#7ee7c4;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.matrix-scroll td{display:block;min-width:0;padding:0;border:0}.matrix-scroll td:before{content:attr(data-column-label);display:block;margin:0 0 5px;color:var(--muted);font-size:.72rem;font-weight:800}.matrix-cell,.filtered-cell{width:100%;min-height:128px}.thumbnail{height:96px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.matrix-cell{transition:none}}
+
+/* Kinetic evidence editorial: full-bleed proof, not dashboard chrome. */
+:root{color-scheme:light dark;--bg:#f4f0e6;--panel:#f4f0e6;--panel-2:#fbfaf6;--line:#171a16;--text:#171a16;--muted:#666b62;--accent:#c8ff48;--pass:#88bd2e;--fail:#ff4d2e;--focus:#4c66ff;--void:#0b0c0a;--bone:#f4f0e6;font-family:Arial,"Helvetica Neue",sans-serif}
+html{background:var(--bg);scroll-padding-top:6rem}
+body{min-width:320px;background-color:var(--bg);background-image:linear-gradient(to right,color-mix(in srgb,var(--line) 8%,transparent) 1px,transparent 1px),linear-gradient(to bottom,color-mix(in srgb,var(--line) 8%,transparent) 1px,transparent 1px);background-size:clamp(64px,8.333vw,160px) clamp(64px,8.333vw,160px);color:var(--text)}
+body.detail-open{overflow:hidden}.shell{width:100%;max-width:none;margin:0;padding:0}.skip-link{border-radius:0;background:var(--focus);color:#fff}.eyebrow{color:var(--muted);font:800 .6875rem/1.2 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.18em}
+.hero{display:block;min-height:min(900px,92svh);margin:0;padding:20px clamp(20px,3.4vw,64px) clamp(48px,7vw,112px);border-bottom:2px solid var(--line);background:color-mix(in srgb,var(--bg) 94%,transparent)}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--line);font:750 .6875rem/1.2 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}
+.brand{gap:12px;color:var(--text);font-weight:850;letter-spacing:.03em}.brand-mark{display:grid;width:42px;height:26px;place-items:center;border:1px solid var(--line);border-radius:0;background:var(--accent);box-shadow:none;color:#0b0c0a;font:900 .625rem/1 ui-monospace,"SFMono-Regular",Menlo,monospace}
+.hero-verdict{display:grid;grid-template-columns:minmax(0,8fr) minmax(240px,4fr);gap:clamp(24px,5vw,96px);align-items:end;margin-top:clamp(54px,10vh,132px)}
+.hero h1{max-width:none;margin:10px 0 0;color:var(--text);font-family:Georgia,"Times New Roman",serif;font-size:clamp(4.5rem,12vw,12rem);font-weight:400;line-height:.72;letter-spacing:-.075em;text-wrap:balance}
+.lede{max-width:58rem;margin:clamp(42px,7vh,88px) 0 0;color:var(--text);font-size:clamp(1.05rem,2vw,1.85rem);line-height:1.2;letter-spacing:-.025em}
+.score{position:relative;padding:18px 0 0;border:0;border-top:2px solid var(--line);border-radius:0;background:none;box-shadow:none}.score:before{position:absolute;top:-2px;left:0;width:30%;height:8px;background:var(--accent);content:""}.score strong{display:flex;align-items:flex-start;color:var(--text);font-family:Georgia,"Times New Roman",serif;font-size:clamp(5rem,11vw,11rem);font-weight:400;line-height:.75;letter-spacing:-.09em}.score strong span{padding-top:.12em;font:800 clamp(1rem,2vw,2rem)/1 Arial,sans-serif;letter-spacing:0}.score p{max-width:24rem;margin:26px 0 0;font-size:clamp(1rem,1.4vw,1.25rem);font-weight:750;line-height:1.2}
+.run-meta{display:flex;margin:0;padding:13px clamp(20px,3.4vw,64px);border-bottom:1px solid var(--line);background:var(--line);color:var(--bg);font:650 .6875rem/1.4 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.04em}.run-meta code{color:inherit}
+.run-tape{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin:0;border-bottom:2px solid var(--line);background:var(--bg)}.metric{min-width:0;padding:clamp(16px,2vw,34px) clamp(12px,1.5vw,28px);border:0;border-right:1px solid var(--line);border-radius:0;background:transparent}.metric:last-child{border-right:0}.metric span{color:var(--muted);font:800 .6875rem/1.2 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.14em}.metric strong{margin-top:10px;color:var(--text);font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,4vw,5rem);font-weight:400;line-height:.85;letter-spacing:-.06em}.metric--failed{background:var(--fail)}.metric--failed span,.metric--failed strong{color:#0b0c0a}
+.filter-rail{position:sticky;top:0;z-index:12;margin:0;padding:18px clamp(20px,3.4vw,64px);border:0;border-bottom:2px solid var(--line);border-radius:0;background:color-mix(in srgb,var(--bg) 92%,transparent);box-shadow:none;backdrop-filter:blur(18px)}
+.filters-heading{align-items:end;margin-bottom:14px}.filters-heading h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.8rem,3vw,3.2rem);font-weight:400;letter-spacing:-.045em}.filters-heading>p{font:650 .75rem/1.4 ui-monospace,"SFMono-Regular",Menlo,monospace}
+.filter-control span{color:var(--muted);font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}.filter-control select,.reset-filters{min-height:44px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--text)}.filter-control select:hover,.reset-filters:hover:not(:disabled){border-color:var(--focus)}.filter-control select:focus-visible,.reset-filters:focus-visible,.back-link:focus-visible,.detail-close:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}.reset-filters{color:var(--text);text-align:left}.reset-filters:disabled{color:var(--muted)}
+.matrix-panel{margin:0;padding:clamp(64px,9vw,144px) 0 0;background:var(--bg)}.section-heading{align-items:end;margin:0;padding:0 clamp(20px,3.4vw,64px) clamp(28px,3vw,52px)}.section-heading h2,.empty-report h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(3.6rem,9vw,10rem);font-weight:400;line-height:.8;letter-spacing:-.075em}.section-heading>p{max-width:31rem;color:var(--text);font-size:clamp(1rem,1.4vw,1.25rem);line-height:1.25}
+.matrix-scroll{border:0;border-top:2px solid var(--line);border-bottom:2px solid var(--line);border-radius:0;background:var(--bg)}.matrix-scroll:focus-visible{outline-color:var(--focus)}table{background:transparent}th,td{border-color:var(--line);padding:0}thead th{padding:12px 14px;background:var(--line);color:var(--bg);font:750 .6875rem/1.25 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.09em;text-transform:uppercase}
+.route-heading,.state-heading{padding:16px 14px;background:var(--bg)}.route-heading{min-width:180px}.state-heading{min-width:210px}.route-heading span,.state-heading span{font-size:1rem}.route-heading small,.state-heading small{font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}
+.matrix-cell{position:relative;width:clamp(260px,23vw,430px);min-height:220px;overflow:visible;border:0;border-radius:0;background:var(--panel-2);transition:transform 120ms ease,filter 120ms ease}.matrix-cell:hover{z-index:3;border:0;transform:translateY(-5px);filter:contrast(1.03)}.matrix-cell:focus-visible{z-index:4;outline-color:var(--focus);outline-offset:-4px}.matrix-cell[aria-current=true]{border:0;box-shadow:inset 0 0 0 5px var(--focus)}
+.cell-status{height:34px;padding:8px 12px;background:var(--line);color:var(--bg);font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}.status-dot{border-radius:0;background:var(--accent);box-shadow:none}.thumbnail{height:clamp(186px,16vw,300px);background:var(--void);filter:saturate(.82);transition:filter 120ms ease}.matrix-cell:hover .thumbnail{filter:saturate(1)}
+.matrix-cell--failed{z-index:2;transform:translate(5px,-5px);box-shadow:-6px 6px 0 var(--fail)}.matrix-cell--failed:hover{transform:translate(5px,-10px)}.matrix-cell--failed .cell-status{background:var(--fail);color:#0b0c0a}.matrix-cell--failed .status-dot{background:#0b0c0a;box-shadow:none}.matrix-cell--failed:after{position:absolute;right:-10px;bottom:12%;width:calc(100% + 20px);height:3px;background:var(--fail);content:"";pointer-events:none}
+.matrix-cell--missing{display:grid;place-items:center;border:1px dashed var(--fail);color:var(--fail);font:800 .75rem/1 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.12em;text-transform:uppercase}.filtered-cell{width:clamp(260px,23vw,430px);min-height:220px;color:var(--muted)}.no-results{padding:64px clamp(20px,3.4vw,64px);border-bottom:2px solid var(--line);text-align:left}
+.detail{margin:0;padding:clamp(24px,3.4vw,64px);border:0;border-radius:0;background:var(--void);box-shadow:none;color:var(--bone);scroll-margin-top:0}.js .detail.is-active{position:fixed;inset:0;z-index:50;display:block;overflow:auto;outline:0;animation:inspection-in 220ms cubic-bezier(.2,.8,.2,1)}
+@keyframes inspection-in{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
+.detail-utility{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:54px;margin:calc(clamp(24px,3.4vw,64px)*-1) calc(clamp(24px,3.4vw,64px)*-1) clamp(40px,5vw,80px);padding:0 clamp(24px,3.4vw,64px);border-bottom:1px solid #55584f;background:color-mix(in srgb,var(--void) 94%,transparent);font:750 .6875rem/1.2 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(16px)}
+.detail-close{display:flex;align-items:center;gap:14px;min-height:44px;text-decoration:none}.detail-close span{font-size:1.8rem;font-weight:300}.detail-heading{align-items:end;margin-bottom:clamp(28px,4vw,64px);padding-bottom:24px;border-bottom:1px solid #55584f}.detail-heading .eyebrow{color:#a8ad9f}.detail-heading h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(3.6rem,9vw,10rem);font-weight:400;line-height:.8;letter-spacing:-.075em}
+.status-badge{border:1px solid currentColor;border-radius:0;background:transparent}.status-badge--passed{color:var(--accent);background:transparent}.status-badge--failed{color:var(--fail);background:transparent}.detail-layout{grid-template-columns:minmax(0,9fr) minmax(260px,3fr);gap:0;border-bottom:1px solid #55584f}.evidence{overflow:visible;border:0;border-right:1px solid #55584f;border-radius:0;background:#000}.full-screenshot{width:100%;max-height:none}.metadata{padding:0 0 0 clamp(20px,2.5vw,48px);border:0;border-radius:0;background:transparent}.metadata dl div{padding:14px 0;border-color:#55584f}.metadata dt{color:#a8ad9f;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}
+.diagnostics{display:block;margin-top:clamp(44px,6vw,96px)}.diagnostics details{border:0;border-top:1px solid #55584f;border-radius:0;background:transparent}.diagnostics details:last-child{border-bottom:1px solid #55584f}.diagnostics summary{min-height:64px;padding:12px 0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.2rem,2.2vw,2.5rem);font-weight:400}.diagnostics summary strong{border:1px solid #55584f;border-radius:0;background:transparent;color:var(--bone);font-family:ui-monospace,"SFMono-Regular",Menlo,monospace}.diagnostic-body{padding:0 0 24px;border:0}.diagnostic-body ul{color:var(--bone)}.diagnostic-body span,.empty-detail{color:#a8ad9f}.back-link,.back-link:visited{color:var(--accent)}
+.empty-report{padding:64px clamp(20px,3.4vw,64px);border:0;border-bottom:2px solid var(--line);border-radius:0;background:var(--bg);box-shadow:none}.footer{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;min-height:45vh;margin:0;padding:clamp(40px,5vw,80px) clamp(20px,3.4vw,64px);background:var(--line);color:var(--bg);text-align:left}.footer strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(4rem,12vw,12rem);font-weight:400;line-height:.7;letter-spacing:-.08em}.footer span{max-width:24rem;font:650 .75rem/1.4 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
+@media(max-width:1000px){.hero{min-height:auto}.hero-verdict{grid-template-columns:1fr}.score{max-width:none}.run-tape{grid-template-columns:repeat(3,1fr)}.metric:nth-child(3){border-right:0}.metric:nth-child(-n+3){border-bottom:1px solid var(--line)}.detail-layout{grid-template-columns:1fr}.evidence{border-right:0;border-bottom:1px solid #55584f}.metadata{padding:24px 0}.footer{align-items:flex-start;flex-direction:column}}
+@media(max-width:700px){body{background-image:none}.shell{width:100%;padding:0}.hero{padding:14px 14px 50px}.masthead>span{max-width:11rem;text-align:right}.hero-verdict{margin-top:58px}.hero h1{font-size:clamp(4rem,20vw,7rem);line-height:.78}.score strong{font-size:clamp(5rem,28vw,9rem)}.lede{margin-top:44px}.run-meta{display:grid;padding:12px 14px}.run-tape{grid-template-columns:repeat(2,1fr)}.metric{padding:16px 14px;border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}.metric:nth-child(even){border-right:0!important}.metric:nth-last-child(-n+2){border-bottom:0!important}.filter-rail{position:relative;padding:20px 14px}.filters-heading{gap:8px}}
+@media(max-width:700px){.matrix-panel{padding:72px 0 0}.section-heading{padding:0 14px 24px}.section-heading h2{font-size:clamp(3.5rem,19vw,6.5rem)}.matrix-scroll{overflow:visible;border-left:0;border-right:0}.matrix-scroll tr{gap:12px;padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}.matrix-scroll tbody+tbody{margin-top:0}.matrix-scroll .state-heading{padding:0 14px 8px}.matrix-scroll td{padding:0 6px}.matrix-cell,.filtered-cell{min-height:170px;border-radius:0}.thumbnail{height:136px}.matrix-cell--failed{transform:translate(3px,-3px);box-shadow:-4px 4px 0 var(--fail)}.detail{padding:18px 14px}.detail-utility{margin:-18px -14px 38px;padding:0 14px}.detail-heading{align-items:flex-start}.detail-heading h2{font-size:clamp(3.2rem,18vw,6rem)}.footer{min-height:50vh;padding:48px 14px}.footer strong{font-size:clamp(4rem,25vw,8rem)}}
+@media(prefers-color-scheme:dark){:root{--bg:#11140f;--panel:#11140f;--panel-2:#171a16;--line:#eef0e8;--text:#f4f0e6;--muted:#a6aa9f}.metric--failed span,.metric--failed strong{color:#0b0c0a}.run-meta,.footer{background:var(--line);color:var(--bg)}.cell-status,thead th{background:var(--line);color:var(--bg)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.matrix-cell,.thumbnail{transition:none}.matrix-cell:hover,.matrix-cell--failed,.matrix-cell--failed:hover{transform:none}.js .detail.is-active{animation:none}}
+#matrix-title{scroll-margin-top:14rem}
+@media(min-width:1001px){.detail-layout{grid-template-columns:minmax(0,8fr) minmax(320px,4fr)}}
+@media(max-width:700px){#matrix-title{scroll-margin-top:1rem}.matrix-cell,.filtered-cell{width:100%}.matrix-cell--failed:after{right:0;width:100%}}
 `;
 
 /** Renders one validated report as a network-independent HTML document. */
@@ -414,27 +461,26 @@ export function renderReportHtml(input: unknown): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'sha256-${interactionHash}'; base-uri 'none'; form-action 'none'">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light dark">
   <title>Statecraft · UI State Coverage Report</title>
   <style>${styles}</style>
 </head>
-<body>
+<body data-brand-system="kinetic-evidence-v1">
   <a class="skip-link" href="#matrix-title">Skip to coverage matrix</a>
   <main class="shell">
     <header class="hero">
-      <div>
-        <div class="brand"><span class="brand-mark" aria-hidden="true">S</span>Statecraft</div>
-        <h1>UI State Coverage Report</h1>
-        <p class="lede">A visual inventory of every configured route, state, viewport, and theme.</p>
+      <div class="masthead"><div class="brand"><span class="brand-mark" aria-hidden="true">S/C</span>Statecraft</div><span>Local evidence / schema v${view.schemaVersion}</span></div>
+      <div class="hero-verdict">
+        <div><p class="eyebrow">UI state coverage report</p><h1>Evidence<br>over instinct.</h1></div>
+        <div class="score" aria-label="${summary.passed} of ${summary.executions} executions passed">
+          <strong>${escapeHtml(summary.coverage.execution.percentage)}<span>%</span></strong>
+          <p>${summary.failed === 0 ? "Every captured state held." : `${summary.failed} ${summary.failed === 1 ? "state broke" : "states broke"}. Open the evidence.`}</p>
+        </div>
       </div>
-      <div class="score" aria-label="${summary.passed} of ${summary.executions} executions passed">
-        <p class="eyebrow">Execution coverage</p>
-        <strong>${escapeHtml(summary.coverage.execution.percentage)}%</strong>
-        <span>${summary.passed} passed / ${summary.executions} expected</span>
-      </div>
+      <p class="lede">Route × state × viewport × theme. One local report. No green average hiding the frame that failed.</p>
     </header>
-    <p class="run-meta"><span>Generated <code>${escapeHtml(view.generatedAt)}</code></span><span>Base URL <code>${escapeHtml(view.baseURL)}</code></span><span>Schema v${view.schemaVersion}</span></p>
-    <section class="summary" aria-label="Report summary">
+    <p class="run-meta"><span>Generated <code>${escapeHtml(view.generatedAt)}</code></span><span>Base URL <code>${escapeHtml(view.baseURL)}</code></span></p>
+    <section class="run-tape summary" aria-label="Report summary">
       <div class="metric"><span>Routes</span><strong>${summary.routes}</strong></div>
       <div class="metric"><span>States</span><strong>${summary.states}</strong></div>
       <div class="metric"><span>Executions</span><strong>${summary.executions}</strong></div>
@@ -445,7 +491,7 @@ export function renderReportHtml(input: unknown): string {
     ${filters(view)}
     <div id="matrix">${matrix(view)}</div>
     <section aria-label="Execution details">${view.executions.map(detail).join("")}</section>
-    <footer class="footer">Generated locally by Statecraft · No network or server required</footer>
+    <footer class="footer"><strong>Statecraft</strong><span>Generated locally. No network or server required. Just evidence.</span></footer>
   </main>
   <script>${interactions}</script>
 </body>

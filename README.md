@@ -152,7 +152,7 @@ configure → expand matrix → run isolated browser cells → persist evidence 
 - Console, page, and request diagnostics are sanitized before persistence.
 - `.statecraft/` is ignored because reports may contain sensitive application data.
 
-Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), and [report UX specification](docs/product/REPORT_UX_SPEC.md) for the detailed contracts.
+Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), [report UX specification](docs/product/REPORT_UX_SPEC.md), and [brand research](docs/design/BRAND_RESEARCH.md) for the detailed contracts. The repository-level [design system](DESIGN.md) is the visual source of truth.
 
 ## Develop and contribute
 
