@@ -175,7 +175,7 @@ Keep the public API small:
 export interface StatecraftScenario {
   beforeNavigate?(ctx: ScenarioContext): Promise<void>;
   afterNavigate?(ctx: ScenarioContext): Promise<void>;
-  assert?(ctx: ScenarioContext): Promise<void>;
+  assert?(ctx: AssertionScenarioContext): Promise<void>;
 }
 
 export interface ScenarioContext {
@@ -185,6 +185,14 @@ export interface ScenarioContext {
   state: StateDefinition;
   viewport: ViewportDefinition;
   theme: string;
+}
+
+export interface AssertionScenarioContext extends ScenarioContext {
+  navigation: {
+    requestedUrl: string;
+    status: number | null;
+    url: string;
+  };
 }
 ```
 

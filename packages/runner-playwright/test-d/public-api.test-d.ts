@@ -1,16 +1,20 @@
 import {
   discoverPublicRoutes,
+  PUBLIC_SITE_OVERFLOW_TOLERANCE_PX,
   PublicRouteDiscoveryError,
   loadScenario,
   runCapturedScenarioCells,
   runExecutionCells,
   runNavigatedScenarioCells,
   runPersistedScenarioCells,
+  runPublicSiteChecks,
   runScenarioCells,
   runScenarioLifecycle,
+  publicSiteScenario,
   ScenarioLoadError,
   ScenarioCaptureError,
   type AssertionStatus,
+  type AssertionScenarioContext,
   type CapturedScenarioCell,
   type DiscoveredPublicRoute,
   type DiscoverPublicRoutesOptions,
@@ -31,11 +35,13 @@ import {
   type RunCapturedScenarioCellsOptions,
   type RunNavigatedScenarioCellsOptions,
   type RunPersistedScenarioCellsOptions,
+  type RunPublicSiteChecksOptions,
   type RunScenarioCellsOptions,
   type ScenarioCellExecutor,
   type ScenarioContext,
   type ScenarioCaptureEvidence,
   type ScenarioHook,
+  type ScenarioAssertionHook,
   type ScenarioLoadErrorCode,
   type StatecraftScenario,
   type PublicRouteDiscoveryErrorCode,
@@ -100,6 +106,7 @@ const navigationOptions: RunNavigatedScenarioCellsOptions = {
   baseURL: "https://statecraft.invalid",
   navigationTimeoutMs: 30_000,
   readiness,
+  scenario,
   scenarioBaseDirectory: process.cwd(),
 };
 const navigationExecutor: NavigatedScenarioCellExecutor<string> = async (
@@ -126,6 +133,23 @@ const persistenceOptions: RunPersistedScenarioCellsOptions = {
 };
 const persistedRun: Promise<PersistedScenarioRun> =
   runPersistedScenarioCells([execution.cell], persistenceOptions);
+const publicSiteOptions: RunPublicSiteChecksOptions = {
+  generatedAt: new Date("2026-08-22T18:00:00.000Z"),
+  launchOptions: { headless: true },
+  navigationTimeoutMs: 30_000,
+  projectDirectory: process.cwd(),
+  readinessTimeoutMs: 10_000,
+};
+const publicSiteRun: Promise<PersistedScenarioRun> = discovery.then((result) =>
+  runPublicSiteChecks(result, publicSiteOptions),
+);
+declare const assertionContext: AssertionScenarioContext;
+const assertionHook: ScenarioAssertionHook = async (context) => {
+  const status: number | null = context.navigation.status;
+  void status;
+};
+void publicSiteScenario.assert?.(assertionContext);
+const overflowTolerance: 1 = PUBLIC_SITE_OVERFLOW_TOLERANCE_PX;
 const htmlReportPath: Promise<".statecraft/report/index.html"> = persistedRun.then(
   (run) => run.htmlReportPath,
 );
@@ -191,16 +215,19 @@ void captureFailures;
 void captureOutcomes;
 void loadedScenario;
 void persistedRun;
+void publicSiteRun;
 void navigation;
 void navigationOutcomes;
 void scenarioOutcomes;
 void scenarioValue;
 void hook;
+void assertionHook;
 void loadErrorCode;
 void htmlReportPath;
 void fulfilledValue;
 void droppedDiagnostics;
 void rejectedReason;
 void screenshotBytes;
+void overflowTolerance;
 void inspectOutcome;
 void invalid;

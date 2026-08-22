@@ -66,6 +66,9 @@ describe("statecraft-ui-runner-playwright package boundary", () => {
       "runScenarioCells",
       "runScenarioLifecycle",
       "ScenarioLoadError",
+      "PUBLIC_SITE_OVERFLOW_TOLERANCE_PX",
+      "publicSiteScenario",
+      "runPublicSiteChecks",
       "runNavigatedScenarioCells",
     ]);
   });

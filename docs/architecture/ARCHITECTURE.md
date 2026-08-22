@@ -74,7 +74,7 @@ Publication runs only for a non-prerelease GitHub Release whose event commit exa
 interface StatecraftScenario {
   beforeNavigate?(ctx: ScenarioContext): Promise<void>;
   afterNavigate?(ctx: ScenarioContext): Promise<void>;
-  assert?(ctx: ScenarioContext): Promise<void>;
+  assert?(ctx: AssertionScenarioContext): Promise<void>;
 }
 ```
 Expose Playwright `page` and `context` instead of wrapping every operation.

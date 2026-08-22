@@ -14,7 +14,7 @@ CI uses the same command with `--with-deps` on Ubuntu.
 
 ## Public URL route discovery
 
-`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. It is the runner foundation for the planned `statecraft check <url>` command; that CLI command, matrix execution, screenshots, assertions, report persistence, and config generation are not part of this API slice.
+`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. It is the discovery half of the planned `statecraft check <url>` command; CLI parsing, terminal orchestration, exit codes, and config generation remain follow-up slices.
 
 ```ts
 import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
@@ -57,6 +57,43 @@ The immutable result contains:
 This is navigation-only discovery. Loading a public page executes its scripts and ordinary requests, so callers should use it only on sites they own or are authorized to test. It does not click controls, submit forms, retain cross-page cookies or storage, or claim coverage of application states.
 
 See [ADR 0029](../decisions/0029-public-url-route-discovery.md) for the discovery boundary and redirect rationale.
+
+## Public-site checks
+
+`runPublicSiteChecks(discovery, options?)` turns a `PublicRouteDiscovery` into persisted Quick Check evidence without a project config or temporary scenario module:
+
+```ts
+import {
+  discoverPublicRoutes,
+  runPublicSiteChecks,
+} from "statecraft-ui-runner-playwright";
+
+const discovery = await discoverPublicRoutes("https://example.com");
+const run = await runPublicSiteChecks(discovery, {
+  projectDirectory: process.cwd(),
+});
+
+run.report.summary;
+run.reportPath;
+run.htmlReportPath;
+```
+
+Every accepted route expands in discovery order into one `public` state and four deterministic cells:
+
+1. mobile `390x844`, light;
+2. mobile `390x844`, dark;
+3. desktop `1440x900`, light;
+4. desktop `1440x900`, dark.
+
+Light and dark are browser-native `prefers-color-scheme` preferences; Quick Check does not invent application selectors. Route IDs retain a readable pathname slug and add a stable 12-hex SHA-256 suffix so similar slugs cannot overwrite one another's artifacts.
+
+The trusted `publicSiteScenario` fails on a final main-document HTTP status of 400 or higher and on document-level horizontal overflow greater than `PUBLIC_SITE_OVERFLOW_TOLERANCE_PX` (one CSS pixel). The existing capture policy fails uncaught page errors and navigation failures. Console errors and subordinate request failures are retained as sanitized warnings and never fail this workflow. The screenshot is taken before assertions, so HTTP, overflow, and page-error failures keep visual evidence when capture itself succeeds. A main-frame navigation guard remains active through screenshot and assertion completion; any replacement document discards the PNG and fails the cell instead of allowing mismatched URL and pixel evidence.
+
+The result uses the existing schema-v1 JSON and self-contained HTML report under `.statecraft/`. Output remains private local evidence. Callers must check only sites they own or are authorized to test because normal page loads execute the site's JavaScript and requests.
+
+The runner's navigated, captured, and persisted option shapes also accept a trusted in-memory `scenario` override for programmatic orchestration. When supplied, it is runtime-validated once and used for every cell instead of importing each state's `setup` path. The exported `publicSiteScenario` can also be the default export of a trusted local scenario module; this lets the later permanent Quick Check setup reuse the exact same assertions instead of copying them.
+
+See [ADR 0030](../decisions/0030-public-site-check-evidence.md) for the fixed matrix, assertion precision, and evidence decisions.
 
 ## Programmatic lifecycle
 
@@ -125,7 +162,7 @@ const scenario: StatecraftScenario = {
 export default scenario;
 ```
 
-The runner runtime-checks the default export and the optional `beforeNavigate`, `afterNavigate`, and reserved `assert` fields. For each cell it runs `beforeNavigate`, the caller's middle step, and `afterNavigate` in order with one frozen `ScenarioContext`. A module-load, validation, or hook failure rejects only that cell; cleanup still runs and later cells continue. `ScenarioLoadError` distinguishes `module-load-failed` from `invalid-module` failures.
+The runner runtime-checks the default export and the optional `beforeNavigate`, `afterNavigate`, and reserved `assert` fields. For each cell it runs `beforeNavigate`, the caller's middle step, and `afterNavigate` in order with one frozen `ScenarioContext`. After built-in navigation and screenshot capture, `assert` receives an `AssertionScenarioContext` that adds final `navigation` metadata. A module-load, validation, or hook failure rejects only that cell; cleanup still runs and later cells continue. `ScenarioLoadError` distinguishes `module-load-failed` from `invalid-module` failures.
 
 `loadScenario(path, options?)` and `runScenarioLifecycle(scenario, context, execute)` expose the two smaller primitives for orchestration and focused testing. Dynamic imports follow normal Node ESM caching semantics. Scenario/config modules are trusted local code with the user's privileges and are not sandboxed.
 
@@ -247,7 +284,7 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The runner also exposes bounded public-route discovery for the approved Quick Check roadmap; CLI orchestration and evidence generation for `statecraft check` remain follow-up slices.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery plus runner-owned fixed-matrix evidence. CLI `statecraft check` orchestration and permanent setup generation remain follow-up slices.
 
 ## Dependency decision
 
