@@ -9,7 +9,7 @@ This project uses the four-part version format required by the GStack ship workf
 ### Added
 
 - Statecraft now has an approved, review-cleared design for a zero-config `statecraft check <url>` workflow that turns a bounded public-site scan into actionable local evidence and an optional permanent project setup.
-- The first runner slice has a typed discovery contract covering deterministic breadth-first traversal, isolated browser contexts, hard navigation and anchor budgets, canonical-origin redirects, sanitized failures, and loopback-only regression tests.
+- The approved design defines the first runner slice's typed discovery contract, covering deterministic breadth-first traversal, isolated browser contexts, hard navigation and anchor budgets, canonical-origin redirects, sanitized failures, and loopback-only regression tests.
 
 ## [0.24.2.0] - 2026-08-21
 
