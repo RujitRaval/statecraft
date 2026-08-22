@@ -17,11 +17,14 @@ const missingBrowserExecutable = path.join(
   "statecraft-missing-navigation-browser-executable",
 );
 
-async function localOrigin(): Promise<{
+async function localOrigin(responseDelayMs = 0): Promise<{
   readonly close: () => Promise<void>;
   readonly origin: string;
 }> {
-  const server = http.createServer((_request, response) => {
+  const server = http.createServer(async (_request, response) => {
+    if (responseDelayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, responseDelayMs));
+    }
     response.writeHead(200, { "content-type": "text/html" });
     response.end("<!doctype html><html><body>outside origin</body></html>");
   });
@@ -397,7 +400,7 @@ describe("runNavigatedScenarioCells", () => {
       "statecraft.test.navigation-redirect-origin",
     );
     const events: string[] = [];
-    const redirectServer = await localOrigin();
+    const redirectServer = await localOrigin(200);
     Reflect.set(globalThis, eventKey, events);
     Reflect.set(globalThis, redirectOriginKey, redirectServer.origin);
 

@@ -1,3 +1,13 @@
+export {
+  discoverPublicRoutes,
+  PublicRouteDiscoveryError,
+} from "./discovery.js";
+export type {
+  DiscoveredPublicRoute,
+  DiscoverPublicRoutesOptions,
+  PublicRouteDiscovery,
+  PublicRouteDiscoveryErrorCode,
+} from "./discovery.js";
 export { runExecutionCells } from "./lifecycle.js";
 export type {
   CellExecutionContext,

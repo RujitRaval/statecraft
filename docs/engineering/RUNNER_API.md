@@ -12,6 +12,44 @@ corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install c
 
 CI uses the same command with `--with-deps` on Ubuntu.
 
+## Public URL route discovery
+
+`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. It is the runner foundation for the planned `statecraft check <url>` command; that CLI command, matrix execution, screenshots, assertions, report persistence, and config generation are not part of this API slice.
+
+```ts
+import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
+
+const discovery = await discoverPublicRoutes("https://example.com/start", {
+  maxPages: 5,
+});
+
+discovery.baseURL;
+discovery.routes;
+discovery.attemptedPages;
+```
+
+The function accepts one absolute HTTP(S) URL without credentials. It removes the supplied query and fragment before the first request. `maxPages` defaults to 5 and accepts integers from 1 through 20; navigation and readiness timeouts default to 30 and 10 seconds. Invalid inputs reject before Chromium launches.
+
+Discovery:
+
+1. Launches one Chromium process and creates a fresh browser context for every attempted page.
+2. Lets the initial redirect establish the canonical origin, then stays on that origin.
+3. Extracts at most the first 1,000 rendered anchors from each ready HTML page.
+4. Removes query strings and fragments, ignores downloads and common non-document resources, and visits unique paths sequentially in first-seen breadth-first order.
+5. Counts every navigation attempt against `maxPages`, including failed and skipped pages.
+
+An initial navigation or readiness failure, missing HTTP response, or non-HTML document rejects with a sanitized `PublicRouteDiscoveryError`. An initial HTML response is accepted regardless of HTTP status so a later check can report the status. For subsequent candidates, a navigation/readiness failure keeps the requested same-origin path as a leaf; a non-HTML response or cross-origin redirect is skipped. A redirected external destination may receive its ordinary GET before Playwright exposes the final URL, but Statecraft extracts and follows no links from it.
+
+The immutable result contains:
+
+- `baseURL`: the canonical origin with a trailing slash.
+- `routes`: accepted pathnames in deterministic first-seen order.
+- `attemptedPages`: all attempted navigations, including the starting page.
+- `skippedPages`: later cross-origin or non-HTML pages.
+- `truncatedAnchorPages`: pages whose rendered anchor count exceeded 1,000.
+
+This is navigation-only discovery. Loading a public page executes its scripts and ordinary requests, so callers should use it only on sites they own or are authorized to test. It does not click controls, submit forms, retain cross-page cookies or storage, or claim coverage of application states.
+
 ## Programmatic lifecycle
 
 `runExecutionCells(cells, execute, options?)` accepts matrix cells from `expandMatrix` and invokes the callback once for every cell in configured order.
@@ -201,7 +239,7 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The runner also exposes bounded public-route discovery for the approved Quick Check roadmap; CLI orchestration and evidence generation for `statecraft check` remain follow-up slices.
 
 ## Dependency decision
 
