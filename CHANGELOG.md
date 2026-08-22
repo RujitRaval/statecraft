@@ -18,7 +18,7 @@ This project uses the four-part version format required by the GStack ship workf
 
 ### Security
 
-- Discovery uses a fresh browser context per page, rejects credential-bearing or unsupported starting URLs before launch, limits attempts to 20 and rendered-anchor extraction to 1,000 per page, and never extracts or follows links from cross-origin redirect destinations.
+- Discovery uses a fresh browser context per page, rejects credential-bearing or unsupported starting URLs before launch, keeps same-origin double-slash paths on the canonical origin, expands only exact `text/html` or `application/xhtml+xml` documents, traverses at most 1,000 rendered anchors incrementally, ignores candidate URLs longer than 8,192 characters, and never extracts or follows links from cross-origin redirect destinations.
 
 ## [0.24.3.0] - 2026-08-22
 
