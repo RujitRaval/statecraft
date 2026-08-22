@@ -4,6 +4,23 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.8.0] - 2026-08-22
+
+### Added
+
+- Quick Check users can now promote the exact discovered public surface into a permanent Statecraft project with `statecraft check <url> --write-config`.
+- Promotion creates a module-unambiguous `statecraft.config.mts` plus one shared public-site scenario, preserving discovery order, runner-owned route identities, and the same mobile/desktop × light/dark policy used by Quick Check.
+- CLI, package-boundary, type-contract, clean-project browser, concurrent-publication, late-collision, symbolic-link, and failure-policy regressions cover the complete `check --write-config` to `scan` adoption path.
+
+### Changed
+
+- `statecraft init` and public-site promotion now share one exclusive, config-last project-file publisher with deterministic conflict reporting and no destructive rollback.
+- The fixed public-site matrix and diagnostic policy now come from one lightweight runner contract so Quick Check and promoted scans cannot drift.
+
+### Security
+
+- Generated executable project files never overwrite existing config or scenario paths, reject observed symbolic-link and non-directory boundaries, and publish only after the persisted evidence run completes.
+
 ## [0.24.7.0] - 2026-08-22
 
 ### Added
