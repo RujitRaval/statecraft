@@ -14,6 +14,7 @@ This project uses the four-part version format required by the GStack ship workf
 
 - Offline reports now open with an evidence-first verdict, ruled run tape, sticky filter rail, full-bleed screenshot field, and viewport-scale inspection room instead of dashboard-style card chrome.
 - Light, dark, mobile, tablet, desktop, reduced-motion, and keyboard experiences share the same self-contained report with no network font, script, style, analytics, or server dependency.
+- The protected release smoke verifies the kinetic report contract, and the checked-in launch images are regenerated from the real 60-cell Northline evidence bundle.
 
 ### Fixed
 
