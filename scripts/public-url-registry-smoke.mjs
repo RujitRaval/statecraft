@@ -28,8 +28,10 @@ if (!/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u.test(PLAYWRIGHT_VERSION
   throw new Error("The runner must declare one exact stable Playwright version.");
 }
 
-const installAttempts = 5;
-const installRetryDelay = 5_000;
+export const REGISTRY_INSTALL_RETRY_WINDOW_MS = 180_000;
+export const REGISTRY_INSTALL_RETRY_DELAY_MS = 10_000;
+const installAttempts =
+  Math.ceil(REGISTRY_INSTALL_RETRY_WINDOW_MS / REGISTRY_INSTALL_RETRY_DELAY_MS) + 1;
 const initializeTimeout = 60_000;
 const installTimeout = 30_000;
 const chromiumTimeout = 180_000;
@@ -104,6 +106,7 @@ export async function installRegistryConsumer({
   execute = runCommand,
   registry = NPM_REGISTRY,
   sleep = (duration) => new Promise((resolve) => setTimeout(resolve, duration)),
+  now = Date.now,
   version,
   withDeps = false,
 } = {}) {
@@ -128,6 +131,7 @@ export async function installRegistryConsumer({
     `statecraft-ui@${normalizedVersion}`,
     `playwright@${PLAYWRIGHT_VERSION}`,
   ];
+  const installRetryDeadline = now() + REGISTRY_INSTALL_RETRY_WINDOW_MS;
   let install;
   for (let attempt = 1; attempt <= installAttempts; attempt += 1) {
     try {
@@ -137,14 +141,20 @@ export async function installRegistryConsumer({
       });
     } catch (error) {
       if (attempt === installAttempts || !retryableRegistryError(error)) throw error;
-      await sleep(installRetryDelay);
+      const remainingRetryWindow = installRetryDeadline - now();
+      if (remainingRetryWindow <= 0) throw error;
+      await sleep(Math.min(REGISTRY_INSTALL_RETRY_DELAY_MS, remainingRetryWindow));
       continue;
     }
     if (install.code === 0) break;
     if (attempt === installAttempts || !retryableRegistryFailure(install)) {
       assertCommand(install, "Installing exact npm registry packages");
     }
-    await sleep(installRetryDelay);
+    const remainingRetryWindow = installRetryDeadline - now();
+    if (remainingRetryWindow <= 0) {
+      assertCommand(install, "Installing exact npm registry packages");
+    }
+    await sleep(Math.min(REGISTRY_INSTALL_RETRY_DELAY_MS, remainingRetryWindow));
   }
   assertCommand(install, "Installing exact npm registry packages");
 
@@ -173,7 +183,11 @@ async function installedManifest(consumerRoot, packageName) {
 
 export async function assertRegistryInstall(consumerRoot, version) {
   const rootManifest = JSON.parse(await readFile(path.join(consumerRoot, "package.json"), "utf8"));
-  assert.equal(rootManifest.type, undefined, "npm init -y must retain its default CommonJS package mode.");
+  assert.equal(
+    rootManifest.type === undefined || rootManifest.type === "commonjs",
+    true,
+    "npm init -y must produce either implicit or explicit CommonJS package mode.",
+  );
   assert.equal(rootManifest.devDependencies["statecraft-ui"], version);
   assert.equal(rootManifest.devDependencies.playwright, PLAYWRIGHT_VERSION);
 

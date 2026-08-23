@@ -4,6 +4,14 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.10.0] - 2026-08-22
+
+### Fixed
+
+- Fresh npm 11 consumers can now complete the registry-only launch gate whether `npm init -y` leaves CommonJS implicit or records `"type": "commonjs"` explicitly.
+- The post-publish consumer gate now allows a bounded three-minute npm registry propagation window while still failing permanent install errors immediately.
+- Regression coverage proves both valid CommonJS manifest shapes and verifies that fast and slow transient failures consume the same elapsed-time retry budget.
+
 ## [0.24.9.0] - 2026-08-22
 
 ### Added
