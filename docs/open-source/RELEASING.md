@@ -41,10 +41,10 @@ corepack pnpm release:smoke
 After npm publication, repeat the exact live-registry Quick Check journey for the released version:
 
 ```bash
-corepack pnpm release:registry-public-url-smoke -- --version 0.24.9
+corepack pnpm release:registry-public-url-smoke -- --version 0.24.10
 ```
 
-This creates another empty `npm init -y` consumer, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, and generated-source stability before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry.
+This creates another empty `npm init -y` consumer, accepts either an implicit CommonJS manifest or npm 11's explicit `"type": "commonjs"` form, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, and generated-source stability before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry. Transient install failures share one bounded three-minute elapsed-time retry window, while permanent failures stop immediately.
 
 ## First publication bootstrap (completed for v0.24.0)
 

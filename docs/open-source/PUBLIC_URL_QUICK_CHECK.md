@@ -53,7 +53,7 @@ Run Quick Check only against websites you own or have permission to test. The br
 
 ## Release proof
 
-Every Statecraft release now finishes with the same consumer journey from an empty `npm init -y` project. The gate installs the exact release and pinned Playwright version from `https://registry.npmjs.org/`, starts a deterministic two-page authorized fixture, and runs:
+Every Statecraft release now finishes with the same consumer journey from an empty `npm init -y` project. The gate accepts both npm's implicit CommonJS manifest and npm 11's explicit `"type": "commonjs"` form, installs the exact release and pinned Playwright version from `https://registry.npmjs.org/`, starts a deterministic two-page authorized fixture, and runs:
 
 ```text
 check → check --write-config → scan
@@ -64,7 +64,7 @@ It requires eight passing cells at each stage, non-empty screenshots, schema-v1 
 Maintainers can repeat the post-publication proof with:
 
 ```bash
-corepack pnpm release:registry-public-url-smoke -- --version 0.24.9
+corepack pnpm release:registry-public-url-smoke -- --version 0.24.10
 ```
 
-Use the npm version that was just published. Registry visibility retries are bounded; all consumer files and evidence live in a private temporary directory that is removed after success or failure.
+Use the npm version that was just published. Registry visibility retries share one bounded three-minute elapsed-time window; all consumer files and evidence live in a private temporary directory that is removed after success or failure.
