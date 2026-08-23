@@ -102,9 +102,43 @@ test("installs exact registry packages with bounded propagation retries", async 
   const install = commands[1].args;
   assert.deepEqual(install.slice(-2), ["statecraft-ui@0.24.9", `playwright@${PLAYWRIGHT_VERSION}`]);
   assert.deepEqual(install.slice(install.indexOf("--registry"), install.indexOf("--registry") + 2), ["--registry", NPM_REGISTRY]);
+  const installCommands = commands.filter(({ args }) => args[0] === "install");
+  assert.equal(installCommands.every(({ args }) => args.includes("--prefer-online")), true);
+  assert.deepEqual(
+    installCommands.map(({ args }) => args[args.indexOf("--cache") + 1]),
+    [1, 2, 3].map((attempt) =>
+      path.join("/tmp/statecraft-empty-consumer", ".npm-cache", `install-${attempt}`),
+    ),
+  );
   assert.equal(commands[1].options.timeout, 30_000);
   assert.deepEqual(commands.at(-1).args, ["exec", "--offline", "--", "playwright", "install", "chromium"]);
   assert.equal(commands.at(-1).options.timeout, 180_000);
+});
+
+test("does not reuse a registry cache after a missing-version response", async () => {
+  const cachePaths = new Set();
+  let installAttempts = 0;
+  await installRegistryConsumer({
+    consumerRoot: "/tmp/statecraft-cache-revalidation-consumer",
+    execute: async (_command, args) => {
+      if (args[0] !== "install") {
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      }
+      installAttempts += 1;
+      const cachePath = args[args.indexOf("--cache") + 1];
+      if (cachePaths.has(cachePath)) {
+        return { code: 1, signal: null, stderr: "npm error ETARGET cached missing version", stdout: "" };
+      }
+      cachePaths.add(cachePath);
+      return installAttempts === 1
+        ? { code: 1, signal: null, stderr: "npm error ETARGET No matching version", stdout: "" }
+        : { code: 0, signal: null, stderr: "", stdout: "" };
+    },
+    sleep: async () => {},
+    version: "0.24.9",
+  });
+  assert.equal(installAttempts, 2);
+  assert.equal(cachePaths.size, 2);
 });
 
 test("retries registry propagation for the complete elapsed-time window", async () => {
@@ -135,8 +169,8 @@ test("retries registry propagation for the complete elapsed-time window", async 
     }),
     /Installing exact npm registry packages exited 1/u,
   );
-  assert.equal(installAttempts, 19);
-  assert.equal(delays.length, 18);
+  assert.equal(installAttempts, 61);
+  assert.equal(delays.length, 60);
   assert.equal(
     delays.reduce((total, duration) => total + duration, 0),
     REGISTRY_INSTALL_RETRY_WINDOW_MS,
@@ -168,9 +202,9 @@ test("counts command timeouts against the registry retry window", async () => {
     }),
     /npm exceeded 30000ms/u,
   );
-  assert.equal(installAttempts, 5);
-  assert.deepEqual(delays, [10_000, 10_000, 10_000, 10_000]);
-  assert.equal(clock, REGISTRY_INSTALL_RETRY_WINDOW_MS + 10_000);
+  assert.equal(installAttempts, 16);
+  assert.deepEqual(delays, Array.from({ length: 15 }, () => 10_000));
+  assert.equal(clock, REGISTRY_INSTALL_RETRY_WINDOW_MS + 30_000);
 });
 
 test("caps retryable thrown errors even when the clock does not advance", async () => {
@@ -192,8 +226,8 @@ test("caps retryable thrown errors even when the clock does not advance", async 
     }),
     /npm exceeded 30000ms/u,
   );
-  assert.equal(installAttempts, 19);
-  assert.equal(delays.length, 18);
+  assert.equal(installAttempts, 61);
+  assert.equal(delays.length, 60);
 });
 
 test("uses the remaining partial window before rejecting a thrown timeout", async () => {

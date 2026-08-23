@@ -138,5 +138,5 @@ test("keeps bootstrap token auth conditional so trusted publishing can use OIDC"
     /node scripts\/public-url-registry-smoke\.mjs --tag "\$RELEASE_TAG" --with-deps/u,
   );
   assert.match(workflow.slice(registryGateIndex), /needs: publish-npm/u);
-  assert.match(workflow.slice(registryGateIndex), /timeout-minutes: 15/u);
+  assert.match(workflow.slice(registryGateIndex), /timeout-minutes: 25/u);
 });

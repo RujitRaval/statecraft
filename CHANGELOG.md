@@ -4,6 +4,14 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.11.0] - 2026-08-22
+
+### Fixed
+
+- The first post-publication consumer attempt now forces npm registry revalidation and uses a fresh temporary cache for every retry, preventing one cached missing-version response from poisoning the release gate.
+- Registry propagation can now consume a bounded ten-minute window inside an independent 25-minute job while permanent install failures still stop immediately.
+- Regression coverage proves cache isolation, forced online checks, elapsed-time bounds, timeout accounting, and the complete release workflow budget.
+
 ## [0.24.10.0] - 2026-08-22
 
 ### Fixed

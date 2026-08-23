@@ -28,7 +28,7 @@ if (!/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u.test(PLAYWRIGHT_VERSION
   throw new Error("The runner must declare one exact stable Playwright version.");
 }
 
-export const REGISTRY_INSTALL_RETRY_WINDOW_MS = 180_000;
+export const REGISTRY_INSTALL_RETRY_WINDOW_MS = 600_000;
 export const REGISTRY_INSTALL_RETRY_DELAY_MS = 10_000;
 const installAttempts =
   Math.ceil(REGISTRY_INSTALL_RETRY_WINDOW_MS / REGISTRY_INSTALL_RETRY_DELAY_MS) + 1;
@@ -128,14 +128,23 @@ export async function installRegistryConsumer({
     "--package-lock=false",
     "--registry",
     registry,
+  ];
+  const installSpecifications = [
     `statecraft-ui@${normalizedVersion}`,
     `playwright@${PLAYWRIGHT_VERSION}`,
   ];
   const installRetryDeadline = now() + REGISTRY_INSTALL_RETRY_WINDOW_MS;
   let install;
   for (let attempt = 1; attempt <= installAttempts; attempt += 1) {
+    const attemptArguments = [
+      ...installArguments,
+      "--prefer-online",
+      "--cache",
+      path.join(consumerRoot, ".npm-cache", `install-${attempt}`),
+      ...installSpecifications,
+    ];
     try {
-      install = await execute("npm", installArguments, {
+      install = await execute("npm", attemptArguments, {
         cwd: consumerRoot,
         timeout: installTimeout,
       });
