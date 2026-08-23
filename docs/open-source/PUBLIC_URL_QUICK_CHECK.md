@@ -64,7 +64,7 @@ It requires eight passing cells at each stage, non-empty screenshots, schema-v1 
 Maintainers can repeat the post-publication proof with:
 
 ```bash
-corepack pnpm release:registry-public-url-smoke -- --version 0.24.10
+corepack pnpm release:registry-public-url-smoke -- --version 0.24.11
 ```
 
-Use the npm version that was just published. Registry visibility retries share one bounded three-minute elapsed-time window; all consumer files and evidence live in a private temporary directory that is removed after success or failure.
+Use the npm version that was just published. Registry visibility retries share one bounded ten-minute elapsed-time window. Every attempt forces online revalidation through a distinct temporary npm cache; all consumer files, caches, and evidence are removed after success or failure.
