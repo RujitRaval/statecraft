@@ -1,6 +1,6 @@
 {
   "name": "statecraft-ui-runner-playwright",
-  "version": "0.24.10",
+  "version": "0.24.11",
   "description": "Playwright execution lifecycle for Statecraft.",
   "license": "MIT",
   "repository": {
