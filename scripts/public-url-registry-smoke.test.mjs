@@ -7,6 +7,8 @@ import test from "node:test";
 import {
   NPM_REGISTRY,
   PLAYWRIGHT_VERSION,
+  REGISTRY_INSTALL_RETRY_DELAY_MS,
+  REGISTRY_INSTALL_RETRY_WINDOW_MS,
   assertPublicReport,
   assertRegistryInstall,
   cleanRegistryConsumer,
@@ -52,7 +54,7 @@ test("retries thrown npm timeouts but not permanent execution errors", async () 
     version: "0.24.9",
   });
   assert.equal(installs, 2);
-  assert.deepEqual(delays, [5_000]);
+  assert.deepEqual(delays, [REGISTRY_INSTALL_RETRY_DELAY_MS]);
 
   await assert.rejects(
     installRegistryConsumer({
@@ -93,13 +95,161 @@ test("installs exact registry packages with bounded propagation retries", async 
   assert.equal(installAttempt, 3);
   assert.equal(commands[0].args.join(" "), "init --yes");
   assert.equal(commands[0].options.timeout, 60_000);
-  assert.deepEqual(delays, [5_000, 5_000]);
+  assert.deepEqual(delays, [
+    REGISTRY_INSTALL_RETRY_DELAY_MS,
+    REGISTRY_INSTALL_RETRY_DELAY_MS,
+  ]);
   const install = commands[1].args;
   assert.deepEqual(install.slice(-2), ["statecraft-ui@0.24.9", `playwright@${PLAYWRIGHT_VERSION}`]);
   assert.deepEqual(install.slice(install.indexOf("--registry"), install.indexOf("--registry") + 2), ["--registry", NPM_REGISTRY]);
   assert.equal(commands[1].options.timeout, 30_000);
   assert.deepEqual(commands.at(-1).args, ["exec", "--offline", "--", "playwright", "install", "chromium"]);
   assert.equal(commands.at(-1).options.timeout, 180_000);
+});
+
+test("retries registry propagation for the complete elapsed-time window", async () => {
+  let clock = 0;
+  let installAttempts = 0;
+  const delays = [];
+  await assert.rejects(
+    installRegistryConsumer({
+      consumerRoot: "/tmp/statecraft-propagation-consumer",
+      execute: async (_command, args) => {
+        if (args[0] === "install") {
+          installAttempts += 1;
+          return {
+            code: 1,
+            signal: null,
+            stderr: "npm error ETARGET No matching version",
+            stdout: "",
+          };
+        }
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      },
+      now: () => clock,
+      sleep: async (duration) => {
+        delays.push(duration);
+        clock += duration;
+      },
+      version: "0.24.9",
+    }),
+    /Installing exact npm registry packages exited 1/u,
+  );
+  assert.equal(installAttempts, 19);
+  assert.equal(delays.length, 18);
+  assert.equal(
+    delays.reduce((total, duration) => total + duration, 0),
+    REGISTRY_INSTALL_RETRY_WINDOW_MS,
+  );
+  assert.equal(delays.every((duration) => duration === REGISTRY_INSTALL_RETRY_DELAY_MS), true);
+});
+
+test("counts command timeouts against the registry retry window", async () => {
+  let clock = 0;
+  let installAttempts = 0;
+  const delays = [];
+  await assert.rejects(
+    installRegistryConsumer({
+      consumerRoot: "/tmp/statecraft-time-bounded-consumer",
+      execute: async (_command, args) => {
+        if (args[0] === "install") {
+          installAttempts += 1;
+          clock += 30_000;
+          throw new Error("npm exceeded 30000ms.");
+        }
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      },
+      now: () => clock,
+      sleep: async (duration) => {
+        delays.push(duration);
+        clock += duration;
+      },
+      version: "0.24.9",
+    }),
+    /npm exceeded 30000ms/u,
+  );
+  assert.equal(installAttempts, 5);
+  assert.deepEqual(delays, [10_000, 10_000, 10_000, 10_000]);
+  assert.equal(clock, REGISTRY_INSTALL_RETRY_WINDOW_MS + 10_000);
+});
+
+test("caps retryable thrown errors even when the clock does not advance", async () => {
+  let installAttempts = 0;
+  const delays = [];
+  await assert.rejects(
+    installRegistryConsumer({
+      consumerRoot: "/tmp/statecraft-thrown-cap-consumer",
+      execute: async (_command, args) => {
+        if (args[0] === "install") {
+          installAttempts += 1;
+          throw new Error("npm exceeded 30000ms.");
+        }
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      },
+      now: () => 0,
+      sleep: async (duration) => delays.push(duration),
+      version: "0.24.9",
+    }),
+    /npm exceeded 30000ms/u,
+  );
+  assert.equal(installAttempts, 19);
+  assert.equal(delays.length, 18);
+});
+
+test("uses the remaining partial window before rejecting a thrown timeout", async () => {
+  let clock = 0;
+  let installAttempts = 0;
+  const delays = [];
+  await assert.rejects(
+    installRegistryConsumer({
+      consumerRoot: "/tmp/statecraft-partial-window-consumer",
+      execute: async (_command, args) => {
+        if (args[0] === "install") {
+          installAttempts += 1;
+          if (installAttempts === 1) clock += REGISTRY_INSTALL_RETRY_WINDOW_MS - 5_000;
+          throw new Error("npm exceeded 30000ms.");
+        }
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      },
+      now: () => clock,
+      sleep: async (duration) => {
+        delays.push(duration);
+        clock += duration;
+      },
+      version: "0.24.9",
+    }),
+    /npm exceeded 30000ms/u,
+  );
+  assert.equal(installAttempts, 2);
+  assert.deepEqual(delays, [5_000]);
+});
+
+test("uses the partial window before a slow failed result exhausts the deadline", async () => {
+  let clock = 0;
+  let installAttempts = 0;
+  const delays = [];
+  await assert.rejects(
+    installRegistryConsumer({
+      consumerRoot: "/tmp/statecraft-result-deadline-consumer",
+      execute: async (_command, args) => {
+        if (args[0] === "install") {
+          installAttempts += 1;
+          clock += installAttempts === 1 ? REGISTRY_INSTALL_RETRY_WINDOW_MS - 5_000 : 1;
+          return { code: 1, signal: null, stderr: "npm error ETARGET No matching version", stdout: "" };
+        }
+        return { code: 0, signal: null, stderr: "", stdout: "" };
+      },
+      now: () => clock,
+      sleep: async (duration) => {
+        delays.push(duration);
+        clock += duration;
+      },
+      version: "0.24.9",
+    }),
+    /Installing exact npm registry packages exited 1/u,
+  );
+  assert.equal(installAttempts, 2);
+  assert.deepEqual(delays, [5_000]);
 });
 
 test("provisions browser system dependencies only when requested", async () => {
@@ -138,12 +288,9 @@ test("does not retry permanent npm installation failures", async () => {
   assert.equal(attempts, 1);
 });
 
-test("verifies every installed public package and the default npm project shape", async (context) => {
+test("verifies every installed public package and both CommonJS npm project shapes", async (context) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-install-test-"));
   context.after(() => rm(root, { force: true, recursive: true }));
-  await writeFile(path.join(root, "package.json"), JSON.stringify({
-    devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
-  }));
   for (const name of [
     "statecraft-ui-core",
     "statecraft-ui-report",
@@ -160,10 +307,25 @@ test("verifies every installed public package and the default npm project shape"
     }));
   }
 
-  assert.equal(
-    await assertRegistryInstall(root, "0.24.9"),
-    path.join(root, "node_modules", "statecraft-ui", "dist", "bin.js"),
-  );
+  for (const type of [undefined, "commonjs"]) {
+    await writeFile(path.join(root, "package.json"), JSON.stringify({
+      ...(type === undefined ? {} : { type }),
+      devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+    }));
+    assert.equal(
+      await assertRegistryInstall(root, "0.24.9"),
+      path.join(root, "node_modules", "statecraft-ui", "dist", "bin.js"),
+    );
+  }
+  await writeFile(path.join(root, "package.json"), JSON.stringify({
+    type: "module",
+    devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+  }));
+  await assert.rejects(assertRegistryInstall(root, "0.24.9"), /CommonJS package mode/u);
+  await writeFile(path.join(root, "package.json"), JSON.stringify({
+    type: "commonjs",
+    devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+  }));
   await writeFile(
     path.join(root, "node_modules", "statecraft-ui-core", "package.json"),
     JSON.stringify({ name: "statecraft-ui-core", version: "0.24.8" }),
