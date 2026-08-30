@@ -4,6 +4,12 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.13.0] - 2026-08-30
+
+### Changed
+
+- GitHub Actions users can upload test evidence without the Node.js 20 deprecation warning because the release-smoke workflow and public setup guide now pin `actions/upload-artifact` v7.0.1 on Node.js 24.
+
 ## [0.24.12.0] - 2026-08-30
 
 ### Added
