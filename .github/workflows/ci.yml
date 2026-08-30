@@ -28,6 +28,8 @@ jobs:
           node-version: 22.20.0
       - name: Validate documentation
         run: node scripts/check-docs.mjs
+      - name: Validate brand contract
+        run: node scripts/check-brand.mjs
       - name: Test repository checks
         run: node --test scripts/*.test.mjs
 

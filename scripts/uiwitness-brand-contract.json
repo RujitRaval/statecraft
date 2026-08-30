@@ -1,0 +1,1198 @@
+{
+  "schemaVersion": 1,
+  "description": "Exact-file migration ratchet. Token budgets may decrease; new legacy-brand occurrences fail.",
+  "migrationBaseline": [
+    {
+      "path": ".github/pull_request_template.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "contentCounts": {
+        "lower": 3,
+        "title": 1
+      }
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": ".gitignore",
+      "contentCounts": {
+        "title": 1,
+        "lower": 3
+      }
+    },
+    {
+      "path": "AGENTS.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 3
+      }
+    },
+    {
+      "path": "apps/example-nextjs/app/globals.css",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/app/layout.tsx",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/package.json",
+      "contentCounts": {
+        "lower": 7,
+        "title": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/scripts/capture-launch-assets.mjs",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>.config.ts",
+      "contentCounts": {
+        "lower": 2,
+        "upper": 1
+      },
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>/scenarios/customers.mjs",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>/scenarios/dashboard.mjs",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>/scenarios/orders.mjs",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>/scenarios/shared.d.mts",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/<legacy-lower>/scenarios/shared.mjs",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/test/scenario-matrix.test.ts",
+      "contentCounts": {
+        "lower": 11,
+        "upper": 1
+      }
+    },
+    {
+      "path": "apps/example-nextjs/test/<legacy-lower>-config.test.ts",
+      "contentCounts": {
+        "lower": 2,
+        "title": 1,
+        "upper": 1
+      },
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "CLAUDE.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 2
+      }
+    },
+    {
+      "path": "codex/IMPLEMENTATION_SPEC.md",
+      "contentCounts": {
+        "title": 14,
+        "lower": 32
+      }
+    },
+    {
+      "path": "codex/MASTER_PROMPT.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 1
+      }
+    },
+    {
+      "path": "codex/PHASE_CHECKLIST.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 1
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 3
+      }
+    },
+    {
+      "path": "DESIGN.md",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "docs/architecture/ARCHITECTURE.md",
+      "contentCounts": {
+        "lower": 19,
+        "title": 6
+      }
+    },
+    {
+      "path": "docs/assets/<legacy-lower>-failure-detail.png",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/assets/<legacy-lower>-report-overview.png",
+      "pathCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/design/BRAND_RESEARCH.md",
+      "contentCounts": {
+        "title": 3
+      }
+    },
+    {
+      "path": "docs/designs/public-url-quick-check.md",
+      "contentCounts": {
+        "lower": 22,
+        "title": 14
+      }
+    },
+    {
+      "path": "docs/engineering/CLI_API.md",
+      "contentCounts": {
+        "lower": 30,
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/engineering/CORE_API.md",
+      "contentCounts": {
+        "lower": 11,
+        "title": 12
+      }
+    },
+    {
+      "path": "docs/engineering/IMPLEMENTATION_PLAN.md",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "docs/engineering/REPORT_API.md",
+      "contentCounts": {
+        "lower": 8
+      }
+    },
+    {
+      "path": "docs/engineering/RUNNER_API.md",
+      "contentCounts": {
+        "lower": 32,
+        "title": 6
+      }
+    },
+    {
+      "path": "docs/engineering/SECURITY_PRIVACY.md",
+      "contentCounts": {
+        "title": 4,
+        "lower": 11
+      }
+    },
+    {
+      "path": "docs/engineering/TEST_STRATEGY.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/open-source/GITHUB_ACTIONS.md",
+      "contentCounts": {
+        "lower": 9,
+        "title": 5
+      }
+    },
+    {
+      "path": "docs/open-source/LAUNCH_STRATEGY.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 5
+      }
+    },
+    {
+      "path": "docs/open-source/PUBLIC_URL_QUICK_CHECK.md",
+      "contentCounts": {
+        "title": 9,
+        "lower": 11
+      }
+    },
+    {
+      "path": "docs/open-source/RELEASING.md",
+      "contentCounts": {
+        "title": 3,
+        "lower": 9
+      }
+    },
+    {
+      "path": "docs/product/CLI_AND_CONFIG_SPEC.md",
+      "contentCounts": {
+        "lower": 19
+      }
+    },
+    {
+      "path": "docs/product/PRD.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/product/REPORT_UX_SPEC.md",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "LICENSE",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "package.json",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/cli/LICENSE",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/cli/package.json",
+      "contentCounts": {
+        "lower": 10,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/cli/README.md",
+      "contentCounts": {
+        "lower": 15,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/cli/src/check.ts",
+      "contentCounts": {
+        "title": 6,
+        "lower": 6
+      }
+    },
+    {
+      "path": "packages/cli/src/command.ts",
+      "contentCounts": {
+        "lower": 8,
+        "title": 9
+      }
+    },
+    {
+      "path": "packages/cli/src/config.ts",
+      "contentCounts": {
+        "title": 9,
+        "lower": 7
+      }
+    },
+    {
+      "path": "packages/cli/src/index.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/cli/src/init.ts",
+      "contentCounts": {
+        "lower": 3,
+        "title": 5
+      }
+    },
+    {
+      "path": "packages/cli/src/open.ts",
+      "contentCounts": {
+        "lower": 3,
+        "title": 5
+      }
+    },
+    {
+      "path": "packages/cli/src/project-files.ts",
+      "contentCounts": {
+        "lower": 1,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/cli/src/public-site-scenario.ts",
+      "contentCounts": {
+        "lower": 2,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/cli/src/public-site-setup.ts",
+      "contentCounts": {
+        "title": 4,
+        "lower": 6
+      }
+    },
+    {
+      "path": "packages/cli/src/scan.ts",
+      "contentCounts": {
+        "title": 2,
+        "lower": 6
+      }
+    },
+    {
+      "path": "packages/cli/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "lower": 6
+      }
+    },
+    {
+      "path": "packages/cli/test-d/public-site-scenario.test-d.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/cli/test/check-options.test.ts",
+      "contentCounts": {
+        "lower": 38,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/cli/test/check.test.ts",
+      "contentCounts": {
+        "lower": 12,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/cli/test/command.test.ts",
+      "contentCounts": {
+        "lower": 43,
+        "title": 9
+      }
+    },
+    {
+      "path": "packages/cli/test/config.test.ts",
+      "contentCounts": {
+        "lower": 12
+      }
+    },
+    {
+      "path": "packages/cli/test/init-config-race.test.ts",
+      "contentCounts": {
+        "lower": 6
+      }
+    },
+    {
+      "path": "packages/cli/test/init.test.ts",
+      "contentCounts": {
+        "lower": 26
+      }
+    },
+    {
+      "path": "packages/cli/test/open.test.ts",
+      "contentCounts": {
+        "lower": 18,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/cli/test/package-boundary.test.ts",
+      "contentCounts": {
+        "lower": 16,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/cli/test/scan-options.test.ts",
+      "contentCounts": {
+        "lower": 15
+      }
+    },
+    {
+      "path": "packages/cli/test/scan.test.ts",
+      "contentCounts": {
+        "lower": 6,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/core/LICENSE",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/core/package.json",
+      "contentCounts": {
+        "lower": 4,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/core/README.md",
+      "contentCounts": {
+        "lower": 5,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/core/src/artifacts.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/core/src/config.ts",
+      "contentCounts": {
+        "title": 5,
+        "lower": 4
+      }
+    },
+    {
+      "path": "packages/core/src/coverage.ts",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/core/src/errors.ts",
+      "contentCounts": {
+        "title": 13
+      }
+    },
+    {
+      "path": "packages/core/src/index.ts",
+      "contentCounts": {
+        "title": 4
+      }
+    },
+    {
+      "path": "packages/core/src/matrix.ts",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/core/src/results.ts",
+      "contentCounts": {
+        "title": 5,
+        "lower": 4
+      }
+    },
+    {
+      "path": "packages/core/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "title": 12,
+        "lower": 3
+      }
+    },
+    {
+      "path": "packages/core/test/artifacts.test.ts",
+      "contentCounts": {
+        "lower": 7
+      }
+    },
+    {
+      "path": "packages/core/test/config.test.ts",
+      "contentCounts": {
+        "title": 3,
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/core/test/coverage.test.ts",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/core/test/matrix.test.ts",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/core/test/package-boundary.test.ts",
+      "contentCounts": {
+        "lower": 2,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/core/test/results.test.ts",
+      "contentCounts": {
+        "title": 7,
+        "lower": 5
+      }
+    },
+    {
+      "path": "packages/report/LICENSE",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/report/package.json",
+      "contentCounts": {
+        "lower": 6,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/report/README.md",
+      "contentCounts": {
+        "lower": 5,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/report/src/index.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/report/src/render.ts",
+      "contentCounts": {
+        "lower": 1,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/report/src/transform.ts",
+      "contentCounts": {
+        "title": 2,
+        "lower": 3
+      }
+    },
+    {
+      "path": "packages/report/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "title": 2,
+        "lower": 3
+      }
+    },
+    {
+      "path": "packages/report/test/fixture.ts",
+      "contentCounts": {
+        "title": 4,
+        "lower": 5
+      }
+    },
+    {
+      "path": "packages/report/test/package-boundary.test.ts",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/report/test/render.test.ts",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "packages/report/test/transform.test.ts",
+      "contentCounts": {
+        "lower": 2,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/LICENSE",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/package.json",
+      "contentCounts": {
+        "lower": 8,
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/README.md",
+      "contentCounts": {
+        "lower": 8,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/capture.ts",
+      "contentCounts": {
+        "lower": 3,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/index.ts",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/lifecycle.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/navigation.ts",
+      "contentCounts": {
+        "lower": 1,
+        "title": 4
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/persistence.ts",
+      "contentCounts": {
+        "title": 4,
+        "lower": 34
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/public-site-scenario.ts",
+      "contentCounts": {
+        "title": 3,
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/public-site.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/src/scenario.ts",
+      "contentCounts": {
+        "lower": 1,
+        "title": 5
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "title": 3,
+        "lower": 5
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test-d/public-site-contract.test-d.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/capture.test.ts",
+      "contentCounts": {
+        "lower": 30,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/discovery.test.ts",
+      "contentCounts": {
+        "lower": 4
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/fixtures/page.ts",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/fixtures/scenarios/capture.mjs",
+      "contentCounts": {
+        "lower": 4
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/fixtures/scenarios/navigation.mjs",
+      "contentCounts": {
+        "lower": 4,
+        "title": 3
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/fixtures/scenarios/recording.mjs",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/fixtures/scenarios/typed.ts",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/lifecycle-errors.test.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/lifecycle.test.ts",
+      "contentCounts": {
+        "lower": 5
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/navigation.test.ts",
+      "contentCounts": {
+        "lower": 30
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/package-boundary.test.ts",
+      "contentCounts": {
+        "lower": 4
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/persistence.test.ts",
+      "contentCounts": {
+        "lower": 68,
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/public-site.test.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/scenario.test.ts",
+      "contentCounts": {
+        "lower": 4,
+        "title": 2
+      }
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "contentCounts": {
+        "lower": 7
+      }
+    },
+    {
+      "path": "README.md",
+      "contentCounts": {
+        "title": 11,
+        "lower": 39
+      }
+    },
+    {
+      "path": "scripts/capture-launch-assets.test.mjs",
+      "contentCounts": {
+        "lower": 4
+      }
+    },
+    {
+      "path": "scripts/check-docs.mjs",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "scripts/check-docs.test.mjs",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "scripts/check-release-packages.mjs",
+      "contentCounts": {
+        "lower": 15
+      }
+    },
+    {
+      "path": "scripts/check-release-packages.test.mjs",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "scripts/clean-package.test.mjs",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "scripts/public-url-registry-smoke.mjs",
+      "contentCounts": {
+        "lower": 19,
+        "title": 2
+      }
+    },
+    {
+      "path": "scripts/public-url-registry-smoke.test.mjs",
+      "contentCounts": {
+        "lower": 51
+      }
+    },
+    {
+      "path": "scripts/release-package-smoke.mjs",
+      "contentCounts": {
+        "lower": 21
+      }
+    },
+    {
+      "path": "scripts/release-package-smoke.test.mjs",
+      "contentCounts": {
+        "lower": 20
+      }
+    },
+    {
+      "path": "scripts/release-smoke.mjs",
+      "contentCounts": {
+        "title": 2,
+        "lower": 10,
+        "upper": 1
+      }
+    },
+    {
+      "path": "scripts/release-smoke.test.mjs",
+      "contentCounts": {
+        "lower": 10
+      }
+    },
+    {
+      "path": "scripts/run-ci.test.mjs",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "SECURITY.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 1
+      }
+    }
+  ],
+  "permanentAllowlist": [
+    {
+      "path": "CHANGELOG.md",
+      "contentCounts": {
+        "title": 16,
+        "lower": 34
+      }
+    },
+    {
+      "path": "docs/decisions/0001-product-state-coverage.md",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0004-phase-1-toolchain.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0005-core-config-validation.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0006-core-matrix-planner.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0007-deterministic-artifact-paths.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0008-configured-state-coverage.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0009-versioned-result-report-contracts.md",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0010-runner-execution-lifecycle.md",
+      "contentCounts": {
+        "lower": 2,
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0011-runner-scenario-loading-hooks.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0014-runner-result-persistence.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 5
+      }
+    },
+    {
+      "path": "docs/decisions/0015-cli-config-discovery.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0016-cli-init.md",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "docs/decisions/0017-cli-scan-orchestration.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0018-cli-open.md",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "docs/decisions/0019-report-offline-html.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 4
+      }
+    },
+    {
+      "path": "docs/decisions/0021-example-application-foundation.md",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0022-example-orders-states.md",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0023-example-customer-detail-states.md",
+      "contentCounts": {
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0024-example-intentional-defects.md",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0025-example-scenario-matrix.md",
+      "contentCounts": {
+        "title": 1,
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0026-release-ci-smoke.md",
+      "contentCounts": {
+        "lower": 4,
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0027-release-package-metadata.md",
+      "contentCounts": {
+        "lower": 8
+      }
+    },
+    {
+      "path": "docs/decisions/0028-cli-init-module-extensions.md",
+      "contentCounts": {
+        "title": 2,
+        "lower": 5
+      }
+    },
+    {
+      "path": "docs/decisions/0029-public-url-route-discovery.md",
+      "contentCounts": {
+        "title": 3,
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0030-public-site-check-evidence.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0031-public-url-cli-orchestration.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "docs/decisions/0032-public-url-setup-promotion.md",
+      "contentCounts": {
+        "lower": 7,
+        "title": 1
+      }
+    },
+    {
+      "path": "docs/decisions/0033-registry-public-url-consumer-gate.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    }
+  ],
+  "renameRecords": [
+    {
+      "path": "docs/designs/uiwitness-renaming.md",
+      "allowedLines": [
+        "# Design: Rename <legacy-title> to UIWitness",
+        "## Deliberate <legacy-title> Allowlist",
+        "- A migration/deprecation page that explicitly maps <legacy-title> to UIWitness.",
+        "- A third-party repository imports or invokes a published <legacy-title> package.",
+        "- Backward-compatibility and deprecation decisions for already-published <legacy-title> packages.",
+        "- Because this is a continuation of the same product and repository, release history remains continuous. The first UIWitness packages use version `0.25.0`, with repository `VERSION` set to `0.25.0.0`; prior <legacy-title> tags and changelog entries remain historical records.",
+        "- Existing `.<legacy-lower>/` evidence is untouched and remains gitignored.",
+        "- One approved inventory accounts for every <legacy-title> occurrence as renamed, historical, privacy-preserving, or compatibility-only.",
+        "- Privacy-safe treatment of existing `.<legacy-lower>/` evidence.",
+        "- The existing public <legacy-title> packages and executable need an intentional migration policy rather than silent abandonment.",
+        "- `.<legacy-lower>/` ignore rules and privacy-preservation tests.",
+        "1. Freeze a bridge inventory from the observed usage. The default inventory is only `<legacy-lower>-ui`; include an old supporting package only when evidence shows direct imports that need it.",
+        "2. Version every bridge package at `0.25.0` and tag the approved commit `<legacy-lower>-bridge-v0.25.0`. Keep the UIWitness repository release contract at `v0.25.0`; the distinct tag makes the legacy publication auditable.",
+        "4. Publish bridge dependencies first and `<legacy-lower>-ui` last through OIDC. The primary legacy executable forwards to the verified `uiwitness` package and emits one precise deprecation warning; it must not duplicate implementation.",
+        "6. Confirm package contents, terminal output, generated paths, JSON, and report UI contain no non-allowlisted <legacy-title> terminology.",
+        "<legacy-title> needs a distinct public identity before launch. An existing product already uses the <legacy-title> name for an overlapping frontend workflow built around product journeys, UI states, branches, and error paths. The current npm package `<legacy-lower>-ui` is valid and owned by this project, but npm ownership does not resolve the product-brand collision. The unrelated `<legacy-lower>` npm package and another CLI using a `<legacy-lower>` executable also make the current command identity harder to own.",
+        "Keep `schemaVersion: 1` and all current persisted fields unchanged. Rename the generated manifest filename to `uiwitness.json`, but ensure UIWitness report readers can open existing schema-v1 <legacy-title> payload fixtures. Rename public TypeScript symbols in the new packages. Do not add dual-name aliases to the new public API unless a verified external consumer requires them.",
+        "Maintain <legacy-title> aliases indefinitely alongside UIWitness. This doubles release, documentation, and support surfaces before meaningful adoption exists. A bounded bridge is permitted only if verified external use warrants it.",
+        "Market the product as UIWitness while retaining `<legacy-lower>-ui`, the `<legacy-lower>` executable, and `.<legacy-lower>/` artifacts. This is smaller but preserves the confusing identities users encounter during installation and support. It does not resolve the collision.",
+        "Rename the public product from <legacy-title> to **UIWitness** before its first broad announcement.",
+        "Repo: `RujitRaval/<legacy-lower>`",
+        "Retain `.<legacy-lower>/` in `.gitignore` and add `.uiwitness/`. The new CLI must never automatically rename, copy, upload, or delete `.<legacy-lower>/`; those directories may contain screenshots and sensitive application data. Migration guidance may tell users how to retain or remove their own artifacts deliberately.",
+        "The dated 2026-08-30 Gate 0 record narrows launch activity to the United States. The official USPTO wordmark search returned no live or dead exact `UIWitness` result. The maintainer approved `UIWitness`, confirmed that there are no known private or direct <legacy-title> consumers and no compatibility promises, and selected `deprecation-only`. No custom domain or launch-critical social handle is required; GitHub and npm are the canonical public destinations. The repository rename remains sequenced after the green implementation merge and immediately before publication, as defined below.",
+        "Use UIWitness consistently for the product, packages, executable, repository, generated files, artifacts, and documentation. Keep only explicit historical and migration references to <legacy-title>. Publish only after the pre-publication package-consumer gate passes; deprecate and announce only after the registry-only journey passes.",
+        "| A late trademark or identifier conflict | Treat clearance and control as blocking; keep <legacy-title> unchanged until passed |",
+        "| Config file | `<legacy-lower>.config.mts` | `uiwitness.config.mts` | New CLI does not silently mutate the old config | Check, promotion, configured scan |",
+        "| Docs and examples | <legacy-title> commands/imports/paths | UIWitness equivalents | Historical and migration references are allowlisted | Docs check and copy-paste smoke |",
+        "| Error codes and branded literals | <legacy-title>-prefixed values such as `<legacy-lower>.invalid` | UIWitness-prefixed equivalents | Rename only values outside the frozen persisted schema; document any persisted legacy value | Error snapshots and legacy-report fixtures |",
+        "| Evidence root | `.<legacy-lower>/` | `.uiwitness/` | Keep both gitignored; never auto-migrate or delete old evidence | Ignore checks and pre-existing-directory fixture |",
+        "| Executable | `<legacy-lower>` | `uiwitness` | Forwarding legacy CLI only if external-use threshold is met | `--help`, PATH resolution, old-package smoke if required |",
+        "| Exported TypeScript API | `<legacy-title>*` symbols | `UIWitness*` symbols | New packages expose only the new names; old packages remain frozen unless bridge triggered | API extraction/types consumer fixture |",
+        "| GitHub repository | `RujitRaval/<legacy-lower>` | `RujitRaval/uiwitness` | Rename immediately before first new-package release | Redirect, clone, issues, releases, links |",
+        "| Internal identifiers | Values such as `<legacy-lower>:public-site`, package scopes, generated imports | UIWitness equivalents | Inventory every match; exceptions require allowlist entry | Case-insensitive source/build/package search |",
+        "| Manifest filename | `.<legacy-lower>/report/<legacy-lower>.json` | `.uiwitness/report/uiwitness.json` | Filename changes; payload remains schema v1 | Golden fixtures and report opening |",
+        "| Primary package | `<legacy-lower>-ui` | `uiwitness` | No alias in the new package | Registry metadata and clean install |",
+        "| Product prose | <legacy-title> | UIWitness | Old name appears only in the allowlist below | Repository and rendered-doc search |",
+        "| Scenario root | `<legacy-lower>/scenarios/` | `uiwitness/scenarios/` | Explicit migration guidance; no silent move | Fixture and consumer-smoke assertions |",
+        "| Scripts and environment names | <legacy-title>-branded names | UIWitness-branded names | Rename public and release-facing identifiers; avoid unrelated churn | CI and release rehearsal |",
+        "| Supporting packages | `<legacy-lower>-ui-*` | `uiwitness-*` | Preserve dependency graph; publish primary last | Packed manifests and registry dependency resolution |",
+        "| Tags, changelog, ADRs | Historical <legacy-title> record | Preserved verbatim where historically necessary | Do not rewrite history | Allowlist-audited search |"
+      ]
+    },
+    {
+      "path": "docs/engineering/UIWITNESS_RENAME_PLAN.md",
+      "allowedLines": [
+        "                +--> accepts legacy .<legacy-lower>/ screenshot paths",
+        "  .<legacy-lower>/**  --> never read, moved, copied, or deleted by a new run",
+        "  .<legacy-lower>/artifacts/... --> accepted --> href relative to .<legacy-lower> report",
+        "  .<legacy-lower>/artifacts/... --> type/runtime rejection",
+        "- An existing `.<legacy-lower>/**` tree is byte-identical before and after successful, failed, and interrupted UIWitness runs.",
+        "- Existing `.<legacy-lower>/` coexistence and privacy cases.",
+        "- Implementation-only literals such as `<legacy-lower>.invalid`, `<legacy-lower>IssueCode`, and `<legacy-lower>:public-site`.",
+        "- Instrumented filesystem sentinels observe zero `open`, `read`, `stat`, `readdir`, `realpath`, or traversal calls beneath `.<legacy-lower>/**` during check, scan, open, success, failure, interruption, and recovery flows.",
+        "- New HTML contains UIWitness identity and no non-allowlisted <legacy-title> text.",
+        "- Prove the documented manual process leaves `.<legacy-lower>/**` untouched unless the user explicitly copies files.",
+        "- Public type names such as `<legacy-title>Config`, `<legacy-title>Scenario`, `<legacy-title>Report`, `<legacy-title>Error`, and `<legacy-title>ErrorCode` to their `UIWitness*` forms.",
+        "- [x] **T2 (P1, human: ~1 day / Codex: ~45 min)**: Brand contract: add the executable <legacy-title> allowlist and CI/release gate. Implemented with an exact-file migration ratchet, strict exact-line rules for both rename records, root lint/CI enforcement, and a strict pre-publication release check that rejects migration-only entries.",
+        "- `<legacy-lower>-ui has moved to uiwitness. Install uiwitness and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`",
+        "- `<legacy-lower>-ui-core has moved to uiwitness-core. Install uiwitness-core and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`",
+        "- `<legacy-lower>-ui-report has moved to uiwitness-report. Install uiwitness-report and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`",
+        "- `<legacy-lower>-ui-runner-playwright has moved to uiwitness-runner-playwright. Install uiwitness-runner-playwright and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`",
+        "- `apps/example-nextjs/<legacy-lower>.config.ts` to `uiwitness.config.ts`.",
+        "- `apps/example-nextjs/<legacy-lower>/scenarios/` to `uiwitness/scenarios/`.",
+        "- `packages/core/src/results.ts` parses valid `.uiwitness/artifacts/**` and legacy `.<legacy-lower>/artifacts/**` read paths before transformation.",
+        "15. Classify intentional historical <legacy-title> text in the approved rename design and this engineering plan through narrow path-plus-pattern brand rules.",
+        "2. Keep `schemaVersion: 1`. New writers emit only `.uiwitness/`; report readers accept both `.uiwitness/` and legacy `.<legacy-lower>/` screenshot paths.",
+        "3. Keep <legacy-title> aliases and the `<legacy-lower>` executable entirely inside these wrappers. Each wrapper forwards exports without adding behavior. The CLI wrapper forwards arguments and exit status to `uiwitness` while printing one deprecation warning to stderr per process.",
+        "3. Never automatically rename, copy, upload, or delete an existing `.<legacy-lower>/` directory.",
+        "4. Allow only historical tags/releases/changelog/accepted decisions, the migration page, old-package deprecation metadata, `.<legacy-lower>/` ignore/privacy tests, and an approved legacy bridge.",
+        "5. Publish through `.github/workflows/release-legacy-bridge.yml`, a separate protected `npm-legacy-bridge` environment, dependency-first order, OIDC trusted-publisher subjects rebound to the renamed repository, and tag `<legacy-lower>-bridge-v0.25.0`.",
+        "Add both `.<legacy-lower>/` and `.uiwitness/` to `.gitignore`. The docs checker must ignore both sensitive evidence roots.",
+        "Do not add <legacy-title> aliases to the new public packages. If the bridge gate is triggered, compatibility lives in a separate legacy package inventory, not in the UIWitness public API.",
+        "Rename the product, public packages, executable, generated project files, evidence paths, current documentation, release automation, and launch assets from <legacy-title> to UIWitness before public announcement.",
+        "Source design: [Rename <legacy-title> to UIWitness](../designs/uiwitness-renaming.md)",
+        "[ADD] dual-root parser + root-correct hrefs      [ADD] .<legacy-lower>/ + .uiwitness/ coexist",
+        "[UPDATE] registry propagation/retry             [ADD] existing .<legacy-lower>/ remains unchanged",
+        "| Area | Files containing <legacy-title> |"
+      ]
+    }
+  ]
+}
