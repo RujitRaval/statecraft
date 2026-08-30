@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.24.12.0] - 2026-08-30
+
+### Added
+
+- The approved UIWitness rename design and engineering roadmap now record the US-only launch scope, canonical GitHub/npm destinations, deprecation-only migration policy, and reserved `0.25.0` cutover contract.
+- An executable exact-file brand contract inventories every legacy-name occurrence, rejects unclassified paths and token-budget growth, and applies exact-line rules to both approved rename records.
+- Positive and negative regression coverage proves branded-path detection, narrow record handling, broad-exemption rejection, private-evidence exclusion, and strict release behavior.
+
+### Changed
+
+- Root lint and pull-request CI now enforce the migration ratchet, while protected publication runs the strict contract that rejects migration-only entries.
+
+### Security
+
+- Brand validation reads only tracked text files, never opens private evidence roots, and reports the exact file, line, matched value, and violated rule for every failure.
+
 ## [0.24.11.0] - 2026-08-22
 
 ### Fixed

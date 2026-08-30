@@ -1,6 +1,6 @@
 {
   "name": "statecraft",
-  "version": "0.24.11",
+  "version": "0.24.12",
   "private": true,
   "description": "Find, render, and report the UI states your product forgot.",
   "license": "MIT",
@@ -10,8 +10,9 @@
   },
   "packageManager": "pnpm@11.22.0+sha512.1ff870c4c6133dfd88fb2afc46dd13d47f09c9794b438c6fdb47ca98caf3bc16381ee0be93a091b8e3824cf01f889f46d7d9e20910fb0be1ab0fb5baa80dd621",
   "scripts": {
+    "brand:check": "node scripts/check-brand.mjs",
     "build": "corepack pnpm --recursive --if-present build",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "corepack pnpm brand:check && eslint . --max-warnings=0",
     "launch:assets": "corepack pnpm --filter @statecraft/example-nextjs launch:assets",
     "release:check": "node scripts/check-release-packages.mjs",
     "release:package-smoke": "corepack pnpm build && node scripts/release-package-smoke.mjs",
