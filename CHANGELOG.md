@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.1.0] - 2026-08-31
+
+### Added
+
+- New UIWitness runs now write screenshots, schema-v1 JSON, and offline HTML only beneath `.uiwitness/`, while report readers continue to accept legacy `.statecraft/artifacts/**` screenshot references without rewriting them.
+- Public core types now distinguish UIWitness-only writer paths from the two-root schema-v1 read contract.
+
+### Changed
+
+- Check, scan, open, example evidence, package smoke, release smoke, and registry verification now use `.uiwitness/report/uiwitness.json` and `.uiwitness/report/index.html` as their canonical output paths.
+- Persistence keeps its existing private modes, lock recovery, coherent rollback, and symbolic-link protections inside a fully separate `.uiwitness/` transaction tree.
+
+### Security
+
+- UIWitness can run beside an unreadable legacy evidence tree without opening or modifying it; coexistence coverage verifies legacy screenshot and report bytes remain unchanged.
+
 ## [0.25.0.0] - 2026-08-31
 
 ### Added
