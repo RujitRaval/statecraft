@@ -11,14 +11,14 @@
     {
       "path": ".github/workflows/ci.yml",
       "contentCounts": {
-        "lower": 3,
-        "title": 1
+        "title": 1,
+        "lower": 1
       }
     },
     {
       "path": ".github/workflows/release.yml",
       "contentCounts": {
-        "lower": 3
+        "lower": 2
       }
     },
     {
@@ -31,275 +31,26 @@
     {
       "path": "AGENTS.md",
       "contentCounts": {
-        "title": 1,
-        "lower": 3
-      }
-    },
-    {
-      "path": "apps/example-nextjs/app/globals.css",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/app/layout.tsx",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/package.json",
-      "contentCounts": {
-        "lower": 7,
-        "title": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/scripts/capture-launch-assets.mjs",
-      "contentCounts": {
-        "lower": 3
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>.config.ts",
-      "contentCounts": {
-        "lower": 2,
-        "upper": 1
-      },
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>/scenarios/customers.mjs",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>/scenarios/dashboard.mjs",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>/scenarios/orders.mjs",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>/scenarios/shared.d.mts",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/<legacy-lower>/scenarios/shared.mjs",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/test/scenario-matrix.test.ts",
-      "contentCounts": {
-        "lower": 11,
-        "upper": 1
-      }
-    },
-    {
-      "path": "apps/example-nextjs/test/<legacy-lower>-config.test.ts",
-      "contentCounts": {
-        "lower": 2,
-        "title": 1,
-        "upper": 1
-      },
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "CLAUDE.md",
-      "contentCounts": {
-        "title": 1,
-        "lower": 2
-      }
-    },
-    {
-      "path": "codex/IMPLEMENTATION_SPEC.md",
-      "contentCounts": {
-        "title": 14,
-        "lower": 32
-      }
-    },
-    {
-      "path": "codex/MASTER_PROMPT.md",
-      "contentCounts": {
-        "title": 2,
-        "lower": 1
-      }
-    },
-    {
-      "path": "codex/PHASE_CHECKLIST.md",
-      "contentCounts": {
-        "title": 1,
         "lower": 1
       }
     },
     {
       "path": "CONTRIBUTING.md",
       "contentCounts": {
-        "title": 2,
-        "lower": 3
-      }
-    },
-    {
-      "path": "DESIGN.md",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "docs/architecture/ARCHITECTURE.md",
-      "contentCounts": {
-        "lower": 19,
-        "title": 6
-      }
-    },
-    {
-      "path": "docs/assets/<legacy-lower>-failure-detail.png",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "docs/assets/<legacy-lower>-report-overview.png",
-      "pathCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "docs/design/BRAND_RESEARCH.md",
-      "contentCounts": {
-        "title": 3
-      }
-    },
-    {
-      "path": "docs/designs/public-url-quick-check.md",
-      "contentCounts": {
-        "lower": 22,
-        "title": 14
-      }
-    },
-    {
-      "path": "docs/engineering/CLI_API.md",
-      "contentCounts": {
-        "lower": 30,
-        "title": 1
-      }
-    },
-    {
-      "path": "docs/engineering/CORE_API.md",
-      "contentCounts": {
-        "lower": 11,
-        "title": 12
-      }
-    },
-    {
-      "path": "docs/engineering/IMPLEMENTATION_PLAN.md",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "docs/engineering/REPORT_API.md",
-      "contentCounts": {
-        "lower": 8
-      }
-    },
-    {
-      "path": "docs/engineering/RUNNER_API.md",
-      "contentCounts": {
-        "lower": 32,
-        "title": 6
+        "lower": 2
       }
     },
     {
       "path": "docs/engineering/SECURITY_PRIVACY.md",
       "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/open-source/MIGRATING_TO_UIWITNESS.md",
+      "contentCounts": {
         "title": 4,
-        "lower": 11
-      }
-    },
-    {
-      "path": "docs/engineering/TEST_STRATEGY.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "docs/open-source/GITHUB_ACTIONS.md",
-      "contentCounts": {
-        "lower": 9,
-        "title": 5
-      }
-    },
-    {
-      "path": "docs/open-source/LAUNCH_STRATEGY.md",
-      "contentCounts": {
-        "title": 2,
-        "lower": 5
-      }
-    },
-    {
-      "path": "docs/open-source/PUBLIC_URL_QUICK_CHECK.md",
-      "contentCounts": {
-        "title": 9,
-        "lower": 11
-      }
-    },
-    {
-      "path": "docs/open-source/RELEASING.md",
-      "contentCounts": {
-        "title": 3,
-        "lower": 9
-      }
-    },
-    {
-      "path": "docs/product/CLI_AND_CONFIG_SPEC.md",
-      "contentCounts": {
-        "lower": 19
-      }
-    },
-    {
-      "path": "docs/product/PRD.md",
-      "contentCounts": {
-        "title": 2,
-        "lower": 1
-      }
-    },
-    {
-      "path": "docs/product/REPORT_UX_SPEC.md",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "LICENSE",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "package.json",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/cli/LICENSE",
-      "contentCounts": {
-        "title": 1
+        "lower": 22
       }
     },
     {
@@ -315,36 +66,9 @@
       }
     },
     {
-      "path": "packages/core/LICENSE",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/core/package.json",
-      "contentCounts": {
-        "lower": 4,
-        "title": 1
-      }
-    },
-    {
       "path": "packages/core/README.md",
       "contentCounts": {
-        "lower": 5,
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/core/src/artifacts.ts",
-      "contentCounts": {
         "lower": 1
-      }
-    },
-    {
-      "path": "packages/core/src/config.ts",
-      "contentCounts": {
-        "title": 5,
-        "lower": 4
       }
     },
     {
@@ -354,80 +78,28 @@
       }
     },
     {
-      "path": "packages/core/src/errors.ts",
-      "contentCounts": {
-        "title": 13
-      }
-    },
-    {
-      "path": "packages/core/src/index.ts",
-      "contentCounts": {
-        "title": 4
-      }
-    },
-    {
-      "path": "packages/core/src/matrix.ts",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
       "path": "packages/core/src/results.ts",
       "contentCounts": {
-        "title": 5,
-        "lower": 4
+        "lower": 1
       }
     },
     {
       "path": "packages/core/test-d/public-api.test-d.ts",
       "contentCounts": {
-        "title": 12,
-        "lower": 3
-      }
-    },
-    {
-      "path": "packages/core/test/artifacts.test.ts",
-      "contentCounts": {
-        "lower": 7
+        "lower": 2,
+        "title": 8
       }
     },
     {
       "path": "packages/core/test/config.test.ts",
       "contentCounts": {
-        "title": 3,
         "lower": 2
-      }
-    },
-    {
-      "path": "packages/core/test/coverage.test.ts",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/core/test/matrix.test.ts",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/core/test/package-boundary.test.ts",
-      "contentCounts": {
-        "lower": 2,
-        "title": 1
       }
     },
     {
       "path": "packages/core/test/results.test.ts",
       "contentCounts": {
-        "title": 7,
         "lower": 5
-      }
-    },
-    {
-      "path": "packages/report/LICENSE",
-      "contentCounts": {
-        "title": 1
       }
     },
     {
@@ -449,96 +121,27 @@
       }
     },
     {
-      "path": "packages/runner-playwright/LICENSE",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/package.json",
-      "contentCounts": {
-        "lower": 8,
-        "title": 1
-      }
-    },
-    {
       "path": "packages/runner-playwright/README.md",
       "contentCounts": {
-        "lower": 8,
-        "title": 2
+        "lower": 1
       }
     },
     {
       "path": "packages/runner-playwright/src/capture.ts",
       "contentCounts": {
-        "lower": 3,
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/index.ts",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/lifecycle.ts",
-      "contentCounts": {
         "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/navigation.ts",
-      "contentCounts": {
-        "lower": 1,
-        "title": 4
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/persistence.ts",
-      "contentCounts": {
-        "title": 4,
-        "lower": 34
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/public-site-scenario.ts",
-      "contentCounts": {
-        "title": 3,
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/public-site.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/scenario.ts",
-      "contentCounts": {
-        "lower": 1,
-        "title": 5
       }
     },
     {
       "path": "packages/runner-playwright/test-d/public-api.test-d.ts",
       "contentCounts": {
-        "title": 3,
-        "lower": 5
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test-d/public-site-contract.test-d.ts",
-      "contentCounts": {
-        "lower": 1
+        "title": 2
       }
     },
     {
       "path": "packages/runner-playwright/test/capture.test.ts",
       "contentCounts": {
-        "lower": 30,
-        "title": 2
+        "lower": 18
       }
     },
     {
@@ -556,14 +159,13 @@
     {
       "path": "packages/runner-playwright/test/fixtures/scenarios/capture.mjs",
       "contentCounts": {
-        "lower": 4
+        "lower": 2
       }
     },
     {
       "path": "packages/runner-playwright/test/fixtures/scenarios/navigation.mjs",
       "contentCounts": {
-        "lower": 4,
-        "title": 3
+        "lower": 4
       }
     },
     {
@@ -573,40 +175,21 @@
       }
     },
     {
-      "path": "packages/runner-playwright/test/fixtures/scenarios/typed.ts",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/lifecycle-errors.test.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
       "path": "packages/runner-playwright/test/lifecycle.test.ts",
       "contentCounts": {
-        "lower": 5
+        "lower": 2
       }
     },
     {
       "path": "packages/runner-playwright/test/navigation.test.ts",
       "contentCounts": {
-        "lower": 30
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/package-boundary.test.ts",
-      "contentCounts": {
-        "lower": 4
+        "lower": 20
       }
     },
     {
       "path": "packages/runner-playwright/test/persistence.test.ts",
       "contentCounts": {
-        "lower": 68,
-        "title": 2
+        "lower": 8
       }
     },
     {
@@ -618,27 +201,7 @@
     {
       "path": "packages/runner-playwright/test/scenario.test.ts",
       "contentCounts": {
-        "lower": 4,
-        "title": 2
-      }
-    },
-    {
-      "path": "pnpm-lock.yaml",
-      "contentCounts": {
-        "lower": 7
-      }
-    },
-    {
-      "path": "README.md",
-      "contentCounts": {
-        "title": 11,
-        "lower": 39
-      }
-    },
-    {
-      "path": "scripts/capture-launch-assets.test.mjs",
-      "contentCounts": {
-        "lower": 4
+        "lower": 3
       }
     },
     {
@@ -651,12 +214,6 @@
       "path": "scripts/check-docs.test.mjs",
       "contentCounts": {
         "lower": 2
-      }
-    },
-    {
-      "path": "scripts/check-release-packages.mjs",
-      "contentCounts": {
-        "lower": 15
       }
     },
     {
@@ -674,8 +231,8 @@
     {
       "path": "scripts/public-url-registry-smoke.mjs",
       "contentCounts": {
-        "lower": 1,
-        "title": 2
+        "title": 2,
+        "lower": 1
       }
     },
     {
@@ -687,7 +244,7 @@
     {
       "path": "scripts/release-package-smoke.mjs",
       "contentCounts": {
-        "lower": 3
+        "lower": 2
       }
     },
     {
@@ -697,17 +254,9 @@
       }
     },
     {
-      "path": "scripts/release-smoke.mjs",
-      "contentCounts": {
-        "title": 2,
-        "lower": 10,
-        "upper": 1
-      }
-    },
-    {
       "path": "scripts/release-smoke.test.mjs",
       "contentCounts": {
-        "lower": 10
+        "lower": 7
       }
     },
     {
@@ -717,9 +266,14 @@
       }
     },
     {
+      "path": "scripts/uiwitness-migration-guide.test.mjs",
+      "contentCounts": {
+        "lower": 10
+      }
+    },
+    {
       "path": "SECURITY.md",
       "contentCounts": {
-        "title": 2,
         "lower": 1
       }
     }
@@ -728,8 +282,8 @@
     {
       "path": "CHANGELOG.md",
       "contentCounts": {
-        "title": 16,
-        "lower": 35
+        "lower": 35,
+        "title": 15
       }
     },
     {

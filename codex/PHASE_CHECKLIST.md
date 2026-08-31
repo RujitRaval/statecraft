@@ -59,7 +59,7 @@ Phase 4 through Phase 6 are complete.
 - [x] `/orders` meaningful states
 - [x] `/customers/[id]` meaningful states and long-content coverage
 - [x] Intentional responsive/theme defects
-- [x] Complete 60-cell Statecraft scenario matrix and known-failure report gate
+- [x] Complete 60-cell UIWitness scenario matrix and known-failure report gate
 
 ## Phase 7
 - [x] Clean-checkout production build and built-CLI consumer smoke gate
@@ -72,6 +72,6 @@ Phase 4 through Phase 6 are complete.
 - [x] Bounded same-origin public route discovery
 - [x] Fixed mobile/desktop by light/dark evidence and persisted report
 - [x] Kinetic evidence report presentation
-- [x] `statecraft check <url>` orchestration, summaries, and exit codes
+- [x] `uiwitness check <url>` orchestration, summaries, and exit codes
 - [x] Overwrite-safe promotion into permanent `.mts` config and scenario files
 - [x] Public launch guidance and registry-only check → promotion → scan gate

@@ -1,6 +1,6 @@
-# Statecraft
+# UIWitness
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 and the approved Public URL Quick Check roadmap are complete, including `statecraft check <url>`, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate. Keep future work in an explicitly approved roadmap slice.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 and the approved Public URL Quick Check roadmap are complete, including `uiwitness check <url>`, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate. Keep future work in an explicitly approved roadmap slice.
 
 ## Skill routing
 
@@ -28,4 +28,4 @@ All development work starts from `main`, uses a focused branch, passes GStack re
 
 ## Testing
 
-Use Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x. Install dependencies with `corepack pnpm install --frozen-lockfile`, then install the pinned runner browser with `corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium`. Run `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`, and `corepack pnpm build` for each development step. Vitest covers TypeScript packages, while Node's built-in test runner covers the repository check scripts. Add a regression test for every bug fix and test both paths of new conditionals.
+Use Node.js 22.20 or newer within the Node 22 line, or Node.js 24.x. Install dependencies with `corepack pnpm install --frozen-lockfile`, then install the pinned runner browser with `corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium`. Run `corepack pnpm lint`, `corepack pnpm typecheck`, `corepack pnpm test`, and `corepack pnpm build` for each development step. Vitest covers TypeScript packages, while Node's built-in test runner covers the repository check scripts. Add a regression test for every bug fix and test both paths of new conditionals.

@@ -1,6 +1,6 @@
-# Statecraft --- Codex Implementation Specification
+# UIWitness --- Codex Implementation Specification
 
-**Project:** Statecraft\
+**Project:** UIWitness\
 **Type:** Open-source developer tool\
 **Initial stack:** TypeScript, Node.js 22+, Playwright, React/Next.js\
 **License:** MIT\
@@ -9,11 +9,11 @@ product-state coverage**.
 
 ## 1. Product definition
 
-Statecraft answers: **What happens to every important screen when data
+UIWitness answers: **What happens to every important screen when data
 is loading, empty, broken, offline, unauthorized, unusually long, or
 otherwise outside the happy path?**
 
-Visual regression asks whether pixels changed. Statecraft asks whether
+Visual regression asks whether pixels changed. UIWitness asks whether
 important product states exist, render correctly, and survive different
 viewports, themes, and data conditions.
 
@@ -23,7 +23,7 @@ calculates coverage, and generates a polished self-contained HTML
 report. The report is a first-class feature and must be visually strong
 enough to serve as the primary README/launch asset.
 
-Statecraft must work without an LLM, API key, account, cloud service, or
+UIWitness must work without an LLM, API key, account, cloud service, or
 telemetry. AI integrations may come later but cannot be required by the
 core.
 
@@ -45,7 +45,7 @@ core.
 
 ## 3. MVP --- v0.1.0
 
-Required: TypeScript monorepo; Node CLI; `statecraft init`, `scan`, and
+Required: TypeScript monorepo; Node CLI; `uiwitness init`, `scan`, and
 `open`; type-safe config; Playwright execution; React/Next.js example
 app; routes; named states; multiple viewports; light/dark themes;
 isolated browser contexts; screenshots; console/page/network
@@ -62,30 +62,30 @@ Do not expand scope until the core workflow is excellent.
 
 The later approved Public URL Quick Check roadmap adds bounded,
 navigation-only route discovery as an onboarding path. It now includes
-runner-owned discovery and fixed-matrix evidence, `statecraft check <url>`
+runner-owned discovery and fixed-matrix evidence, `uiwitness check <url>`
 orchestration, and overwrite-safe `--write-config` promotion. It does not
-infer application states or replace the explicit configured `statecraft
+infer application states or replace the explicit configured `uiwitness
 scan` workflow.
 
 ## 4. Developer experience
 
 ``` bash
-npm install -D statecraft-ui
-npx statecraft init
+npm install -D uiwitness
+npx uiwitness init
 ```
 
 Generated structure:
 
 ``` text
-statecraft.config.mts
-statecraft/
+uiwitness.config.mts
+uiwitness/
   scenarios/
 ```
 
 Example config:
 
 ``` ts
-import { defineConfig } from "statecraft-ui";
+import { defineConfig } from "uiwitness";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
@@ -98,10 +98,10 @@ export default defineConfig({
     id: "dashboard",
     path: "/dashboard",
     states: [
-      { id: "success", setup: "./statecraft/scenarios/dashboard/success.mts" },
-      { id: "loading", setup: "./statecraft/scenarios/dashboard/loading.mts" },
-      { id: "empty", setup: "./statecraft/scenarios/dashboard/empty.mts" },
-      { id: "error", setup: "./statecraft/scenarios/dashboard/error.mts" },
+      { id: "success", setup: "./uiwitness/scenarios/dashboard/success.mts" },
+      { id: "loading", setup: "./uiwitness/scenarios/dashboard/loading.mts" },
+      { id: "empty", setup: "./uiwitness/scenarios/dashboard/empty.mts" },
+      { id: "error", setup: "./uiwitness/scenarios/dashboard/error.mts" },
     ],
   }],
 });
@@ -110,9 +110,9 @@ export default defineConfig({
 Example scenario:
 
 ``` ts
-import type { StatecraftScenario } from "statecraft-ui-runner-playwright";
+import type { UIWitnessScenario } from "uiwitness-runner-playwright";
 
-const scenario: StatecraftScenario = {
+const scenario: UIWitnessScenario = {
   async beforeNavigate({ page }) {
     await page.route("**/api/dashboard", async route => {
       await route.fulfill({
@@ -129,13 +129,13 @@ export default scenario;
 Run:
 
 ``` bash
-npx statecraft scan
+npx uiwitness scan
 ```
 
 Desired terminal UX:
 
 ``` text
-Statecraft
+UIWitness
 
 Dashboard
   ✓ success · desktop · light
@@ -145,11 +145,11 @@ Dashboard
       ASSERTION_FAILED: Expected error heading.
 
 Coverage: 87.5%
-Report: .statecraft/report/index.html
+Report: .uiwitness/report/index.html
 1 of 4 executions failed.
 ```
 
-Then `npx statecraft open`.
+Then `npx uiwitness open`.
 
 ## 5. Coverage semantics
 
@@ -164,7 +164,7 @@ one execution cell. Example: `3 × 4 × 2 × 2 = 48` executions.
 -   **Theme coverage:** route/state combinations passing every
     configured theme.
 
-v0.1 must NOT claim that an unconfigured state is missing. Statecraft
+v0.1 must NOT claim that an unconfigured state is missing. UIWitness
 only knows configured states. A future policy engine can recommend
 expected states.
 
@@ -179,7 +179,7 @@ naturally.
 Keep the public API small:
 
 ``` ts
-export interface StatecraftScenario {
+export interface UIWitnessScenario {
   beforeNavigate?(ctx: ScenarioContext): Promise<void>;
   afterNavigate?(ctx: ScenarioContext): Promise<void>;
   assert?(ctx: AssertionScenarioContext): Promise<void>;
@@ -242,7 +242,7 @@ failOn: {
 Use deterministic paths:
 
 ``` text
-.statecraft/
+.uiwitness/
   artifacts/
     dashboard/
       success/
@@ -252,7 +252,7 @@ Use deterministic paths:
         mobile-dark.png
   report/
     index.html
-    statecraft.json
+    uiwitness.json
 ```
 
 Use PNG initially. No timestamps in filenames. Metadata must not be
@@ -260,7 +260,7 @@ inferred from filenames.
 
 ## 10. HTML report --- highest-priority UX
 
-Do not ship a generic raw table. Header should show Statecraft, report
+Do not ship a generic raw table. Header should show UIWitness, report
 title, passed/total executions, and coverage. Present routes, states,
 executions, passed, failed, coverage, and duration as one ruled run tape
 rather than a dashboard-style row of summary cards.
@@ -279,16 +279,16 @@ polished enough for launch screenshots.
 
 ## 11. JSON contract
 
-Generate `.statecraft/report/statecraft.json` with `schemaVersion: 1`,
+Generate `.uiwitness/report/uiwitness.json` with `schemaVersion: 1`,
 generation time, project/baseURL, summary metrics, and execution
 records. Treat this as a versioned external contract from day one.
 
 ## 12. CLI behavior
 
-Commands: `statecraft init`, `statecraft scan`, `statecraft open`.
+Commands: `uiwitness init`, `uiwitness scan`, `uiwitness open`.
 
 `init` creates starter files and never silently overwrites. Initial scan
-forms: `statecraft scan`, `--config`, `--route`, `--headed`. Do not
+forms: `uiwitness scan`, `--config`, `--route`, `--headed`. Do not
 implement speculative flags. `open` opens the latest report and gives a
 useful error if none exists.
 
@@ -298,7 +298,7 @@ Exit codes: `0` all pass; `1` scan completes with one or more failures;
 ## 13. Repository architecture
 
 ``` text
-statecraft/
+uiwitness/
 ├── apps/example-nextjs/
 ├── packages/
 │   ├── core/
@@ -316,15 +316,15 @@ statecraft/
 
 Do not create empty future packages.
 
-`statecraft-ui-core`: public types, config validation, matrix expansion,
+`uiwitness-core`: public types, config validation, matrix expansion,
 report contracts, shared errors. Avoid browser-specific dependencies.
 
-`statecraft-ui-runner-playwright`: browser lifecycle, contexts, scenario
+`uiwitness-runner-playwright`: browser lifecycle, contexts, scenario
 loading, navigation, readiness, screenshots, diagnostics.
 
-`statecraft-ui-report`: report transformation, assets, HTML/report UI.
+`uiwitness-report`: report transformation, assets, HTML/report UI.
 
-`statecraft-ui`: commands, config discovery, orchestration, terminal
+`uiwitness`: commands, config discovery, orchestration, terminal
 UX, exit codes.
 
 Preferred tools: pnpm workspaces, strict TypeScript, Playwright, Zod,
@@ -337,7 +337,7 @@ polished dashboard with `/dashboard`, `/orders`, `/customers/[id]`.
 Provide success, loading, empty, error, long-content, and unauthorized
 states.
 
-Include at least one intentional defect Statecraft exposes, such as long
+Include at least one intentional defect UIWitness exposes, such as long
 customer names overflowing on mobile or an error state failing only in
 dark mode. The generated report should make the problem obvious.
 
@@ -364,7 +364,7 @@ reports. Redact sensitive request metadata.
 
 Above the fold: name/logo treatment; **"Find the UI states your product
 forgot."**; one excellent demo GIF/report screenshot;
-`npx statecraft scan`; tiny matrix; short explanation of difference from
+`npx uiwitness scan`; tiny matrix; short explanation of difference from
 visual regression.
 
 Then: quick start, config, state model, report screenshots, CI,
@@ -375,7 +375,7 @@ positioning.
 
 Document a workflow that checks out code, installs
 Node/dependencies/Chromium, builds/starts the example app as needed,
-runs Statecraft, and uploads `.statecraft/report` using
+runs UIWitness, and uploads `.uiwitness/report` using
 `actions/upload-artifact` with `if: always()`. A custom Marketplace
 action is not required for v0.1.
 
@@ -473,7 +473,7 @@ coverage, documented GitHub Actions usage, public npm packages, protected
 release automation, real report launch assets, and final contributor and
 release guidance are implemented. The approved Public URL Quick Check
 roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic
-reporting, `statecraft check <url>` orchestration, overwrite-safe
+reporting, `uiwitness check <url>` orchestration, overwrite-safe
 `--write-config` promotion, public launch guidance, and the registry-only
 check → promotion → scan release gate are implemented. Keep future work in
 an explicitly approved roadmap slice.
@@ -485,5 +485,5 @@ boundary.
 
 Guiding sentence:
 
-> **Statecraft finds, renders, and reports the UI states your product
+> **UIWitness finds, renders, and reports the UI states your product
 > forgot.**

@@ -1,14 +1,14 @@
-# Statecraft Brand Research
+# UIWitness Brand Research
 
 ## Purpose
 
-Statecraft turns hidden UI states into evidence a team can act on. Its visual system must make a failed state feel impossible to ignore without turning a technical report into decoration. The product should feel like an editorial instrument: exact enough for an engineer, dramatic enough for a product review, and useful without a network connection.
+UIWitness turns hidden UI states into evidence a team can act on. Its visual system must make a failed state feel impossible to ignore without turning a technical report into decoration. The product should feel like an editorial instrument: exact enough for an engineer, dramatic enough for a product review, and useful without a network connection.
 
 ## Reference research
 
 The reference set was reviewed for transferable interaction and art-direction patterns, not surface imitation.
 
-| Reference | Transferable lesson | Statecraft application |
+| Reference | Transferable lesson | UIWitness application |
 | --- | --- | --- |
 | [Awwwards](https://www.awwwards.com/) | Dense indexes stay legible when small metadata and large titles have a strict hierarchy. | Treat route, state, viewport, and theme as editorial coordinates around the evidence. |
 | [Run Rob Run](https://www.runrobrun.com/) | Typography, sequencing, and a persistent canvas can carry the whole experience. | Make one active screenshot the dominant object instead of surrounding it with dashboard cards. |
