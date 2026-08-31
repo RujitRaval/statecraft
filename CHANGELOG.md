@@ -4,6 +4,19 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.2.0] - 2026-08-31
+
+### Changed
+
+- Developers now initialize and promote projects with `uiwitness.config.mts` and `uiwitness/scenarios/**`; automatic discovery ignores legacy config names while explicit legacy config paths remain usable.
+- CLI help, command summaries, errors, and next-step commands now present the UIWitness identity throughout the init, check, scan, and open journeys.
+- Offline reports now use the UIWitness title, `UI/W` masthead mark, and UIWitness footer without changing the schema-v1 or interaction contract.
+
+### Fixed
+
+- The UIWitness footer wordmark now fits narrow report viewports without horizontal scrolling.
+- Packed-package and registry consumer gates now verify the renamed config, scenario, help, promotion, and scan paths end to end.
+
 ## [0.25.1.0] - 2026-08-31
 
 ### Added
