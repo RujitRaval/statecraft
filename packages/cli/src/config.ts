@@ -7,12 +7,12 @@ import { parseConfig, type UIWitnessConfig } from "uiwitness-core";
 
 /** Config filenames recognized during default project-root discovery. */
 export const DEFAULT_CONFIG_FILENAMES: readonly string[] = Object.freeze([
-  "statecraft.config.ts",
-  "statecraft.config.mts",
-  "statecraft.config.cts",
-  "statecraft.config.js",
-  "statecraft.config.mjs",
-  "statecraft.config.cjs",
+  "uiwitness.config.ts",
+  "uiwitness.config.mts",
+  "uiwitness.config.cts",
+  "uiwitness.config.js",
+  "uiwitness.config.mjs",
+  "uiwitness.config.cjs",
 ]);
 
 /** Inputs shared by config discovery and loading. */
@@ -77,7 +77,7 @@ export class ConfigLoadError extends Error {
   }
 }
 
-/** A validated Statecraft config paired with its canonical source path. */
+/** A validated UIWitness config paired with its canonical source path. */
 export interface LoadedConfig {
   readonly config: UIWitnessConfig;
   readonly path: string;
@@ -139,7 +139,7 @@ async function canonicalRegularFile(
 }
 
 /**
- * Finds a Statecraft config without walking parent directories or choosing
+ * Finds a UIWitness config without walking parent directories or choosing
  * silently between multiple supported filenames.
  */
 export async function discoverConfig(
@@ -199,7 +199,7 @@ export async function discoverConfig(
   if (canonicalPaths.length === 0) {
     throw new ConfigDiscoveryError(
       "CONFIG_NOT_FOUND",
-      `No Statecraft config found in ${root}.`,
+      `No UIWitness config found in ${root}.`,
       {
         candidates: DEFAULT_CONFIG_FILENAMES.map((filename) =>
           resolve(root, filename),
@@ -210,7 +210,7 @@ export async function discoverConfig(
   if (canonicalPaths.length > 1) {
     throw new ConfigDiscoveryError(
       "CONFIG_AMBIGUOUS",
-      `Multiple Statecraft configs found in ${root}. Pass an explicit config path.`,
+      `Multiple UIWitness configs found in ${root}. Pass an explicit config path.`,
       { candidates: canonicalPaths },
     );
   }
@@ -218,7 +218,7 @@ export async function discoverConfig(
   return canonicalPaths[0]!;
 }
 
-/** Locates, executes, and validates a trusted local Statecraft config module. */
+/** Locates, executes, and validates a trusted local UIWitness config module. */
 export async function loadConfig(
   options: ConfigDiscoveryOptions = {},
 ): Promise<LoadedConfig> {
@@ -233,7 +233,7 @@ export async function loadConfig(
   } catch (cause: unknown) {
     throw new ConfigLoadError(
       "CONFIG_IMPORT_FAILED",
-      `Failed to import Statecraft config: ${configPath}`,
+      `Failed to import UIWitness config: ${configPath}`,
       configPath,
       { cause },
     );
@@ -242,7 +242,7 @@ export async function loadConfig(
   if (!Object.prototype.hasOwnProperty.call(configModule, "default")) {
     throw new ConfigLoadError(
       "CONFIG_DEFAULT_EXPORT_MISSING",
-      `Statecraft config must have a default export: ${configPath}`,
+      `UIWitness config must have a default export: ${configPath}`,
       configPath,
     );
   }

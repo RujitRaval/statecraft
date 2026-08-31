@@ -2,7 +2,7 @@ import { publicSiteScenario as runnerPublicSiteScenario } from "uiwitness-runner
 
 /** Narrow helper shape used by generated Quick Check scenario modules. */
 export interface PublicSiteScenarioHelper {
-  /** Opaque runtime assertion consumed by Statecraft's scenario loader. */
+  /** Opaque runtime assertion consumed by UIWitness's scenario loader. */
   readonly assert: unknown;
 }
 

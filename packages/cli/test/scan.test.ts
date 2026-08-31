@@ -21,7 +21,7 @@ async function projectFixture(): Promise<{
   readonly project: string;
 }> {
   const project = await realpath(
-    await mkdtemp(join(tmpdir(), "statecraft-cli-scan-")),
+    await mkdtemp(join(tmpdir(), "uiwitness-cli-scan-")),
   );
   projects.push(project);
   const configDirectory = join(project, "config");
@@ -33,7 +33,7 @@ async function projectFixture(): Promise<{
       await request.fulfill({
         contentType: "text/html",
         status: 200,
-        body: "<!doctype html><title>Statecraft fixture</title><h1>Ready</h1>",
+        body: "<!doctype html><title>UIWitness fixture</title><h1>Ready</h1>",
       });
     });
   },
@@ -47,7 +47,7 @@ async function projectFixture(): Promise<{
       await request.fulfill({
         contentType: "text/html",
         status: 200,
-        body: "<!doctype html><title>Statecraft fixture</title><h1>Ready</h1>",
+        body: "<!doctype html><title>UIWitness fixture</title><h1>Ready</h1>",
       });
     });
   },

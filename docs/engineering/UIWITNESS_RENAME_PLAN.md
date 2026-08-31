@@ -555,7 +555,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Architecture Review D2/D7 and outside review.
   - Files: `packages/core/src/results.ts`, core artifact paths and type tests, runner persistence, report transformer, CLI result/path contracts, related tests.
   - Verify: parser-level dual-root reads, root-correct hrefs, new-root-only writers, zero legacy filesystem accesses, coexistence, byte preservation, rollback, permissions, and symbolic-link matrix.
-- [ ] **T5 (P1, human: ~2 days / Codex: ~1 hour)**: CLI/report identity: rename config, scenarios, templates, terminal UX, and offline report presentation.
+- [x] **T5 (P1, human: ~2 days / Codex: ~1 hour)**: CLI/report identity: rename config, scenarios, templates, terminal UX, and offline report presentation. Implemented with UIWitness-only default config discovery, overwrite-safe `uiwitness.config.mts` and `uiwitness/scenarios/**` generation, UIWitness terminal/help/error output, the `UI/W` offline-report identity, legacy-config preservation coverage, and updated package/registry consumer expectations.
   - Surfaced by: Architecture and Test Reviews.
   - Files: `packages/cli/**`, `packages/report/**`, snapshots and browser tests.
   - Verify: init, check, promotion, scan, open, report browser suite.

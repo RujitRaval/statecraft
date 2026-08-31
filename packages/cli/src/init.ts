@@ -6,7 +6,7 @@ import {
   publishConfigLast,
 } from "./project-files.js";
 
-const SCENARIO_DIRECTORY = join("statecraft", "scenarios", "home");
+const SCENARIO_DIRECTORY = join("uiwitness", "scenarios", "home");
 const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.mts");
 
 const CONFIG_TEMPLATE = `import { defineConfig } from "uiwitness";
@@ -25,7 +25,7 @@ export default defineConfig({
       states: [
         {
           id: "success",
-          setup: "./statecraft/scenarios/home/success.mts",
+          setup: "./uiwitness/scenarios/home/success.mts",
         },
       ],
     },
@@ -50,7 +50,7 @@ interface InitErrorOptions extends ErrorOptions {
   readonly paths?: readonly string[] | undefined;
 }
 
-/** A classifiable failure while creating starter Statecraft files. */
+/** A classifiable failure while creating starter UIWitness files. */
 export class InitError extends Error {
   readonly code: InitErrorCode;
   readonly paths: readonly string[];
@@ -67,7 +67,7 @@ export class InitError extends Error {
   }
 }
 
-/** Inputs for creating the starter Statecraft project files. */
+/** Inputs for creating the starter UIWitness project files. */
 export interface InitOptions {
   /** Project directory to initialize. Defaults to the current directory. */
   readonly cwd?: string | undefined;
@@ -85,7 +85,7 @@ function initializationError(error: unknown): InitError {
   if (!(error instanceof ProjectFileError)) {
     return new InitError(
       "INIT_WRITE_FAILED",
-      "Statecraft could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
+      "UIWitness could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
       { cause: error },
     );
   }
@@ -99,7 +99,7 @@ function initializationError(error: unknown): InitError {
   if (error.code === "PROJECT_FILE_CONFLICT") {
     return new InitError(
       "INIT_CONFLICT",
-      `Statecraft initialization conflicts with existing paths:\n${error.paths
+      `UIWitness initialization conflicts with existing paths:\n${error.paths
         .map((path) => `  ${path}`)
         .join("\n")}\nNo existing file was overwritten.`,
       { cause: error, paths: error.paths },
@@ -107,7 +107,7 @@ function initializationError(error: unknown): InitError {
   }
   return new InitError(
     "INIT_WRITE_FAILED",
-    "Statecraft could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
+    "UIWitness could not create every starter file. Existing paths were preserved; inspect the reported targets before retrying.",
     { cause: error, paths: error.paths },
   );
 }

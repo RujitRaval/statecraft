@@ -11,12 +11,12 @@ import {
 } from "./project-files.js";
 
 const SCENARIO_RELATIVE_PATH = join(
-  "statecraft",
+  "uiwitness",
   "scenarios",
   "public",
   "default.mts",
 );
-const SCENARIO_CONFIG_PATH = "./statecraft/scenarios/public/default.mts";
+const SCENARIO_CONFIG_PATH = "./uiwitness/scenarios/public/default.mts";
 
 const SCENARIO_TEMPLATE = `import { publicSiteScenario } from "uiwitness/public-site-scenario";
 

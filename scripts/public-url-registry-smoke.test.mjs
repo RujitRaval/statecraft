@@ -492,18 +492,18 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
     commands.push({ args, command, options });
     await writeEvidence(consumerRoot);
     if (args.includes("--write-config")) {
-      await mkdir(path.join(consumerRoot, "statecraft", "scenarios", "public"), { recursive: true });
-      await writeFile(path.join(consumerRoot, "statecraft.config.mts"), 'import { defineConfig } from "uiwitness";\nexport default defineConfig({});\n');
-      await writeFile(path.join(consumerRoot, "statecraft", "scenarios", "public", "default.mts"), 'import { publicSiteScenario } from "uiwitness/public-site-scenario";\nexport default publicSiteScenario;\n');
-      return { code: 0, signal: null, stderr: "", stdout: "Saved the discovered public surface.\nNext: add real product states, then run `npx statecraft scan`.\n" };
+      await mkdir(path.join(consumerRoot, "uiwitness", "scenarios", "public"), { recursive: true });
+      await writeFile(path.join(consumerRoot, "uiwitness.config.mts"), 'import { defineConfig } from "uiwitness";\nexport default defineConfig({});\n');
+      await writeFile(path.join(consumerRoot, "uiwitness", "scenarios", "public", "default.mts"), 'import { publicSiteScenario } from "uiwitness/public-site-scenario";\nexport default publicSiteScenario;\n');
+      return { code: 0, signal: null, stderr: "", stdout: "Saved the discovered public surface.\nNext: add real product states, then run `npx uiwitness scan`.\n" };
     }
     if (args.at(-1) === "scan") {
       return { code: 0, signal: null, stderr: "", stdout: "All 8 executions passed.\n" };
     }
-    return { code: 0, signal: null, stderr: "", stdout: `All 8 checks passed.\nNext: npx statecraft check ${fixtureUrl} --write-config\n` };
+    return { code: 0, signal: null, stderr: "", stdout: `All 8 checks passed.\nNext: npx uiwitness check ${fixtureUrl} --write-config\n` };
   };
 
-  await assert.rejects(readFile(path.join(consumerRoot, "statecraft.config.mts")), { code: "ENOENT" });
+  await assert.rejects(readFile(path.join(consumerRoot, "uiwitness.config.mts")), { code: "ENOENT" });
   await runRegistryJourney({
     cliBinPath: "/registry/node_modules/uiwitness/dist/bin.js",
     consumerRoot,
@@ -519,5 +519,5 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
   assert.equal(commands.every(({ command }) => command === process.execPath), true);
   assert.equal(commands.every(({ options }) => options.cwd === consumerRoot), true);
   assert.equal(commands.every(({ options }) => options.timeout === 120_000), true);
-  assert.match(await readFile(path.join(consumerRoot, "statecraft.config.mts"), "utf8"), /defineConfig/u);
+  assert.match(await readFile(path.join(consumerRoot, "uiwitness.config.mts"), "utf8"), /defineConfig/u);
 });

@@ -282,14 +282,14 @@ export async function runRegistryJourney({
     cwd: consumerRoot,
     timeout: cliTimeout,
   });
-  const configPath = path.join(consumerRoot, "statecraft.config.mts");
-  const scenarioPath = path.join(consumerRoot, "statecraft", "scenarios", "public", "default.mts");
+  const configPath = path.join(consumerRoot, "uiwitness.config.mts");
+  const scenarioPath = path.join(consumerRoot, "uiwitness", "scenarios", "public", "default.mts");
 
   const check = await runCli(["check", fixtureUrl, "--max-pages", "2"]);
   assertCommand(check, "Running registry-only public Quick Check");
   assert.match(check.stdout, /All 8 checks passed\./u);
   assert.equal(
-    check.stdout.includes(`npx statecraft check ${fixtureUrl} --write-config`),
+    check.stdout.includes(`npx uiwitness check ${fixtureUrl} --write-config`),
     true,
     "Quick Check did not print the exact promotion command.",
   );
@@ -304,7 +304,7 @@ export async function runRegistryJourney({
   ]);
   assertCommand(promote, "Promoting the registry-only public surface");
   assert.match(promote.stdout, /Saved the discovered public surface\./u);
-  assert.match(promote.stdout, /Next: add real product states, then run `npx statecraft scan`\./u);
+  assert.match(promote.stdout, /Next: add real product states, then run `npx uiwitness scan`\./u);
   const config = await readFile(configPath, "utf8");
   const scenario = await readFile(scenarioPath, "utf8");
   assert.match(config, /from "uiwitness"/u);

@@ -32,6 +32,7 @@ vi.mock("uiwitness-runner-playwright", () => ({
 import { checkPublicSite } from "../src/check.js";
 
 const projects: string[] = [];
+const legacyDefaultConfigFilename = ["state", "craft.config.mts"].join("");
 
 function report() {
   return parseReport({
@@ -125,7 +126,7 @@ afterEach(async () => {
 describe("checkPublicSite options", () => {
   it("connects bounded discovery to headed evidence persistence", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-options-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-options-")),
     );
     projects.push(project);
     const discovery = Object.freeze({
@@ -168,7 +169,7 @@ describe("checkPublicSite options", () => {
   it("snapshots the invocation root before browser-backed discovery", async () => {
     const originalCwd = process.cwd();
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-cwd-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-cwd-")),
     );
     projects.push(project);
     const redirectedDirectory = join(project, "redirected");
@@ -230,11 +231,11 @@ describe("checkPublicSite options", () => {
 
   it("preflights every setup conflict before browser-backed discovery", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-conflicts-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-conflicts-")),
     );
     projects.push(project);
-    await writeFile(join(project, "statecraft.config.mjs"), "keep", "utf8");
-    await writeFile(join(project, "statecraft.config.ts"), "keep", "utf8");
+    await writeFile(join(project, "uiwitness.config.mjs"), "keep", "utf8");
+    await writeFile(join(project, "uiwitness.config.ts"), "keep", "utf8");
 
     await expect(
       checkPublicSite({
@@ -245,20 +246,20 @@ describe("checkPublicSite options", () => {
     ).rejects.toMatchObject({
       code: "CHECK_SETUP_CONFLICT",
       paths: [
-        join(project, "statecraft.config.ts"),
-        join(project, "statecraft.config.mjs"),
+        join(project, "uiwitness.config.ts"),
+        join(project, "uiwitness.config.mjs"),
       ],
     });
     expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
     expect(runPublicSiteChecksMock).not.toHaveBeenCalled();
     await expect(
-      readFile(join(project, "statecraft.config.mjs"), "utf8"),
+      readFile(join(project, "uiwitness.config.mjs"), "utf8"),
     ).resolves.toBe("keep");
   });
 
   it("publishes a deterministic config and shared scenario after persisted evidence", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-setup-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-setup-")),
     );
     projects.push(project);
     const discovery = Object.freeze({
@@ -286,22 +287,22 @@ describe("checkPublicSite options", () => {
     });
 
     expect(result.setup).toEqual({
-      configPath: join(project, "statecraft.config.mts"),
+      configPath: join(project, "uiwitness.config.mts"),
       files: [
-        join(project, "statecraft.config.mts"),
-        join(project, "statecraft", "scenarios", "public", "default.mts"),
+        join(project, "uiwitness.config.mts"),
+        join(project, "uiwitness", "scenarios", "public", "default.mts"),
       ],
       projectRoot: project,
       scenarioPath: join(
         project,
-        "statecraft",
+        "uiwitness",
         "scenarios",
         "public",
         "default.mts",
       ),
     });
     const config = await readFile(
-      join(project, "statecraft.config.mts"),
+      join(project, "uiwitness.config.mts"),
       "utf8",
     );
     expect(config).toContain('baseURL: "https://example.test/"');
@@ -322,7 +323,7 @@ describe("checkPublicSite options", () => {
     expect(config).toContain('"pageError": true');
     await expect(
       readFile(
-        join(project, "statecraft", "scenarios", "public", "default.mts"),
+        join(project, "uiwitness", "scenarios", "public", "default.mts"),
         "utf8",
       ),
     ).resolves.toBe(`import { publicSiteScenario } from "uiwitness/public-site-scenario";
@@ -331,14 +332,55 @@ export default publicSiteScenario;
 `);
   });
 
+  it("preserves a legacy config while promoting the discovered surface", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-legacy-config-")),
+    );
+    projects.push(project);
+    const legacyConfigPath = join(project, legacyDefaultConfigFilename);
+    await writeFile(legacyConfigPath, "legacy config", "utf8");
+    discoverPublicRoutesMock.mockResolvedValue(
+      Object.freeze({
+        attemptedPages: 1,
+        baseURL: "https://example.test/",
+        routes: Object.freeze([Object.freeze({ path: "/start" })]),
+        skippedPages: 0,
+        truncatedAnchorPages: 0,
+      }),
+    );
+    runPublicSiteChecksMock.mockResolvedValue(
+      Object.freeze({
+        htmlReportPath: ".uiwitness/report/index.html",
+        report: discoveredReport(),
+        reportPath: ".uiwitness/report/uiwitness.json",
+      }),
+    );
+
+    const result = await checkPublicSite({
+      cwd: project,
+      url: "https://example.test/",
+      writeConfig: true,
+    });
+
+    await expect(readFile(legacyConfigPath, "utf8")).resolves.toBe(
+      "legacy config",
+    );
+    await expect(readFile(result.setup!.configPath, "utf8")).resolves.toContain(
+      'import { defineConfig } from "uiwitness";',
+    );
+    expect(result.setup!.configPath).toBe(
+      join(project, "uiwitness.config.mts"),
+    );
+  });
+
   it("preserves a late scenario collision and leaves the config unpublished", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-late-race-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-late-race-")),
     );
     projects.push(project);
     const scenarioPath = join(
       project,
-      "statecraft",
+      "uiwitness",
       "scenarios",
       "public",
       "default.mts",
@@ -356,7 +398,7 @@ export default publicSiteScenario;
       }),
     );
     runPublicSiteChecksMock.mockImplementation(async () => {
-      await mkdir(join(project, "statecraft", "scenarios", "public"), {
+      await mkdir(join(project, "uiwitness", "scenarios", "public"), {
         recursive: true,
       });
       await writeFile(scenarioPath, "created by another process", "utf8");
@@ -381,7 +423,7 @@ export default publicSiteScenario;
       "created by another process",
     );
     await expect(
-      readFile(join(project, "statecraft.config.mts"), "utf8"),
+      readFile(join(project, "uiwitness.config.mts"), "utf8"),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -432,7 +474,7 @@ export default publicSiteScenario;
 
   it("rejects an invalid output root before browser-backed discovery", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-invalid-root-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-invalid-root-")),
     );
     projects.push(project);
     await expect(
@@ -442,7 +484,7 @@ export default publicSiteScenario;
       }),
     ).rejects.toMatchObject({
       code: "CHECK_ROOT_INVALID",
-      message: "The Statecraft check project directory is invalid.",
+      message: "The UIWitness check project directory is invalid.",
     });
     expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
     expect(runPublicSiteChecksMock).not.toHaveBeenCalled();
@@ -450,7 +492,7 @@ export default publicSiteScenario;
 
   it("rejects a non-directory output root before browser-backed discovery", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-check-file-root-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-check-file-root-")),
     );
     projects.push(project);
     const file = join(project, "not-a-directory");
@@ -460,7 +502,7 @@ export default publicSiteScenario;
       checkPublicSite({ cwd: file, url: "https://example.test" }),
     ).rejects.toMatchObject({
       code: "CHECK_ROOT_INVALID",
-      message: "The Statecraft check project directory is invalid.",
+      message: "The UIWitness check project directory is invalid.",
     });
     expect(discoverPublicRoutesMock).not.toHaveBeenCalled();
     expect(runPublicSiteChecksMock).not.toHaveBeenCalled();

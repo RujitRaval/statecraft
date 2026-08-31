@@ -126,7 +126,7 @@ describe("uiwitness package boundary", () => {
 
   it("runs the built executable entrypoint", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-bin-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-bin-")),
     );
     const binPath = fileURLToPath(
       new URL("../dist/bin.js", import.meta.url),
@@ -137,17 +137,17 @@ describe("uiwitness package boundary", () => {
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
       ).resolves.toMatchObject({
         stderr: "",
-        stdout: expect.stringContaining("Statecraft initialized."),
+        stdout: expect.stringContaining("UIWitness initialized."),
       });
       await expect(
-        access(join(project, "statecraft.config.mts")),
+        access(join(project, "uiwitness.config.mts")),
       ).resolves.toBeUndefined();
       await expect(
         execFileAsync(process.execPath, [binPath, "open"], { cwd: project }),
       ).rejects.toMatchObject({
         code: 2,
         stderr: expect.stringContaining(
-          "No Statecraft HTML report found at .uiwitness/report/index.html.",
+          "No UIWitness HTML report found at .uiwitness/report/index.html.",
         ),
       });
 
@@ -178,7 +178,7 @@ describe("uiwitness package boundary", () => {
             target: "ES2023",
             types: [],
           },
-          include: ["statecraft.config.mts", "statecraft/**/*.mts"],
+          include: ["uiwitness.config.mts", "uiwitness/**/*.mts"],
         }),
         "utf8",
       );
@@ -202,7 +202,7 @@ describe("uiwitness package boundary", () => {
       );
       const scenarioModule = await import(
         pathToFileURL(
-          join(project, "statecraft", "scenarios", "home", "success.mts"),
+          join(project, "uiwitness", "scenarios", "home", "success.mts"),
         ).href
       );
       expect(scenarioModule.default).toEqual({});
@@ -252,7 +252,7 @@ describe("uiwitness package boundary", () => {
       ).rejects.toMatchObject({
         code: 2,
         stderr: expect.stringContaining(
-          "Statecraft initialization conflicts with existing paths:",
+          "UIWitness initialization conflicts with existing paths:",
         ),
       });
     } finally {

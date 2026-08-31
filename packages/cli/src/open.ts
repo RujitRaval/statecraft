@@ -103,7 +103,7 @@ async function validateReportPath(projectRoot: string): Promise<string> {
       ) {
         throw new OpenReportError(
           "OPEN_REPORT_PATH_INVALID",
-          `Statecraft report path must contain only real ${
+          `UIWitness report path must contain only real ${
             boundary.directory ? "directories" : "files"
           }: ${boundary.path}`,
           reportPath,
@@ -116,13 +116,13 @@ async function validateReportPath(projectRoot: string): Promise<string> {
       if (isMissing(error)) {
         throw new OpenReportError(
           "OPEN_REPORT_NOT_FOUND",
-          `No Statecraft HTML report found at ${REPORT_RELATIVE_PATH}. Generate an offline report before running statecraft open.`,
+          `No UIWitness HTML report found at ${REPORT_RELATIVE_PATH}. Generate an offline report before running uiwitness open.`,
           reportPath,
         );
       }
       throw new OpenReportError(
         "OPEN_REPORT_PATH_INVALID",
-        `Statecraft report path cannot be inspected: ${boundary.path}`,
+        `UIWitness report path cannot be inspected: ${boundary.path}`,
         reportPath,
         { cause: error },
       );
@@ -134,7 +134,7 @@ async function validateReportPath(projectRoot: string): Promise<string> {
   } catch (error: unknown) {
     throw new OpenReportError(
       "OPEN_REPORT_PATH_INVALID",
-      `Statecraft report cannot be read: ${reportPath}`,
+      `UIWitness report cannot be read: ${reportPath}`,
       reportPath,
       { cause: error },
     );
@@ -156,7 +156,7 @@ export async function openReportWithLauncher(
   } catch (error: unknown) {
     throw new OpenReportError(
       "OPEN_REPORT_LAUNCH_FAILED",
-      `Statecraft could not open ${REPORT_RELATIVE_PATH} with the system browser.`,
+      `UIWitness could not open ${REPORT_RELATIVE_PATH} with the system browser.`,
       reportPath,
       { cause: error },
     );

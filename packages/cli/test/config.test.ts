@@ -22,16 +22,17 @@ import {
 } from "../src/index.js";
 
 const temporaryDirectories: string[] = [];
+const legacyDefaultConfigFilename = ["state", "craft.config.mts"].join("");
 
 async function temporaryProject(): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), "statecraft-cli-"));
+  const directory = await mkdtemp(join(tmpdir(), "uiwitness-cli-"));
   temporaryDirectories.push(directory);
   return directory;
 }
 
 async function writeConfig(
   directory: string,
-  filename = "statecraft.config.mjs",
+  filename = "uiwitness.config.mjs",
   source = `export default {
     baseURL: "http://localhost:3000",
     routes: [{
@@ -59,7 +60,7 @@ afterEach(async () => {
 describe("discoverConfig", () => {
   it("returns the canonical path for one default config", async () => {
     const project = await temporaryProject();
-    const configPath = await writeConfig(project, "statecraft.config.ts");
+    const configPath = await writeConfig(project, "uiwitness.config.ts");
 
     await expect(discoverConfig({ cwd: project })).resolves.toBe(
       await realpath(configPath),
@@ -126,10 +127,25 @@ describe("discoverConfig", () => {
     );
   });
 
+  it("does not select a legacy config name during default discovery", async () => {
+    const project = await temporaryProject();
+    const legacyConfigPath = await writeConfig(
+      project,
+      legacyDefaultConfigFilename,
+    );
+
+    await expect(discoverConfig({ cwd: project })).rejects.toMatchObject({
+      code: "CONFIG_NOT_FOUND",
+    });
+    await expect(
+      discoverConfig({ configPath: legacyConfigPath, cwd: project }),
+    ).resolves.toBe(await realpath(legacyConfigPath));
+  });
+
   it("requires an explicit path when multiple default configs exist", async () => {
     const project = await temporaryProject();
-    const first = await writeConfig(project, "statecraft.config.mjs");
-    const second = await writeConfig(project, "statecraft.config.cjs");
+    const first = await writeConfig(project, "uiwitness.config.mjs");
+    const second = await writeConfig(project, "uiwitness.config.cjs");
 
     const error = await discoverConfig({ cwd: project }).catch(
       (cause: unknown) => cause,
@@ -144,7 +160,7 @@ describe("discoverConfig", () => {
 
   it("rejects missing explicit paths and non-file candidates", async () => {
     const project = await temporaryProject();
-    await mkdir(join(project, "statecraft.config.ts"));
+    await mkdir(join(project, "uiwitness.config.ts"));
 
     await expect(
       discoverConfig({ configPath: "missing.mjs", cwd: project }),
@@ -204,7 +220,7 @@ describe("discoverConfig", () => {
 describe("loadConfig", () => {
   it("imports a default export and validates it through core", async () => {
     const project = await temporaryProject();
-    const configPath = await writeConfig(project, "statecraft.config.ts");
+    const configPath = await writeConfig(project, "uiwitness.config.ts");
 
     await expect(loadConfig({ cwd: project })).resolves.toEqual({
       config: {
@@ -229,7 +245,7 @@ describe("loadConfig", () => {
     const project = await temporaryProject();
     await writeConfig(
       project,
-      "statecraft.config.cjs",
+      "uiwitness.config.cjs",
       `module.exports = {
         baseURL: "http://localhost:3000",
         routes: [{
@@ -249,7 +265,7 @@ describe("loadConfig", () => {
 
   it("preserves core validation errors for invalid config values", async () => {
     const project = await temporaryProject();
-    await writeConfig(project, "statecraft.config.mjs", "export default {};");
+    await writeConfig(project, "uiwitness.config.mjs", "export default {};");
 
     await expect(loadConfig({ cwd: project })).rejects.toBeInstanceOf(
       ConfigValidationError,
@@ -260,7 +276,7 @@ describe("loadConfig", () => {
     const project = await temporaryProject();
     await writeConfig(
       project,
-      "statecraft.config.mjs",
+      "uiwitness.config.mjs",
       "export const config = {};",
     );
 
@@ -273,7 +289,7 @@ describe("loadConfig", () => {
     const project = await temporaryProject();
     const configPath = await writeConfig(
       project,
-      "statecraft.config.mjs",
+      "uiwitness.config.mjs",
       'throw new Error("fixture exploded");',
     );
 

@@ -36,7 +36,7 @@ async function fixtureServer(): Promise<FixtureServer> {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Statecraft check fixture</title>
+          <title>UIWitness check fixture</title>
           <style>
             * { box-sizing: border-box; }
             html, body { margin: 0; min-height: 100%; }
@@ -78,13 +78,13 @@ afterEach(async () => {
   );
 });
 
-describe("statecraft check", () => {
+describe("uiwitness check", () => {
   it(
     "promotes a public surface into a configured scan without changing its evidence matrix",
     async () => {
       const fixture = await fixtureServer();
       const project = await realpath(
-        await mkdtemp(join(tmpdir(), "statecraft-cli-check-")),
+        await mkdtemp(join(tmpdir(), "uiwitness-cli-check-")),
       );
       projects.push(project);
       try {
@@ -115,7 +115,7 @@ describe("statecraft check", () => {
         expect(stdout).toContain("Report: .uiwitness/report/index.html");
         expect(stdout).toContain("Saved the discovered public surface.");
         expect(stdout).toContain(
-          "Next: add real product states, then run `npx statecraft scan`.",
+          "Next: add real product states, then run `npx uiwitness scan`.",
         );
         const reportPath = join(
           project,
@@ -176,7 +176,7 @@ describe("statecraft check", () => {
         expect(html).toContain("4 states broke. Open the evidence.");
 
         const config = await readFile(
-          join(project, "statecraft.config.mts"),
+          join(project, "uiwitness.config.mts"),
           "utf8",
         );
         expect(config).toContain(`baseURL: "${fixture.origin}/"`);
@@ -187,7 +187,7 @@ describe("statecraft check", () => {
           readFile(
             join(
               project,
-              "statecraft",
+              "uiwitness",
               "scenarios",
               "public",
               "default.mts",

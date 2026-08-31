@@ -35,7 +35,7 @@ afterEach(async () => {
 describe("scanProject options", () => {
   it("forwards headed mode and config policy to the persisted runner", async () => {
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-scan-options-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-scan-options-")),
     );
     projects.push(project);
     const configPath = join(project, "custom.mjs");
@@ -95,7 +95,7 @@ describe("scanProject options", () => {
   it("snapshots the invocation root before trusted config execution", async () => {
     const originalCwd = process.cwd();
     const project = await realpath(
-      await mkdtemp(join(tmpdir(), "statecraft-cli-scan-cwd-")),
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-scan-cwd-")),
     );
     projects.push(project);
     const redirectedDirectory = join(project, "redirected");
