@@ -41,7 +41,7 @@ export class CheckError extends Error {
 
 /** Inputs for one bounded public-site Quick Check. */
 export interface CheckOptions {
-  /** Project directory that receives `.statecraft/`. */
+  /** Project directory that receives `.uiwitness/`. */
   readonly cwd?: string | undefined;
   /** Show the Playwright browser instead of using its headless default. */
   readonly headed?: boolean | undefined;
@@ -70,9 +70,9 @@ export interface CheckDiscovery {
 /** Discovery metadata plus persisted evidence from one completed Quick Check. */
 export interface CheckResult {
   readonly discovery: CheckDiscovery;
-  readonly htmlReportPath: ".statecraft/report/index.html";
+  readonly htmlReportPath: ".uiwitness/report/index.html";
   readonly report: UIWitnessReport;
-  readonly reportPath: ".statecraft/report/statecraft.json";
+  readonly reportPath: ".uiwitness/report/uiwitness.json";
   readonly setup?: PublicSiteSetupResult | undefined;
 }
 

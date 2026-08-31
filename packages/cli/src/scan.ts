@@ -27,7 +27,7 @@ export class ScanError extends Error {
 export interface ScanOptions {
   /** Explicit config file. Relative paths resolve from `cwd`. */
   readonly configPath?: string | undefined;
-  /** Project directory that receives `.statecraft/`. */
+  /** Project directory that receives `.uiwitness/`. */
   readonly cwd?: string | undefined;
   /** Show the Playwright browser instead of using its headless default. */
   readonly headed?: boolean | undefined;
@@ -38,9 +38,9 @@ export interface ScanOptions {
 /** Validated persisted output from one completed scan. */
 export interface ScanResult {
   readonly configPath: string;
-  readonly htmlReportPath: ".statecraft/report/index.html";
+  readonly htmlReportPath: ".uiwitness/report/index.html";
   readonly report: UIWitnessReport;
-  readonly reportPath: ".statecraft/report/statecraft.json";
+  readonly reportPath: ".uiwitness/report/uiwitness.json";
 }
 
 /**

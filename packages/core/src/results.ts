@@ -2,6 +2,7 @@ import { z, type ZodIssue } from "zod";
 
 import {
   screenshotArtifactPath,
+  type ReportScreenshotArtifactPath,
   type ScreenshotArtifactPath,
 } from "./artifacts.js";
 import type { CoverageSummary } from "./coverage.js";
@@ -77,6 +78,12 @@ export interface ExecutionResult {
   readonly viewportId: string;
 }
 
+/** One schema-v1 execution read from either supported evidence root. */
+export interface ReportExecutionResult
+  extends Omit<ExecutionResult, "screenshotPath"> {
+  readonly screenshotPath: ReportScreenshotArtifactPath | null;
+}
+
 /** Aggregate metrics stored in a report and checked against its executions. */
 export interface ReportSummary {
   readonly coverage: CoverageSummary;
@@ -96,7 +103,7 @@ export interface UIWitnessReport {
     readonly baseURL: string;
   };
   readonly summary: ReportSummary;
-  readonly executions: readonly ExecutionResult[];
+  readonly executions: readonly ReportExecutionResult[];
 }
 
 const identifierPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -215,8 +222,7 @@ function matrixCellFor(result: {
   };
 }
 
-const executionResultSchema = z
-  .strictObject({
+const executionResultShape = {
     diagnostics: diagnosticsSchema,
     durationMs: durationSchema,
     failures: z.array(failureSchema),
@@ -230,8 +236,13 @@ const executionResultSchema = z
     url: httpUrlSchema,
     viewport: viewportSchema,
     viewportId: identifierSchema,
-  })
-  .superRefine((result, context) => {
+  } as const;
+
+function validateExecutionResult(
+  result: z.infer<ReturnType<typeof executionResultObjectSchema>>,
+  context: z.RefinementCtx,
+  allowLegacyScreenshotRoot: boolean,
+): void {
     if (result.status === "passed" && result.failures.length > 0) {
       context.addIssue({
         code: "custom",
@@ -253,9 +264,15 @@ const executionResultSchema = z
         path: ["screenshotPath"],
       });
     }
+    const expectedPath = screenshotArtifactPath(matrixCellFor(result));
+    const legacyPath = expectedPath.replace(
+      /^\.uiwitness\//u,
+      ".statecraft/",
+    );
     if (
       result.screenshotPath !== null &&
-      result.screenshotPath !== screenshotArtifactPath(matrixCellFor(result))
+      result.screenshotPath !== expectedPath &&
+      (!allowLegacyScreenshotRoot || result.screenshotPath !== legacyPath)
     ) {
       context.addIssue({
         code: "custom",
@@ -263,7 +280,18 @@ const executionResultSchema = z
         path: ["screenshotPath"],
       });
     }
-  });
+}
+
+function executionResultObjectSchema() {
+  return z.strictObject(executionResultShape);
+}
+
+const executionResultSchema = executionResultObjectSchema().superRefine(
+  (result, context) => validateExecutionResult(result, context, false),
+);
+const reportExecutionResultSchema = executionResultObjectSchema().superRefine(
+  (result, context) => validateExecutionResult(result, context, true),
+);
 
 const coverageMetricSchema = z
   .strictObject({
@@ -307,7 +335,7 @@ const reportSummarySchema = z.strictObject({
   states: z.number().int().nonnegative(),
 });
 
-function coordinateKey(result: ExecutionResult): string {
+function coordinateKey(result: ReportExecutionResult): string {
   return JSON.stringify([
     result.routeId,
     result.stateId,
@@ -316,7 +344,7 @@ function coordinateKey(result: ExecutionResult): string {
   ]);
 }
 
-function stateKey(result: ExecutionResult): string {
+function stateKey(result: ReportExecutionResult): string {
   return JSON.stringify([result.routeId, result.stateId]);
 }
 
@@ -334,10 +362,10 @@ const reportSchema = z
     generatedAt: z.string().datetime({ offset: true }),
     project: z.strictObject({ baseURL: httpUrlSchema }),
     summary: reportSummarySchema,
-    executions: z.array(executionResultSchema),
+    executions: z.array(reportExecutionResultSchema),
   })
   .superRefine((report, context) => {
-    const executions = report.executions as readonly ExecutionResult[];
+    const executions = report.executions as readonly ReportExecutionResult[];
     const coordinates = new Set<string>();
     const routePaths = new Map<string, string>();
     const scenarioSources = new Map<string, string>();

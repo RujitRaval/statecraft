@@ -25,7 +25,11 @@ export type {
 export { expandMatrix } from "./matrix.js";
 export type { MatrixCell, MatrixFilter } from "./matrix.js";
 export { screenshotArtifactPath } from "./artifacts.js";
-export type { ScreenshotArtifactPath } from "./artifacts.js";
+export type {
+  LegacyScreenshotArtifactPath,
+  ReportScreenshotArtifactPath,
+  ScreenshotArtifactPath,
+} from "./artifacts.js";
 export { calculateCoverage } from "./coverage.js";
 export type {
   CoverageMetric,
@@ -45,6 +49,7 @@ export type {
   ExecutionResult,
   ExecutionStatus,
   FailedRequestDiagnostic,
+  ReportExecutionResult,
   ReportSummary,
   UIWitnessReport,
 } from "./results.js";

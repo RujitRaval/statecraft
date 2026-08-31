@@ -35,7 +35,7 @@ function cells(): readonly MatrixCell[] {
 describe("screenshotArtifactPath", () => {
   it("returns the documented project-relative PNG path", () => {
     expect(screenshotArtifactPath(cells()[1]!)).toBe(
-      ".statecraft/artifacts/customer-details/payment-declined/desktop-dark.png",
+      ".uiwitness/artifacts/customer-details/payment-declined/desktop-dark.png",
     );
   });
 
@@ -49,10 +49,10 @@ describe("screenshotArtifactPath", () => {
     const paths = cells().map(screenshotArtifactPath);
 
     expect(paths).toContain(
-      ".statecraft/artifacts/customer-details/payment-declined/desktop-wide~00002Ddark.png",
+      ".uiwitness/artifacts/customer-details/payment-declined/desktop-wide~00002Ddark.png",
     );
     expect(paths).toContain(
-      ".statecraft/artifacts/customer-details/payment-declined/desktop~00002Dwide-dark.png",
+      ".uiwitness/artifacts/customer-details/payment-declined/desktop~00002Dwide-dark.png",
     );
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -70,7 +70,7 @@ describe("screenshotArtifactPath", () => {
     const path = screenshotArtifactPath(unsafeCell);
 
     expect(path).toBe(
-      ".statecraft/artifacts/~00002E~00002E~00002F~000044ashboard/success~00002F~00002E~00002E~00002Ferror/~00002E~00002E~00002F~000057ide~00002D~000053creen-~000044ark~00002F~00004Dode.png",
+      ".uiwitness/artifacts/~00002E~00002E~00002F~000044ashboard/success~00002F~00002E~00002E~00002Ferror/~00002E~00002E~00002F~000057ide~00002D~000053creen-~000044ark~00002F~00004Dode.png",
     );
     expect(path).not.toContain("../");
   });
@@ -86,7 +86,7 @@ describe("screenshotArtifactPath", () => {
     };
 
     expect(screenshotArtifactPath(reservedCell)).toBe(
-      ".statecraft/artifacts/~000063on/~000061ux/desktop-dark.png",
+      ".uiwitness/artifacts/~000063on/~000061ux/desktop-dark.png",
     );
   });
 
@@ -108,10 +108,10 @@ describe("screenshotArtifactPath", () => {
     };
 
     expect(screenshotArtifactPath(emptyCell)).toBe(
-      ".statecraft/artifacts/~/~/~-~.png",
+      ".uiwitness/artifacts/~/~/~-~.png",
     );
     expect(screenshotArtifactPath(tildeCell)).toBe(
-      ".statecraft/artifacts/~00007E/~00007E/~00007E-~00007E.png",
+      ".uiwitness/artifacts/~00007E/~00007E/~00007E-~00007E.png",
     );
     expect(screenshotArtifactPath(emptyCell)).not.toBe(
       screenshotArtifactPath(tildeCell),

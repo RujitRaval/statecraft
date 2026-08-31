@@ -44,7 +44,8 @@ yarn-error.log*
 /.gstack/
 /.gbrain-source
 
-# Statecraft reports can contain screenshots and application data.
+# UIWitness and legacy Statecraft reports can contain screenshots and application data.
+.uiwitness/
 .statecraft/
 
 # Original project handoff artifacts are retained locally, not versioned.

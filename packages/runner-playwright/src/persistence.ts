@@ -40,12 +40,12 @@ import {
 import type { CellExecutionOutcome } from "./lifecycle.js";
 import { DocumentNavigationError } from "./readiness.js";
 
-const statecraftDirectoryName = ".statecraft";
+const evidenceDirectoryName = ".uiwitness";
 const artifactsDirectoryName = "artifacts";
 const reportDirectoryName = "report";
-const reportFileName = "statecraft.json";
+const reportFileName = "uiwitness.json";
 const reportHtmlFileName = "index.html";
-const reportProjectPath = ".statecraft/report/statecraft.json" as const;
+const reportProjectPath = ".uiwitness/report/uiwitness.json" as const;
 const lockDirectoryName = ".runner-persistence-lock";
 const lockOwnerFileName = "owner.json";
 const publishingMarkerFileName = "publishing";
@@ -60,7 +60,7 @@ export interface RunPersistedScenarioCellsOptions
   extends RunCapturedScenarioCellsOptions {
   /** Optional deterministic report timestamp. Defaults to the completion time. */
   readonly generatedAt?: Date | undefined;
-  /** Existing project directory that owns the generated `.statecraft/` tree. */
+  /** Existing project directory that owns the generated `.uiwitness/` tree. */
   readonly projectDirectory?: string | undefined;
 }
 
@@ -103,7 +103,7 @@ interface PersistenceLock {
   readonly directory: string;
   preserve: boolean;
   readonly reportDirectory: string;
-  readonly statecraftRoot: string;
+  readonly evidenceRoot: string;
   readonly token: string;
 }
 
@@ -340,9 +340,9 @@ async function ensurePrivateTree(
 function safeRelativeSegments(projectPath: string): readonly string[] {
   if (
     isAbsolute(projectPath) ||
-    !projectPath.startsWith(`${statecraftDirectoryName}/`)
+    !projectPath.startsWith(`${evidenceDirectoryName}/`)
   ) {
-    throw new TypeError("Artifact paths must stay inside .statecraft/.");
+    throw new TypeError("Artifact paths must stay inside .uiwitness/.");
   }
   const segments = projectPath.split("/");
   if (segments.some((segment) => segment.length === 0 || segment === "..")) {
@@ -359,7 +359,7 @@ function assertContained(root: string, destination: string): void {
     relativePath.startsWith(`..${sep}`) ||
     isAbsolute(relativePath)
   ) {
-    throw new TypeError("Persistence destinations must stay inside .statecraft/.");
+    throw new TypeError("Persistence destinations must stay inside .uiwitness/.");
   }
 }
 
@@ -604,12 +604,12 @@ export async function releasePersistenceLock(
   await rm(lock.directory, { force: true, recursive: true });
 }
 
-async function removeAbandonedStaging(statecraftRoot: string): Promise<void> {
-  for (const entry of await readdir(statecraftRoot)) {
+async function removeAbandonedStaging(evidenceRoot: string): Promise<void> {
+  for (const entry of await readdir(evidenceRoot)) {
     if (!entry.startsWith(stagingDirectoryPrefix)) {
       continue;
     }
-    const path = join(statecraftRoot, entry);
+    const path = join(evidenceRoot, entry);
     const metadata = await lstat(path);
     if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
       throw new Error("Abandoned persistence staging must be a real directory.");
@@ -622,21 +622,21 @@ async function removeAbandonedStaging(statecraftRoot: string): Promise<void> {
 export async function acquirePersistenceLock(
   root: string,
 ): Promise<PersistenceLock> {
-  const statecraftRoot = await ensurePrivateTree(root, [
-    statecraftDirectoryName,
+  const evidenceRoot = await ensurePrivateTree(root, [
+    evidenceDirectoryName,
   ]);
-  const reportDirectory = await ensurePrivateTree(statecraftRoot, [
+  const reportDirectory = await ensurePrivateTree(evidenceRoot, [
     reportDirectoryName,
   ]);
-  const directory = join(statecraftRoot, lockDirectoryName);
+  const directory = join(evidenceRoot, lockDirectoryName);
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    const candidate = await mkdtemp(join(statecraftRoot, lockCandidatePrefix));
+    const candidate = await mkdtemp(join(evidenceRoot, lockCandidatePrefix));
     const token = randomUUID();
     const lock: PersistenceLock = {
       directory,
       preserve: false,
       reportDirectory,
-      statecraftRoot,
+      evidenceRoot,
       token,
     };
     try {
@@ -669,7 +669,7 @@ export async function acquirePersistenceLock(
       if (metadata.isSymbolicLink() || !metadata.isDirectory()) {
         await rm(candidate, { force: true, recursive: true });
         throw new Error(
-          ".statecraft result-persistence lock must be a real directory.",
+          ".uiwitness result-persistence lock must be a real directory.",
           { cause: error },
         );
       }
@@ -712,7 +712,7 @@ export async function acquirePersistenceLock(
           throw replacementError;
         }
         try {
-          await removeAbandonedStaging(statecraftRoot);
+          await removeAbandonedStaging(evidenceRoot);
         } catch (cleanupError: unknown) {
           try {
             await releasePersistenceLock(lock);
@@ -729,7 +729,7 @@ export async function acquirePersistenceLock(
       }
       await rm(candidate, { force: true, recursive: true });
       throw new Error(
-        ".statecraft contains recovery state from an interrupted result-persistence run.",
+        ".uiwitness contains recovery state from an interrupted result-persistence run.",
         { cause: error },
       );
     }
@@ -745,13 +745,13 @@ export async function persistReport(
   artifacts: readonly ExecutionArtifact[],
   operations: PublicationOperations = publicationOperations,
 ): Promise<void> {
-  const { directory: lockDirectory, reportDirectory, statecraftRoot } = lock;
+  const { directory: lockDirectory, evidenceRoot, reportDirectory } = lock;
 
   let stagingRoot: string | undefined;
   let preserveRecoveryState = false;
   let persistenceError: unknown;
   try {
-    const existingArtifacts = join(statecraftRoot, artifactsDirectoryName);
+    const existingArtifacts = join(evidenceRoot, artifactsDirectoryName);
     const existingReport = join(reportDirectory, reportFileName);
     const existingHtml = join(reportDirectory, reportHtmlFileName);
     const artifactsType = await existingType(existingArtifacts);
@@ -759,21 +759,21 @@ export async function persistReport(
     const htmlType = await existingType(existingHtml);
     if (artifactsType !== "missing" && artifactsType !== "directory") {
       throw new TypeError(
-        ".statecraft/artifacts must be a real directory, not a symbolic link.",
+        ".uiwitness/artifacts must be a real directory, not a symbolic link.",
       );
     }
     if (reportType !== "missing" && reportType !== "file") {
       throw new TypeError(
-        ".statecraft/report/statecraft.json must be a regular file, not a symbolic link.",
+        ".uiwitness/report/uiwitness.json must be a regular file, not a symbolic link.",
       );
     }
     if (htmlType !== "missing" && htmlType !== "file") {
       throw new TypeError(
-        ".statecraft/report/index.html must be a regular file, not a symbolic link.",
+        ".uiwitness/report/index.html must be a regular file, not a symbolic link.",
       );
     }
 
-    stagingRoot = await mkdtemp(join(statecraftRoot, stagingDirectoryPrefix));
+    stagingRoot = await mkdtemp(join(evidenceRoot, stagingDirectoryPrefix));
     const stagedArtifacts = await ensurePrivateTree(stagingRoot, [
       artifactsDirectoryName,
     ]);
@@ -786,11 +786,11 @@ export async function persistReport(
       }
       const segments = safeRelativeSegments(artifact.result.screenshotPath);
       if (
-        segments[0] !== statecraftDirectoryName ||
+        segments[0] !== evidenceDirectoryName ||
         segments[1] !== artifactsDirectoryName
       ) {
         throw new TypeError(
-          "Screenshot paths must stay inside .statecraft/artifacts/.",
+          "Screenshot paths must stay inside .uiwitness/artifacts/.",
         );
       }
       const fileSegments = segments.slice(2);
@@ -816,7 +816,7 @@ export async function persistReport(
     await updateLockPhase(lock, "publishing");
 
     const previousArtifacts = join(stagingRoot, "previous-artifacts");
-    const previousReport = join(stagingRoot, "previous-statecraft.json");
+    const previousReport = join(stagingRoot, "previous-uiwitness.json");
     const previousHtml = join(stagingRoot, "previous-index.html");
     let movedPreviousArtifacts = false;
     let movedPreviousReport = false;

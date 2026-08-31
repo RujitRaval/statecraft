@@ -26,7 +26,7 @@ function makeReport() {
     executions.push({
       failures: [],
       routeId: "dashboard",
-      screenshotPath: `.statecraft/artifacts/dashboard/success/${index}.png`,
+      screenshotPath: `.uiwitness/artifacts/dashboard/success/${index}.png`,
       stateId: "success",
       status: "passed",
       theme: index % 2 === 0 ? "light" : "dark",
@@ -37,7 +37,7 @@ function makeReport() {
     executions.push({
       failures: [{ code: "ASSERTION_FAILED" }],
       routeId,
-      screenshotPath: `.statecraft/artifacts/${routeId}/${stateId}/${viewportId}-${theme}.png`,
+      screenshotPath: `.uiwitness/artifacts/${routeId}/${stateId}/${viewportId}-${theme}.png`,
       stateId,
       status: "failed",
       theme,
@@ -306,7 +306,7 @@ test("orchestrates the built bin target and always cleans local output", async (
     loadReport: async (value) => value,
     log: () => {},
     readText: async (filePath) =>
-      filePath.endsWith("statecraft.json")
+      filePath.endsWith("uiwitness.json")
         ? JSON.stringify(report)
         : 'data-brand-system="kinetic-evidence-v1" Evidence<br>over instinct. 4 states broke. Open the evidence. <strong>93.33<span>%</span></strong> <span>Failed</span><strong>4</strong>',
     recordOutput: async (...args) => recorded.push(args),

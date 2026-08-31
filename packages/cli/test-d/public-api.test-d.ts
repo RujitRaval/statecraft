@@ -81,7 +81,7 @@ const openCode: OpenReportErrorCode = "OPEN_REPORT_NOT_FOUND";
 const openError: Error = new OpenReportError(
   openCode,
   "Report missing.",
-  "/tmp/example/.statecraft/report/index.html",
+  "/tmp/example/.uiwitness/report/index.html",
 );
 const cliOptions: RunCliOptions = {
   args: ["init"],
@@ -95,7 +95,7 @@ const scanOptions: ScanOptions = {
   routeId: "home",
 };
 const scanResult: Promise<ScanResult> = scanProject(scanOptions);
-const htmlReportPath: Promise<".statecraft/report/index.html"> = scanResult.then(
+const htmlReportPath: Promise<".uiwitness/report/index.html"> = scanResult.then(
   (result) => result.htmlReportPath,
 );
 const scanCode: ScanErrorCode = "SCAN_ROUTE_NOT_FOUND";

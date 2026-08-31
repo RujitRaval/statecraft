@@ -55,6 +55,27 @@ describe("transformReport", () => {
     );
   });
 
+  it("keeps screenshot hrefs relative to either accepted evidence root", () => {
+    const current = reportFixture();
+    const legacy = parseReport({
+      ...current,
+      executions: current.executions.map((execution) => ({
+        ...execution,
+        screenshotPath: execution.screenshotPath?.replace(
+          /^\.uiwitness\//u,
+          ".statecraft/",
+        ),
+      })),
+    });
+
+    expect(
+      transformReport(current).executions.map((cell) => cell.screenshotHref),
+    ).toEqual(
+      transformReport(legacy).executions.map((cell) => cell.screenshotHref),
+    );
+    expect(legacy.executions[0]!.screenshotPath).toMatch(/^\.statecraft\//u);
+  });
+
   it("preserves route order while reusing shared viewport and theme columns", () => {
     const fixture = reportFixture();
     const second = fixture.executions[1]!;
@@ -67,7 +88,7 @@ describe("transformReport", () => {
           routeId: "settings",
           routePath: "/settings",
           screenshotPath:
-            ".statecraft/artifacts/settings/error/desktop-light.png",
+            ".uiwitness/artifacts/settings/error/desktop-light.png",
           theme: "light",
         },
       ],

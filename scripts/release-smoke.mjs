@@ -246,7 +246,7 @@ async function recordArtifactPath(projectRoot, outputFile) {
   if (outputFile === undefined) return;
   await appendFile(
     outputFile,
-    `artifact-path=${path.join(projectRoot, ".statecraft")}\n`,
+    `artifact-path=${path.join(projectRoot, ".uiwitness")}\n`,
     "utf8",
   );
 }
@@ -319,12 +319,12 @@ export async function runReleaseSmoke({
 
     const reportDirectory = path.join(
       smokeProjectRoot,
-      ".statecraft",
+      ".uiwitness",
       "report",
     );
     const report = await loadReport(
       JSON.parse(
-        await readText(path.join(reportDirectory, "statecraft.json"), "utf8"),
+        await readText(path.join(reportDirectory, "uiwitness.json"), "utf8"),
       ),
     );
     await validateReport(report, { projectRoot: smokeProjectRoot });

@@ -19,7 +19,9 @@ console.log(evidence.htmlReportPath);
 import type { UIWitnessScenario } from "uiwitness-runner-playwright";
 ```
 
-This fixed public-site check runs mobile/desktop by light/dark, fails only high-confidence navigation, HTTP, uncaught-page-error, and horizontal-overflow boundaries, and writes screenshots plus schema-v1 JSON and offline HTML under the ignored local `.statecraft/` directory. Check only sites you own or are authorized to test.
+This fixed public-site check runs mobile/desktop by light/dark, fails only high-confidence navigation, HTTP, uncaught-page-error, and horizontal-overflow boundaries, and writes screenshots plus schema-v1 JSON and offline HTML under the ignored local `.uiwitness/` directory. Check only sites you own or are authorized to test.
+
+Persistence owns only the `.uiwitness/` transaction tree and does not open or modify legacy `.statecraft/` evidence. Existing private file modes, symbolic-link checks, locking, recovery, and coherent rollback apply to the new root.
 
 Most users should install [`uiwitness`](https://www.npmjs.com/package/uiwitness). Use this package directly when composing the programmatic runner API.
 

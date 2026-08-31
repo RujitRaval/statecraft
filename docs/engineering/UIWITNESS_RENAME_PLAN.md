@@ -551,7 +551,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Architecture Review and complete-scope decision.
   - Files: root manifest/lock/version, `packages/**`, package/type tests, release metadata validator.
   - Verify: build, typecheck, public API tests, release contract.
-- [ ] **T4 (P1, human: ~2 days / Codex: ~1 hour)**: Evidence compatibility: write only `.uiwitness/`, accept both schema-v1 roots, and preserve old evidence.
+- [x] **T4 (P1, human: ~2 days / Codex: ~1 hour)**: Evidence compatibility: write only `.uiwitness/`, accept both schema-v1 roots, and preserve old evidence. Implemented with distinct writer/read screenshot-path types, dual-root schema-v1 parsing, root-preserving report links, a fully separate `.uiwitness/` persistence transaction, UIWitness-only CLI report targets, and denied-permission coexistence proof that legacy evidence remains byte-identical.
   - Surfaced by: Architecture Review D2/D7 and outside review.
   - Files: `packages/core/src/results.ts`, core artifact paths and type tests, runner persistence, report transformer, CLI result/path contracts, related tests.
   - Verify: parser-level dual-root reads, root-correct hrefs, new-root-only writers, zero legacy filesystem accesses, coexistence, byte preservation, rollback, permissions, and symbolic-link matrix.

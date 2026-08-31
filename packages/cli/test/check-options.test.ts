@@ -72,7 +72,7 @@ function discoveredReport() {
     routeId,
     routePath,
     scenarioSource: "uiwitness:public-site",
-    screenshotPath: `.statecraft/artifacts/${routeId}/public/mobile-light.png`,
+    screenshotPath: `.uiwitness/artifacts/${routeId}/public/mobile-light.png`,
     stateId: "public",
     status: "passed" as const,
     theme: "light",
@@ -140,9 +140,9 @@ describe("checkPublicSite options", () => {
     });
     discoverPublicRoutesMock.mockResolvedValue(discovery);
     const persisted = Object.freeze({
-      htmlReportPath: ".statecraft/report/index.html",
+      htmlReportPath: ".uiwitness/report/index.html",
       report: report(),
-      reportPath: ".statecraft/report/statecraft.json",
+      reportPath: ".uiwitness/report/uiwitness.json",
     });
     runPublicSiteChecksMock.mockResolvedValue(persisted);
 
@@ -185,9 +185,9 @@ describe("checkPublicSite options", () => {
       return discovery;
     });
     runPublicSiteChecksMock.mockResolvedValue({
-      htmlReportPath: ".statecraft/report/index.html",
+      htmlReportPath: ".uiwitness/report/index.html",
       report: report(),
-      reportPath: ".statecraft/report/statecraft.json",
+      reportPath: ".uiwitness/report/uiwitness.json",
     });
 
     try {
@@ -273,9 +273,9 @@ describe("checkPublicSite options", () => {
     });
     discoverPublicRoutesMock.mockResolvedValue(discovery);
     const persisted = Object.freeze({
-      htmlReportPath: ".statecraft/report/index.html",
+      htmlReportPath: ".uiwitness/report/index.html",
       report: discoveredReport(),
-      reportPath: ".statecraft/report/statecraft.json",
+      reportPath: ".uiwitness/report/uiwitness.json",
     });
     runPublicSiteChecksMock.mockResolvedValue(persisted);
 
@@ -361,9 +361,9 @@ export default publicSiteScenario;
       });
       await writeFile(scenarioPath, "created by another process", "utf8");
       return Object.freeze({
-        htmlReportPath: ".statecraft/report/index.html",
+        htmlReportPath: ".uiwitness/report/index.html",
         report: discoveredReport(),
-        reportPath: ".statecraft/report/statecraft.json",
+        reportPath: ".uiwitness/report/uiwitness.json",
       });
     });
 

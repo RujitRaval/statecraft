@@ -150,7 +150,7 @@ const assertionHook: ScenarioAssertionHook = async (context) => {
 };
 void publicSiteScenario.assert?.(assertionContext);
 const overflowTolerance: 1 = PUBLIC_SITE_OVERFLOW_TOLERANCE_PX;
-const htmlReportPath: Promise<".statecraft/report/index.html"> = persistedRun.then(
+const htmlReportPath: Promise<".uiwitness/report/index.html"> = persistedRun.then(
   (run) => run.htmlReportPath,
 );
 declare const capture: CapturedScenarioCell;

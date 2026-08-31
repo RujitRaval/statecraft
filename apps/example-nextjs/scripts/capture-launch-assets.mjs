@@ -9,7 +9,7 @@ const exampleRoot = path.resolve(
 const repositoryRoot = path.resolve(exampleRoot, "..", "..");
 const reportPath = path.join(
   exampleRoot,
-  ".statecraft",
+  ".uiwitness",
   "report",
   "index.html",
 );

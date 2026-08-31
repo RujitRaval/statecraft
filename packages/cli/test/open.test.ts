@@ -38,7 +38,7 @@ async function reportFixture(): Promise<{
   readonly reportPath: string;
 }> {
   const project = await temporaryProject();
-  const reportDirectory = join(project, ".statecraft", "report");
+  const reportDirectory = join(project, ".uiwitness", "report");
   await mkdir(reportDirectory, { recursive: true });
   const reportPath = join(reportDirectory, "index.html");
   await writeFile(reportPath, "<!doctype html><title>Statecraft</title>", "utf8");
@@ -64,7 +64,7 @@ describe("openReport", () => {
     ).resolves.toEqual({
       projectRoot: fixture.project,
       reportPath: fixture.reportPath,
-      reportRelativePath: ".statecraft/report/index.html",
+      reportRelativePath: ".uiwitness/report/index.html",
     });
     expect(launcher).toHaveBeenCalledOnce();
     expect(launcher).toHaveBeenCalledWith(fixture.reportPath);
@@ -82,12 +82,28 @@ describe("openReport", () => {
     expect(error).toBeInstanceOf(OpenReportError);
     expect(error).toMatchObject({
       code: "OPEN_REPORT_NOT_FOUND",
-      reportPath: join(project, ".statecraft", "report", "index.html"),
+      reportPath: join(project, ".uiwitness", "report", "index.html"),
     });
     expect((error as Error).message).toContain(
-      "No Statecraft HTML report found at .statecraft/report/index.html.",
+      "No Statecraft HTML report found at .uiwitness/report/index.html.",
     );
     expect(launcher).not.toHaveBeenCalled();
+  });
+
+  it("does not fall back to a legacy report tree", async () => {
+    const project = await temporaryProject();
+    const legacyReport = join(project, ".statecraft", "report", "index.html");
+    await mkdir(join(project, ".statecraft", "report"), { recursive: true });
+    await writeFile(legacyReport, "legacy evidence", "utf8");
+    const launcher = vi.fn(async () => undefined);
+
+    await expect(
+      openReportWithLauncher({ cwd: project }, launcher),
+    ).rejects.toMatchObject({ code: "OPEN_REPORT_NOT_FOUND" });
+    expect(launcher).not.toHaveBeenCalled();
+    await expect(readFile(legacyReport, "utf8")).resolves.toBe(
+      "legacy evidence",
+    );
   });
 
   it("keeps the public OS-launching wrapper behind report validation", async () => {
@@ -103,7 +119,7 @@ describe("openReport", () => {
     async (boundary) => {
     const project = await temporaryProject();
     const external = await temporaryProject();
-      const reportDirectory = join(project, ".statecraft", "report");
+      const reportDirectory = join(project, ".uiwitness", "report");
       if (boundary === "statecraft") {
         await mkdir(join(external, "report"));
         await writeFile(
@@ -111,9 +127,9 @@ describe("openReport", () => {
           "outside",
           "utf8",
         );
-        await symlink(external, join(project, ".statecraft"), "dir");
+        await symlink(external, join(project, ".uiwitness"), "dir");
       } else if (boundary === "report") {
-        await mkdir(join(project, ".statecraft"));
+        await mkdir(join(project, ".uiwitness"));
         await writeFile(join(external, "index.html"), "outside", "utf8");
         await symlink(external, reportDirectory, "dir");
       } else {
@@ -133,7 +149,7 @@ describe("openReport", () => {
 
   it("rejects a non-file report target", async () => {
     const project = await temporaryProject();
-    await mkdir(join(project, ".statecraft", "report", "index.html"), {
+    await mkdir(join(project, ".uiwitness", "report", "index.html"), {
       recursive: true,
     });
 
@@ -190,7 +206,7 @@ describe("reportOpenCommand", () => {
     ["linux", "/usr/bin/xdg-open"],
     ["freebsd", "/usr/local/bin/xdg-open"],
   ] as const)("uses a shell-free %s launcher", (platform, file) => {
-    const reportPath = "/project with spaces/.statecraft/report/index.html";
+    const reportPath = "/project with spaces/.uiwitness/report/index.html";
 
     expect(reportOpenCommand(platform, reportPath, "C:\\Windows")).toEqual({
       args: [reportPath],
@@ -202,11 +218,11 @@ describe("reportOpenCommand", () => {
     expect(
       reportOpenCommand(
         "win32",
-        "C:\\project\\.statecraft\\report\\index.html",
+        "C:\\project\\.uiwitness\\report\\index.html",
         "D:\\Windows",
       ),
     ).toEqual({
-      args: ["C:\\project\\.statecraft\\report\\index.html"],
+      args: ["C:\\project\\.uiwitness\\report\\index.html"],
       file: "D:\\Windows\\explorer.exe",
     });
   });
@@ -216,7 +232,7 @@ describe("reportOpenCommand", () => {
     const child = Object.assign(new EventEmitter(), { unref });
     const spawnProcess = vi.fn(() => child);
     const launched = launchReportWithSpawn(
-      "/project/.statecraft/report/index.html",
+      "/project/.uiwitness/report/index.html",
       "win32",
       spawnProcess,
     );
@@ -228,7 +244,7 @@ describe("reportOpenCommand", () => {
     expect(unref).toHaveBeenCalledOnce();
     expect(spawnProcess).toHaveBeenCalledWith(
       "C:\\Windows\\explorer.exe",
-      ["/project/.statecraft/report/index.html"],
+      ["/project/.uiwitness/report/index.html"],
       {
         detached: true,
         shell: false,
@@ -242,7 +258,7 @@ describe("reportOpenCommand", () => {
     const unref = vi.fn<() => void>();
     const child = Object.assign(new EventEmitter(), { unref });
     const launched = launchReportWithSpawn(
-      "/project/.statecraft/report/index.html",
+      "/project/.uiwitness/report/index.html",
       "linux",
       () => child,
     );
@@ -255,7 +271,7 @@ describe("reportOpenCommand", () => {
   it("classifies a synchronous launcher rejection", async () => {
     await expect(
       launchReportWithSpawn(
-        "/project/.statecraft/report/index.html",
+        "/project/.uiwitness/report/index.html",
         "darwin",
         () => {
           throw new Error("spawn denied");

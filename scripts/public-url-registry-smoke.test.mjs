@@ -377,7 +377,7 @@ function fixtureReport() {
         navigation: { requestedUrl: `http://127.0.0.1:4321${routePath}`, status: 200, url: `http://127.0.0.1:4321${routePath}` },
         routeId: routeIndex === 0 ? "home" : "about",
         routePath,
-        screenshotPath: `.statecraft/artifacts/${routeIndex}/public/${viewportId}-${theme}.png`,
+        screenshotPath: `.uiwitness/artifacts/${routeIndex}/public/${viewportId}-${theme}.png`,
         stateId: "public",
         status: "passed",
         theme,
@@ -409,21 +409,21 @@ function fixtureReport() {
 
 async function writeEvidence(root) {
   const report = fixtureReport();
-  await mkdir(path.join(root, ".statecraft", "report"), { recursive: true });
+  await mkdir(path.join(root, ".uiwitness", "report"), { recursive: true });
   for (const execution of report.executions) {
     const screenshot = path.join(root, execution.screenshotPath);
     await mkdir(path.dirname(screenshot), { recursive: true });
     await writeFile(screenshot, "png");
   }
-  await writeFile(path.join(root, ".statecraft", "report", "statecraft.json"), JSON.stringify(report));
-  await writeFile(path.join(root, ".statecraft", "report", "index.html"), '<main data-brand-system="kinetic-evidence-v1"></main>');
+  await writeFile(path.join(root, ".uiwitness", "report", "uiwitness.json"), JSON.stringify(report));
+  await writeFile(path.join(root, ".uiwitness", "report", "index.html"), '<main data-brand-system="kinetic-evidence-v1"></main>');
 }
 
 test("rejects screenshot evidence that resolves outside the artifact boundary", async (context) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-boundary-test-"));
   context.after(() => rm(root, { force: true, recursive: true }));
   await writeEvidence(root);
-  const reportPath = path.join(root, ".statecraft", "report", "statecraft.json");
+  const reportPath = path.join(root, ".uiwitness", "report", "uiwitness.json");
   const report = JSON.parse(await readFile(reportPath, "utf8"));
   const screenshot = path.join(root, report.executions[0].screenshotPath);
   const outside = path.join(root, "outside.png");
@@ -441,7 +441,7 @@ test("rejects an artifact root that resolves outside the temporary consumer", as
     await rm(outside, { force: true, recursive: true });
   });
   await writeEvidence(root);
-  const artifactRoot = path.join(root, ".statecraft", "artifacts");
+  const artifactRoot = path.join(root, ".uiwitness", "artifacts");
   const movedArtifacts = path.join(outside, "artifacts");
   await rename(artifactRoot, movedArtifacts);
   await symlink(movedArtifacts, artifactRoot);

@@ -36,6 +36,8 @@ const cells = expandMatrix(
     },
   }),
 );
+const legacyScreenshotPath =
+  ".statecraft/artifacts/dashboard/success/desktop-light.png";
 
 function result(
   index: number,
@@ -185,7 +187,7 @@ describe("parseExecutionResult", () => {
     const forged = {
       ...result(0, "passed"),
       screenshotPath:
-        ".statecraft/artifacts/dashboard/success/mobile-light.png",
+        ".uiwitness/artifacts/dashboard/success/mobile-light.png",
     };
 
     expect(captureResultError(forged).issues).toEqual(
@@ -194,6 +196,19 @@ describe("parseExecutionResult", () => {
           code: "invalid_value",
           path: "$.screenshotPath",
         }),
+      ]),
+    );
+  });
+
+  it("keeps legacy evidence paths out of the writer contract", () => {
+    const legacy = {
+      ...result(0, "passed"),
+      screenshotPath: legacyScreenshotPath,
+    };
+
+    expect(captureResultError(legacy).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "$.screenshotPath" }),
       ]),
     );
   });
@@ -290,6 +305,42 @@ describe("parseExecutionResult", () => {
 describe("parseReport", () => {
   it("parses schema version 1 with internally consistent summaries", () => {
     expect(parseReport(validReport())).toEqual(validReport());
+  });
+
+  it("reads legacy schema-v1 screenshot paths without rewriting them", () => {
+    const report = validReport();
+    const parsed = parseReport({
+      ...report,
+      executions: [
+        { ...report.executions[0], screenshotPath: legacyScreenshotPath },
+        report.executions[1],
+      ],
+    });
+
+    expect(parsed.schemaVersion).toBe(1);
+    expect(parsed.executions[0]!.screenshotPath).toBe(legacyScreenshotPath);
+    expect(serializeReport(parsed)).toContain(legacyScreenshotPath);
+  });
+
+  it.each([
+    ".other/artifacts/dashboard/success/desktop-light.png",
+    ".uiwitness/artifacts/dashboard/success/../desktop-light.png",
+    legacyScreenshotPath.replace("desktop-light.png", "../desktop-light.png"),
+  ])("rejects unsupported or traversing report screenshot path %s", (path) => {
+    const report = validReport();
+    const error = captureReportError({
+      ...report,
+      executions: [
+        { ...report.executions[0], screenshotPath: path },
+        report.executions[1],
+      ],
+    });
+
+    expect(error.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: "$.executions[0].screenshotPath" }),
+      ]),
+    );
   });
 
   it("rejects unsupported schema versions at a stable path", () => {
