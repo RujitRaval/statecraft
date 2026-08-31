@@ -4,6 +4,18 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.3.0] - 2026-08-31
+
+### Added
+
+- Existing projects now have a copy-ready migration guide covering every package, command, config, scenario, report path, and exact deprecation message without touching legacy evidence.
+
+### Changed
+
+- The complete Northline example now uses the UIWitness config, scenario root, environment variable, npm scripts, and 60-cell release-smoke journey.
+- Current product, architecture, API, security, contributor, and launch guidance now presents the UIWitness identity while keeping the external repository and npm cutover explicitly pending.
+- Launch documentation now uses freshly generated UIWitness overview and failure-detail images from the verified 60-cell offline report.
+
 ## [0.25.2.0] - 2026-08-31
 
 ### Changed
