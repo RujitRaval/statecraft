@@ -50,7 +50,7 @@ function persistenceCells(states: readonly string[]): readonly MatrixCell[] {
       routes: [
         {
           id: "capture",
-          path: "/capture?source=statecraft#panel",
+          path: "/capture?source=uiwitness#panel",
           states: states.map((id) => ({ id, setup: "./capture.mjs" })),
         },
       ],
@@ -122,7 +122,7 @@ async function temporaryProject(): Promise<{
   readonly cleanup: () => Promise<void>;
   readonly path: string;
 }> {
-  const path = await mkdtemp(join(tmpdir(), "statecraft-persistence-"));
+  const path = await mkdtemp(join(tmpdir(), "uiwitness-persistence-"));
   return {
     cleanup: () => rm(path, { force: true, recursive: true }),
     path,
@@ -136,7 +136,7 @@ async function expectMissing(path: string): Promise<void> {
 describe("runPersistedScenarioCells", () => {
   it("persists deterministic screenshots and a validated schema-v1 report", async () => {
     const project = await temporaryProject();
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -257,7 +257,7 @@ describe("runPersistedScenarioCells", () => {
   it("loads the generated report from disk without network access", async () => {
     const project = await temporaryProject();
     const browser = await chromium.launch({ headless: true });
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
     try {
       const run = await runPersistedScenarioCells(
@@ -573,7 +573,7 @@ describe("runPersistedScenarioCells", () => {
   it("filters identifiers named all without treating them as wildcards", async () => {
     const project = await temporaryProject();
     const browser = await chromium.launch({ headless: true });
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
     try {
       const run = await runPersistedScenarioCells(allIdentifierCells(), {

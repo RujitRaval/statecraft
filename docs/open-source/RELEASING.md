@@ -44,7 +44,7 @@ After npm publication, repeat the exact live-registry Quick Check journey for th
 corepack pnpm release:registry-public-url-smoke -- --version 0.24.11
 ```
 
-This creates another empty `npm init -y` consumer, accepts either an implicit CommonJS manifest or npm 11's explicit `"type": "commonjs"` form, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, and generated-source stability before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry. Transient install failures share one bounded ten-minute elapsed-time retry window. Each attempt forces online registry revalidation through its own temporary npm cache, while permanent failures stop immediately.
+This creates another empty `npm init -y` consumer, accepts either an implicit CommonJS manifest or npm 11's explicit `"type": "commonjs"` form, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` → `open` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, generated-source stability, and the installed report-opening command before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry. Transient install failures share one bounded ten-minute elapsed-time retry window. Each attempt forces online registry revalidation through its own temporary npm cache, while permanent failures stop immediately.
 
 ## First publication bootstrap (pending external cutover)
 
@@ -54,13 +54,45 @@ npm requires each package to exist before a trusted publisher can be configured.
 2. Create a granular npm access token with `All Packages` read/write permission, bypass-2FA enabled, and the shortest available expiry. npm cannot grant an unclaimed package-specific permission, so this bootstrap credential is temporarily broader than the steady-state publisher.
 3. Store the token only as the `NPM_TOKEN` secret in the protected `npm-publish` Environment.
 4. Merge a fully green release pull request and create a non-prerelease GitHub Release whose tag exactly matches `VERSION`, for example `v0.24.0`.
-5. Approve the protected Environment deployment and wait for the `Release` workflow to verify and publish all four packages.
-6. In npm package settings for each package, add the GitHub Actions trusted publisher for repository `RujitRaval/uiwitness`, workflow `.github/workflows/release.yml`, and environment `npm-publish`.
-7. Delete the `NPM_TOKEN` Environment secret and revoke the token in npm immediately.
+5. Approve the protected Environment deployment and wait for the `Release` workflow to verify and publish all four packages. Bootstrap mode deliberately does not start registry verification automatically.
+6. If publication is partial, complete cleanup before retrying. Record the attempt ID, package outcomes, finish time, token fingerprint, token-revocation time, GitHub-secret-deletion time, and cleanup-completion time. Create a fresh minimum-expiration token for the next attempt. The publisher rechecks every tarball and skips only an existing version with identical registry integrity; it stops on mismatched immutable contents.
+7. In npm package settings for each package, add the GitHub Actions trusted publisher for repository `RujitRaval/uiwitness`, workflow `.github/workflows/release.yml`, and environment `npm-publish`.
+8. Within 30 minutes of every successful or failed attempt, revoke that attempt's token, delete the `NPM_TOKEN` Environment secret, and finish its cleanup record.
+9. After all four packages exist and all attempt records are complete, manually run `Verify Registry Release`. Supply the immutable release tag and one compact schema-v1 cleanup-evidence JSON object. The workflow resolves the tag commit, proves it belongs to `main`, checks `VERSION` and the GitHub Release, validates fresh-token and 30-minute cleanup evidence for every attempt, then runs the registry-only journey from that exact tag.
+
+The cleanup evidence has this shape. Package entries remain in dependency-first order, and the final recorded outcome for every package must be `published` or `verified-existing`:
+
+```json
+{
+  "schemaVersion": 1,
+  "releaseTag": "v0.25.3",
+  "releaseSha": "0123456789abcdef0123456789abcdef01234567",
+  "attempts": [{
+    "id": "123456789-1",
+    "tokenFingerprint": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "finishedAt": "2026-08-31T20:00:00.000Z",
+    "tokenRevokedAt": "2026-08-31T20:05:00.000Z",
+    "githubSecretDeletedAt": "2026-08-31T20:06:00.000Z",
+    "cleanupCompletedAt": "2026-08-31T20:07:00.000Z",
+    "packages": [
+      { "name": "uiwitness-core", "outcome": "published" },
+      { "name": "uiwitness-report", "outcome": "published" },
+      { "name": "uiwitness-runner-playwright", "outcome": "published" },
+      { "name": "uiwitness", "outcome": "published" }
+    ]
+  }],
+  "trustedPublishers": [
+    { "name": "uiwitness-core", "configuredAt": "2026-08-31T20:04:00.000Z" },
+    { "name": "uiwitness-report", "configuredAt": "2026-08-31T20:04:00.000Z" },
+    { "name": "uiwitness-runner-playwright", "configuredAt": "2026-08-31T20:04:00.000Z" },
+    { "name": "uiwitness", "configuredAt": "2026-08-31T20:04:00.000Z" }
+  ]
+}
+```
 
 This bootstrap has not yet occurred for the UIWitness package identities. Run it only in the approved external-cutover step after the rename implementation and distribution gates are green. The previous package set's trusted-publisher configuration does not transfer to new npm package identities.
 
-The workflow configures token authentication only when that bootstrap secret exists. After bootstrap, GitHub's short-lived OIDC identity supplies publication authority through the workflow's `id-token: write` permission, with no token-style npm configuration present to suppress the OIDC exchange. No npm token should remain configured. The Environment approval remains a deliberate human gate for every registry publication.
+The workflow configures token authentication only when that bootstrap secret exists. After bootstrap, GitHub's short-lived OIDC identity supplies publication authority through the workflow's `id-token: write` permission, with no token-style npm configuration present to suppress the OIDC exchange. No npm token should remain configured. The Environment approval remains a deliberate human gate for every registry publication. Normal OIDC releases automatically start the final tag/SHA-bound registry job; only bootstrap mode uses the cleanup-gated manual workflow.
 
 ## Normal releases after bootstrap
 

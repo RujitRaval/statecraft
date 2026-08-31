@@ -7,7 +7,7 @@ import test from "node:test";
 import { checkDocs } from "./check-docs.mjs";
 
 async function makeFixture() {
-  return mkdtemp(path.join(tmpdir(), "statecraft-docs-"));
+  return mkdtemp(path.join(tmpdir(), "uiwitness-docs-"));
 }
 
 async function write(root, relativePath, contents) {

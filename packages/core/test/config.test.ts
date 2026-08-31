@@ -22,11 +22,11 @@ function validConfig(): UIWitnessConfig {
         states: [
           {
             id: "success",
-            setup: "./statecraft/scenarios/dashboard/success.ts",
+            setup: "./uiwitness/scenarios/dashboard/success.ts",
           },
           {
             id: "payment-declined",
-            setup: "./statecraft/scenarios/dashboard/payment-declined.ts",
+            setup: "./uiwitness/scenarios/dashboard/payment-declined.ts",
           },
         ],
       },

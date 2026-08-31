@@ -7,7 +7,7 @@ import test from "node:test";
 import { cleanPackage } from "./clean-package.mjs";
 
 test("removes only the package dist directory", async (t) => {
-  const root = await mkdtemp(path.join(tmpdir(), "statecraft-clean-"));
+  const root = await mkdtemp(path.join(tmpdir(), "uiwitness-clean-"));
   t.after(() => rm(root, { force: true, recursive: true }));
   await mkdir(path.join(root, "dist"));
   await writeFile(path.join(root, "dist", "stale.js"), "stale");

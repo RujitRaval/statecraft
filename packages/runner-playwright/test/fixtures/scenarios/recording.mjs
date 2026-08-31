@@ -1,4 +1,4 @@
-const eventKey = Symbol.for("statecraft.test.scenario-events");
+const eventKey = Symbol.for("uiwitness.test.scenario-events");
 
 function record(hook, context) {
   if (!Object.isFrozen(context)) {

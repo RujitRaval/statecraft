@@ -563,7 +563,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Complete-scope decision and outside documentation review.
   - Files: `apps/example-nextjs/**`, root/current docs, `docs/open-source/MIGRATING_TO_UIWITNESS.md`, `docs/assets/**`, capture tests.
   - Verify: 60-cell example gate, copy-paste migration commands and mappings, exact deprecation messages, docs check, regenerated assets, brand check.
-- [ ] **T7 (P1, human: ~2 days / Codex: ~1 hour)**: Distribution proof: rename and run tarball, release, and registry-only gates.
+- [x] **T7 (P1, human: ~2 days / Codex: ~1 hour)**: Distribution proof: renamed and strengthened the tarball, release, and registry-only gates. Implemented exact packed-file brand inspection, bootstrap-vs-OIDC workflow outputs, automatic normal-release verification, a separate immutable-tag manual bootstrap verifier, schema-v1 cleanup evidence with fresh-token and 30-minute cleanup enforcement across partial retries, and the complete registry-only `check` → promotion → `scan` → `open` journey.
   - Surfaced by: Test Review D5 and outside release-security review.
   - Files: release scripts/tests, `.github/workflows/release.yml`, and `.github/workflows/verify-registry-release.yml`.
   - Verify: bootstrap cannot auto-verify; partial publication uses fresh-token integrity-safe retries and cleanup per attempt; immutable tag/SHA plus cleanup evidence gates manual dispatch; normal releases are token-free and automatically run the final registry job; exact registry check -> promotion -> scan -> open journey.

@@ -14,7 +14,7 @@ const scenarioBaseDirectory = fileURLToPath(
 const baseURL = "https://uiwitness.invalid/base/";
 const missingBrowserExecutable = path.join(
   process.cwd(),
-  "statecraft-missing-navigation-browser-executable",
+  "uiwitness-missing-navigation-browser-executable",
 );
 
 async function localOrigin(responseDelayMs = 0): Promise<{
@@ -63,7 +63,7 @@ function navigationCells(
       routes: [
         {
           id: "fixture",
-          path: "/fixture?source=statecraft#panel",
+          path: "/fixture?source=uiwitness#panel",
           states: states.map((id) => ({
             id,
             setup: "./navigation.mjs",
@@ -78,7 +78,7 @@ function navigationCells(
 
 describe("runNavigatedScenarioCells", () => {
   it("applies themes before application scripts and runs post-readiness work", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
     const cells = navigationCells(
@@ -95,13 +95,13 @@ describe("runNavigatedScenarioCells", () => {
           const pageState = await context.page.evaluate(() => {
             const boot = (
               globalThis as typeof globalThis & {
-                statecraftBoot: {
+                uiwitnessBoot: {
                   dark: boolean;
                   reducedMotion: boolean;
                   theme: string | undefined;
                 };
               }
-            ).statecraftBoot;
+            ).uiwitnessBoot;
             const animated = getComputedStyle(
               document.querySelector("#animated")!,
             );
@@ -144,21 +144,21 @@ describe("runNavigatedScenarioCells", () => {
       expect(values.map((value) => value?.navigation)).toEqual([
         {
           requestedUrl:
-            "https://uiwitness.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=uiwitness#panel",
           status: 207,
-          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=uiwitness#panel",
         },
         {
           requestedUrl:
-            "https://uiwitness.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=uiwitness#panel",
           status: 207,
-          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=uiwitness#panel",
         },
         {
           requestedUrl:
-            "https://uiwitness.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=uiwitness#panel",
           status: 207,
-          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=uiwitness#panel",
         },
       ]);
       expect(values.map((value) => value?.pageState.boot.theme)).toEqual([
@@ -203,9 +203,9 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("settles invalid routes, navigation failures, and readiness timeouts", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const redirectOriginKey = Symbol.for(
-      "statecraft.test.navigation-redirect-origin",
+      "uiwitness.test.navigation-redirect-origin",
     );
     const events: string[] = [];
     const redirectServer = await localOrigin();
@@ -323,7 +323,7 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("uses load and font readiness when no selector is configured", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
 
@@ -361,7 +361,7 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("reports built-in navigation status with the final same-origin URL", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
 
@@ -383,7 +383,7 @@ describe("runNavigatedScenarioCells", () => {
           status: "fulfilled",
           value: {
             requestedUrl:
-              "https://uiwitness.invalid/fixture?source=statecraft#panel",
+              "https://uiwitness.invalid/fixture?source=uiwitness#panel",
             status: 207,
             url: "https://uiwitness.invalid/same-origin",
           },
@@ -395,9 +395,9 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("rejects cross-origin navigation scheduled during readiness", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const redirectOriginKey = Symbol.for(
-      "statecraft.test.navigation-redirect-origin",
+      "uiwitness.test.navigation-redirect-origin",
     );
     const events: string[] = [];
     const redirectServer = await localOrigin(200);
@@ -436,7 +436,7 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("rejects same-origin document navigation during readiness", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
 
@@ -470,7 +470,7 @@ describe("runNavigatedScenarioCells", () => {
   });
 
   it("waits for a font load started after the normal load event", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
 

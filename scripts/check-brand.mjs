@@ -257,7 +257,11 @@ export async function checkBrand({ root = process.cwd(), trackedPaths, contract,
   };
 }
 
-export async function createBrandContract({ root = process.cwd(), trackedPaths } = {}) {
+export async function createBrandContract({
+  releaseReady = false,
+  root = process.cwd(),
+  trackedPaths,
+} = {}) {
   const inventory = await collectBrandFindings({ root, trackedPaths });
   const findingsByPath = new Map();
   for (const finding of inventory.findings) {
@@ -284,7 +288,11 @@ export async function createBrandContract({ root = process.cwd(), trackedPaths }
       ...(contentFindings.length > 0 ? { contentCounts: countVariants(contentFindings.map(({ matchedValue }) => matchedValue).join(" ")) } : {}),
       ...(pathFindings.length > 0 ? { pathCounts: countVariants(relativePath) } : {}),
     };
-    if (relativePath === "CHANGELOG.md" || relativePath.startsWith("docs/decisions/")) {
+    if (
+      releaseReady ||
+      relativePath === "CHANGELOG.md" ||
+      relativePath.startsWith("docs/decisions/")
+    ) {
       permanentAllowlist.push(entry);
     } else {
       migrationBaseline.push(entry);
@@ -293,7 +301,9 @@ export async function createBrandContract({ root = process.cwd(), trackedPaths }
 
   return {
     schemaVersion: 1,
-    description: "Exact-file migration ratchet. Token budgets may decrease; new legacy-brand occurrences fail.",
+    description: releaseReady
+      ? "Release-ready exact-file allowlist. Every retained legacy occurrence is intentional; new occurrences fail."
+      : "Exact-file migration ratchet. Token budgets may decrease; new legacy-brand occurrences fail.",
     migrationBaseline,
     permanentAllowlist,
     renameRecords,
@@ -307,8 +317,14 @@ export function formatBrandViolation(violation) {
 
 async function main() {
   const root = process.cwd();
-  if (process.argv.includes("--write-contract")) {
-    const contract = await createBrandContract({ root });
+  if (
+    process.argv.includes("--write-contract") ||
+    process.argv.includes("--write-release-contract")
+  ) {
+    const contract = await createBrandContract({
+      releaseReady: process.argv.includes("--write-release-contract"),
+      root,
+    });
     validateBrandContract(contract);
     await writeFile(path.join(root, defaultContractPath), `${JSON.stringify(contract, null, 2)}\n`);
     console.log(

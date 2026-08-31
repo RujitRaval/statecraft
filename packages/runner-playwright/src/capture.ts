@@ -129,7 +129,7 @@ function sanitizeHttpUrl(value: string): string | null {
   }
   return url.href.length <= maxDiagnosticUrlLength
     ? url.href
-    : new URL("/__statecraft_url_truncated__", url.origin).href;
+    : new URL("/__uiwitness_url_truncated__", url.origin).href;
 }
 
 function sanitizeEmbeddedUrl(value: string): string {

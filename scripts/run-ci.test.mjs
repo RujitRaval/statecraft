@@ -7,7 +7,7 @@ import test from "node:test";
 import { corepackInvocation, runCi } from "./run-ci.mjs";
 
 async function makeFixture(packageJson) {
-  const root = await mkdtemp(path.join(tmpdir(), "statecraft-ci-"));
+  const root = await mkdtemp(path.join(tmpdir(), "uiwitness-ci-"));
   if (packageJson) {
     await writeFile(path.join(root, "package.json"), JSON.stringify(packageJson));
   }

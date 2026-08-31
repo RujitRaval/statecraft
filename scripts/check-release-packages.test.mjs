@@ -19,7 +19,7 @@ const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const checkedInRelease = await validateReleaseWorkspace({ root: repositoryRoot });
 
 async function copyReleaseFixture() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-release-contract-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "uiwitness-release-contract-"));
   await cp(path.join(repositoryRoot, "VERSION"), path.join(root, "VERSION"));
   await cp(path.join(repositoryRoot, "LICENSE"), path.join(root, "LICENSE"));
   await cp(path.join(repositoryRoot, "package.json"), path.join(root, "package.json"));
@@ -88,7 +88,7 @@ test("synchronizes every npm manifest from the four-part VERSION", async (contex
 });
 
 test("writes explicit GitHub outputs without inheriting ambient output paths", async (context) => {
-  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-release-output-"));
+  const outputRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-release-output-"));
   context.after(() => rm(outputRoot, { force: true, recursive: true }));
   const outputFile = path.join(outputRoot, "github-output");
   await writeFile(outputFile, "", "utf8");
@@ -112,14 +112,14 @@ test("writes explicit GitHub outputs without inheriting ambient output paths", a
   );
 });
 
-test("keeps bootstrap token auth conditional so trusted publishing can use OIDC", async () => {
+test("separates bootstrap publication from automatic OIDC registry verification", async () => {
   const workflow = await readFile(path.join(repositoryRoot, ".github", "workflows", "release.yml"), "utf8");
   const jobEnvironment = workflow.match(/ {4}env:\n(?:(?: {6}.*\n)+)/u)?.[0] ?? "";
 
   assert.doesNotMatch(workflow, /registry-url:/u);
   assert.doesNotMatch(jobEnvironment, /\$\{\{ runner\./u);
   assert.equal(
-    (workflow.match(/PACKAGE_OUTPUT: \$\{\{ runner\.temp \}\}\/statecraft-packages/gu) ?? []).length,
+    (workflow.match(/PACKAGE_OUTPUT: \$\{\{ runner\.temp \}\}\/uiwitness-packages/gu) ?? []).length,
     2,
   );
   assert.match(workflow, /NPM_BOOTSTRAP_TOKEN_PRESENT: \$\{\{ secrets\.NPM_TOKEN != '' \}\}/u);
@@ -129,6 +129,7 @@ test("keeps bootstrap token auth conditional so trusted publishing can use OIDC"
   );
   assert.equal((workflow.match(/NODE_AUTH_TOKEN:/gu) ?? []).length, 1);
   assert.match(workflow, /id-token: write/u);
+  assert.match(workflow, /bootstrap: \$\{\{ steps\.release-mode\.outputs\.bootstrap \}\}/u);
   const publishIndex = workflow.indexOf("- name: Publish npm artifacts");
   const registryGateIndex = workflow.indexOf("verify-public-url:");
   assert.equal(publishIndex >= 0, true);
@@ -138,5 +139,10 @@ test("keeps bootstrap token auth conditional so trusted publishing can use OIDC"
     /node scripts\/public-url-registry-smoke\.mjs --tag "\$RELEASE_TAG" --with-deps/u,
   );
   assert.match(workflow.slice(registryGateIndex), /needs: publish-npm/u);
+  assert.match(
+    workflow.slice(registryGateIndex),
+    /needs\.publish-npm\.outputs\.bootstrap == 'false'/u,
+  );
+  assert.match(workflow, /Use a fresh token for every retry\./u);
   assert.match(workflow.slice(registryGateIndex), /timeout-minutes: 25/u);
 });

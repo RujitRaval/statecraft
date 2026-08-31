@@ -1,5 +1,5 @@
-const eventKey = Symbol.for("statecraft.test.capture-events");
-const redirectOriginKey = Symbol.for("statecraft.test.capture-redirect-origin");
+const eventKey = Symbol.for("uiwitness.test.capture-events");
+const redirectOriginKey = Symbol.for("uiwitness.test.capture-redirect-origin");
 
 function record(event) {
   const events = globalThis[eventKey];

@@ -317,6 +317,9 @@ export async function runRegistryJourney({
   assert.equal(await readFile(configPath, "utf8"), config);
   assert.equal(await readFile(scenarioPath, "utf8"), scenario);
   assert.deepEqual(await assertPublicReport(consumerRoot), checkCoordinates);
+  const open = await runCli(["open"]);
+  assertCommand(open, "Opening the registry-only offline report");
+  assert.match(open.stdout, /Opened \.uiwitness\/report\/index\.html/u);
   return { executions: checkCoordinates.length };
 }
 
@@ -326,7 +329,7 @@ function fixtureDocument({ heading, linkHref, linkLabel }) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${heading} · Statecraft registry fixture</title>
+    <title>${heading} · UIWitness registry fixture</title>
     <style>
       * { box-sizing: border-box; }
       html { color-scheme: light dark; font-family: system-ui, sans-serif; }
@@ -339,7 +342,7 @@ function fixtureDocument({ heading, linkHref, linkLabel }) {
     <main>
       <p>Authorized deterministic release fixture</p>
       <h1>${heading}</h1>
-      <p>This page proves Statecraft can capture a public success surface from an empty npm project.</p>
+      <p>This page proves UIWitness can capture a public success surface from an empty npm project.</p>
       <a href="${linkHref}">${linkLabel}</a>
     </main>
   </body>
@@ -392,7 +395,7 @@ export async function cleanRegistryConsumer({
 
 export async function runPublicUrlRegistrySmoke({ version, withDeps = false } = {}) {
   const normalizedVersion = normalizeRegistrySmokeVersion(version);
-  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-public-url-"));
+  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-public-url-"));
   let fixture;
   try {
     await installRegistryConsumer({ consumerRoot, version: normalizedVersion, withDeps });
@@ -413,7 +416,7 @@ async function main() {
   const { version, withDeps } = parseRegistrySmokeArguments(process.argv.slice(2));
   const result = await runPublicUrlRegistrySmoke({ version, withDeps });
   console.log(
-    `Registry public URL smoke passed: uiwitness@${result.version} completed check -> --write-config -> scan with ${result.executions}/${result.executions} cells from npm registry artifacts.`,
+    `Registry public URL smoke passed: uiwitness@${result.version} completed check -> --write-config -> scan -> open with ${result.executions}/${result.executions} cells from npm registry artifacts.`,
   );
 }
 

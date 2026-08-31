@@ -21,6 +21,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      bootstrap: ${{ steps.release-mode.outputs.bootstrap }}
+      release-sha: ${{ steps.release-mode.outputs.release-sha }}
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name }}
       NPM_BOOTSTRAP_TOKEN_PRESENT: ${{ secrets.NPM_TOKEN != '' }}
@@ -35,6 +38,11 @@ jobs:
         with:
           node-version: 24.19.0
           package-manager-cache: false
+      - name: Record release mode
+        id: release-mode
+        run: |
+          echo "bootstrap=$NPM_BOOTSTRAP_TOKEN_PRESENT" >> "$GITHUB_OUTPUT"
+          echo "release-sha=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
       - name: Configure first-publication npm token
         if: ${{ env.NPM_BOOTSTRAP_TOKEN_PRESENT == 'true' }}
         run: npm config set //registry.npmjs.org/:_authToken "$NODE_AUTH_TOKEN" --location=user
@@ -59,21 +67,34 @@ jobs:
       - name: Pack and test npm artifacts
         run: node scripts/release-package-smoke.mjs --output "$PACKAGE_OUTPUT"
         env:
-          PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
+          PACKAGE_OUTPUT: ${{ runner.temp }}/uiwitness-packages
       - name: Publish npm artifacts
         run: node scripts/publish-release-packages.mjs --input "$PACKAGE_OUTPUT" --tag "$RELEASE_TAG"
         env:
-          PACKAGE_OUTPUT: ${{ runner.temp }}/statecraft-packages
+          PACKAGE_OUTPUT: ${{ runner.temp }}/uiwitness-packages
+      - name: Record bootstrap cleanup requirement
+        if: ${{ always() && env.NPM_BOOTSTRAP_TOKEN_PRESENT == 'true' }}
+        run: |
+          {
+            echo "## Bootstrap cleanup required"
+            echo
+            echo "Attempt: ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            echo "Release: ${RELEASE_TAG} at ${GITHUB_SHA}"
+            echo
+            echo "Within 30 minutes of this attempt finishing, configure trusted publishers for every created package, revoke the temporary npm token, delete the npm-publish environment's NPM_TOKEN secret, and record the evidence for the manual registry-verification workflow. Use a fresh token for every retry."
+          } >> "$GITHUB_STEP_SUMMARY"
 
   verify-public-url:
     name: Verify published public URL journey
     needs: publish-npm
+    if: ${{ needs.publish-npm.result == 'success' && needs.publish-npm.outputs.bootstrap == 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     permissions:
       contents: read
     env:
       RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_SHA: ${{ needs.publish-npm.outputs.release-sha }}
     steps:
       - name: Check out the release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,4 +106,6 @@ jobs:
           node-version: 24.19.0
           package-manager-cache: false
       - name: Run the registry-only consumer gate
-        run: node scripts/public-url-registry-smoke.mjs --tag "$RELEASE_TAG" --with-deps
+        run: |
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          node scripts/public-url-registry-smoke.mjs --tag "$RELEASE_TAG" --with-deps

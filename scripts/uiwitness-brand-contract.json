@@ -1,24 +1,12 @@
 {
   "schemaVersion": 1,
-  "description": "Exact-file migration ratchet. Token budgets may decrease; new legacy-brand occurrences fail.",
-  "migrationBaseline": [
+  "description": "Release-ready exact-file allowlist. Every retained legacy occurrence is intentional; new occurrences fail.",
+  "migrationBaseline": [],
+  "permanentAllowlist": [
     {
       "path": ".github/pull_request_template.md",
       "contentCounts": {
         "lower": 1
-      }
-    },
-    {
-      "path": ".github/workflows/ci.yml",
-      "contentCounts": {
-        "title": 1,
-        "lower": 1
-      }
-    },
-    {
-      "path": ".github/workflows/release.yml",
-      "contentCounts": {
-        "lower": 2
       }
     },
     {
@@ -35,255 +23,16 @@
       }
     },
     {
-      "path": "CONTRIBUTING.md",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "docs/engineering/SECURITY_PRIVACY.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "docs/open-source/MIGRATING_TO_UIWITNESS.md",
-      "contentCounts": {
-        "title": 4,
-        "lower": 22
-      }
-    },
-    {
-      "path": "packages/cli/README.md",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/cli/test/open.test.ts",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/core/README.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/core/src/coverage.ts",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/core/src/results.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/core/test-d/public-api.test-d.ts",
-      "contentCounts": {
-        "lower": 2,
-        "title": 8
-      }
-    },
-    {
-      "path": "packages/core/test/config.test.ts",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/core/test/results.test.ts",
-      "contentCounts": {
-        "lower": 5
-      }
-    },
-    {
-      "path": "packages/report/README.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/report/src/transform.ts",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/report/test/transform.test.ts",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/README.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/src/capture.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test-d/public-api.test-d.ts",
-      "contentCounts": {
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/capture.test.ts",
-      "contentCounts": {
-        "lower": 18
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/discovery.test.ts",
-      "contentCounts": {
-        "lower": 4
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/fixtures/page.ts",
-      "contentCounts": {
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/fixtures/scenarios/capture.mjs",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/fixtures/scenarios/navigation.mjs",
-      "contentCounts": {
-        "lower": 4
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/fixtures/scenarios/recording.mjs",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/lifecycle.test.ts",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/navigation.test.ts",
-      "contentCounts": {
-        "lower": 20
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/persistence.test.ts",
-      "contentCounts": {
-        "lower": 8
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/public-site.test.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/runner-playwright/test/scenario.test.ts",
-      "contentCounts": {
-        "lower": 3
-      }
-    },
-    {
-      "path": "scripts/check-docs.mjs",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "scripts/check-docs.test.mjs",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "scripts/check-release-packages.test.mjs",
-      "contentCounts": {
-        "lower": 3
-      }
-    },
-    {
-      "path": "scripts/clean-package.test.mjs",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "scripts/public-url-registry-smoke.mjs",
-      "contentCounts": {
-        "title": 2,
-        "lower": 1
-      }
-    },
-    {
-      "path": "scripts/public-url-registry-smoke.test.mjs",
-      "contentCounts": {
-        "lower": 19
-      }
-    },
-    {
-      "path": "scripts/release-package-smoke.mjs",
-      "contentCounts": {
-        "lower": 2
-      }
-    },
-    {
-      "path": "scripts/release-package-smoke.test.mjs",
-      "contentCounts": {
-        "lower": 6
-      }
-    },
-    {
-      "path": "scripts/release-smoke.test.mjs",
-      "contentCounts": {
-        "lower": 7
-      }
-    },
-    {
-      "path": "scripts/run-ci.test.mjs",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "scripts/uiwitness-migration-guide.test.mjs",
-      "contentCounts": {
-        "lower": 10
-      }
-    },
-    {
-      "path": "SECURITY.md",
-      "contentCounts": {
-        "lower": 1
-      }
-    }
-  ],
-  "permanentAllowlist": [
-    {
       "path": "CHANGELOG.md",
       "contentCounts": {
         "lower": 35,
         "title": 15
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "contentCounts": {
+        "lower": 2
       }
     },
     {
@@ -462,6 +211,129 @@
     },
     {
       "path": "docs/decisions/0033-registry-public-url-consumer-gate.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/engineering/SECURITY_PRIVACY.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "docs/open-source/MIGRATING_TO_UIWITNESS.md",
+      "contentCounts": {
+        "title": 4,
+        "lower": 22
+      }
+    },
+    {
+      "path": "packages/cli/README.md",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/cli/test/open.test.ts",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/core/README.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/core/src/results.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/core/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "lower": 2,
+        "title": 8
+      }
+    },
+    {
+      "path": "packages/core/test/results.test.ts",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/report/README.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/report/src/transform.ts",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/report/test/transform.test.ts",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/README.md",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test-d/public-api.test-d.ts",
+      "contentCounts": {
+        "title": 2
+      }
+    },
+    {
+      "path": "packages/runner-playwright/test/persistence.test.ts",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "scripts/check-docs.mjs",
+      "contentCounts": {
+        "lower": 2
+      }
+    },
+    {
+      "path": "scripts/check-docs.test.mjs",
+      "contentCounts": {
+        "lower": 1
+      }
+    },
+    {
+      "path": "scripts/release-package-smoke.mjs",
+      "contentCounts": {
+        "lower": 3
+      }
+    },
+    {
+      "path": "scripts/release-package-smoke.test.mjs",
+      "contentCounts": {
+        "lower": 1,
+        "title": 1
+      }
+    },
+    {
+      "path": "scripts/uiwitness-migration-guide.test.mjs",
+      "contentCounts": {
+        "lower": 10
+      }
+    },
+    {
+      "path": "SECURITY.md",
       "contentCounts": {
         "lower": 1
       }
