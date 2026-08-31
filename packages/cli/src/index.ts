@@ -11,7 +11,7 @@ export type {
   ConfigLoadErrorCode,
   LoadedConfig,
 } from "./config.js";
-export { defineConfig } from "statecraft-ui-core";
+export { defineConfig } from "uiwitness-core";
 export { CheckError, checkPublicSite } from "./check.js";
 export type {
   CheckDiscoveredRoute,

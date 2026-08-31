@@ -1,7 +1,7 @@
 import { realpath, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import type { StatecraftReport } from "statecraft-ui-core";
+import type { UIWitnessReport } from "uiwitness-core";
 
 import { ProjectFileError } from "./project-files.js";
 import {
@@ -71,7 +71,7 @@ export interface CheckDiscovery {
 export interface CheckResult {
   readonly discovery: CheckDiscovery;
   readonly htmlReportPath: ".statecraft/report/index.html";
-  readonly report: StatecraftReport;
+  readonly report: UIWitnessReport;
   readonly reportPath: ".statecraft/report/statecraft.json";
   readonly setup?: PublicSiteSetupResult | undefined;
 }
@@ -176,7 +176,7 @@ export async function checkPublicSite(
       throw error;
     }
   }
-  const runner = await import("statecraft-ui-runner-playwright");
+  const runner = await import("uiwitness-runner-playwright");
   const launchOptions =
     options.headed === true ? Object.freeze({ headless: false }) : undefined;
 

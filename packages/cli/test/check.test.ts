@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { parseReport } from "statecraft-ui-core";
+import { parseReport } from "uiwitness-core";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { runCli } from "../src/command.js";
@@ -195,14 +195,14 @@ describe("statecraft check", () => {
             "utf8",
           ),
         ).resolves.toContain(
-          'from "statecraft-ui/public-site-scenario"',
+          'from "uiwitness/public-site-scenario"',
         );
 
         const packageModules = join(project, "node_modules");
         await mkdir(packageModules, { recursive: true });
         await symlink(
           fileURLToPath(new URL("../", import.meta.url)),
-          join(packageModules, "statecraft-ui"),
+          join(packageModules, "uiwitness"),
           process.platform === "win32" ? "junction" : "dir",
         );
         let scanStderr = "";

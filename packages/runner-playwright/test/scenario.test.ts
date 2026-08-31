@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { expandMatrix, parseConfig } from "uiwitness-core";
 
 import {
   loadScenario,
@@ -11,7 +11,7 @@ import {
   runScenarioLifecycle,
   ScenarioLoadError,
   type ScenarioContext,
-  type StatecraftScenario,
+  type UIWitnessScenario,
 } from "../src/index.js";
 
 const scenarioBaseDirectory = fileURLToPath(
@@ -106,7 +106,7 @@ describe("runScenarioLifecycle", () => {
 
   it("runs hooks around caller-owned work with one context", async () => {
     const events: string[] = [];
-    const scenario: StatecraftScenario = {
+    const scenario: UIWitnessScenario = {
       async afterNavigate(received) {
         expect(received).toBe(context);
         events.push("after");

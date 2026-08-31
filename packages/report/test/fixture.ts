@@ -5,8 +5,8 @@ import {
   screenshotArtifactPath,
   type ExecutionResult,
   type MatrixCell,
-  type StatecraftReport,
-} from "statecraft-ui-core";
+  type UIWitnessReport,
+} from "uiwitness-core";
 
 function cell(
   stateId: string,
@@ -66,20 +66,20 @@ function execution(
     stateId: matrixCell.state.id,
     status,
     theme: matrixCell.theme,
-    url: `https://statecraft.invalid${matrixCell.route.path}`,
+    url: `https://uiwitness.invalid${matrixCell.route.path}`,
     viewport: matrixCell.viewport,
     viewportId: matrixCell.viewportId,
   };
 }
 
-export function reportFixture(): StatecraftReport {
+export function reportFixture(): UIWitnessReport {
   const cells = [cell("success", "desktop", "light"), cell("error", "desktop", "dark")];
   const executions = [execution(cells[0]!, "passed"), execution(cells[1]!, "failed")];
   const passed = executions.filter((result) => result.status === "passed").length;
   return parseReport({
     executions,
     generatedAt: "2026-08-20T18:00:00.000Z",
-    project: { baseURL: "https://statecraft.invalid" },
+    project: { baseURL: "https://uiwitness.invalid" },
     schemaVersion: REPORT_SCHEMA_VERSION,
     summary: {
       coverage: calculateCoverage(
@@ -102,7 +102,7 @@ export function reportFixture(): StatecraftReport {
   });
 }
 
-export function interactiveReportFixture(): StatecraftReport {
+export function interactiveReportFixture(): UIWitnessReport {
   const cells = [
     namedCell("dashboard", "/dashboard", "success", "desktop", "light", 1_200, 800),
     namedCell("dashboard", "/dashboard", "error", "mobile", "dark", 390, 844),
@@ -115,7 +115,7 @@ export function interactiveReportFixture(): StatecraftReport {
   return parseReport({
     executions,
     generatedAt: "2026-08-20T18:00:00.000Z",
-    project: { baseURL: "https://statecraft.invalid" },
+    project: { baseURL: "https://uiwitness.invalid" },
     schemaVersion: REPORT_SCHEMA_VERSION,
     summary: {
       coverage: calculateCoverage(
@@ -141,13 +141,13 @@ export function interactiveReportFixture(): StatecraftReport {
   });
 }
 
-export function allIdentifierReportFixture(): StatecraftReport {
+export function allIdentifierReportFixture(): UIWitnessReport {
   const matrixCell = namedCell("all", "/all", "all", "all", "all", 800, 600);
   const result = execution(matrixCell, "passed");
   return parseReport({
     executions: [result],
     generatedAt: "2026-08-20T18:00:00.000Z",
-    project: { baseURL: "https://statecraft.invalid" },
+    project: { baseURL: "https://uiwitness.invalid" },
     schemaVersion: REPORT_SCHEMA_VERSION,
     summary: {
       coverage: calculateCoverage(

@@ -1,4 +1,4 @@
-import { publicSiteScenario } from "statecraft-ui/public-site-scenario";
+import { publicSiteScenario } from "uiwitness/public-site-scenario";
 
 const assertion: unknown = publicSiteScenario.assert;
 

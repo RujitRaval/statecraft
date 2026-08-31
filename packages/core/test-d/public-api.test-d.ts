@@ -3,7 +3,7 @@ import {
   REPORT_SCHEMA_VERSION,
   ReportValidationError,
   ResultValidationError,
-  StatecraftError,
+  UIWitnessError,
   calculateCoverage,
   defineConfig,
   expandMatrix,
@@ -32,11 +32,11 @@ import {
   type ResultValidationIssue,
   type ScreenshotArtifactPath,
   type StateDefinition,
-  type StatecraftConfig,
-  type StatecraftReport,
-  type StatecraftErrorCode,
+  type UIWitnessConfig,
+  type UIWitnessReport,
+  type UIWitnessErrorCode,
   type ViewportDefinition,
-} from "statecraft-ui-core";
+} from "uiwitness-core";
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",
@@ -52,7 +52,7 @@ const config = defineConfig({
   viewports: { desktop: { height: 900, width: 1440 } },
 });
 
-const parsed: StatecraftConfig = parseConfig(config);
+const parsed: UIWitnessConfig = parseConfig(config);
 const filter: MatrixFilter = { routeIds: ["dashboard"] };
 const matrix: readonly MatrixCell[] = expandMatrix(parsed, filter);
 const coverageObservation: CoverageObservation = {
@@ -78,7 +78,7 @@ const screenshotPath: ScreenshotArtifactPath = screenshotArtifactPath(matrix[0]!
 // @ts-expect-error Artifact paths must come from the safe encoder.
 const forgedScreenshotPath: ScreenshotArtifactPath =
   ".statecraft/artifacts/../../outside/screenshot.png";
-const validationError: StatecraftError = new ConfigValidationError([]);
+const validationError: UIWitnessError = new ConfigValidationError([]);
 const executionFailureCode: ExecutionFailureCode = "ASSERTION_FAILED";
 const executionStatus: ExecutionStatus = "passed";
 const executionFailure: ExecutionFailure = {
@@ -120,7 +120,7 @@ const reportSummary: ReportSummary = {
   routes: 1,
   states: 1,
 };
-const report: StatecraftReport = parseReport({
+const report: UIWitnessReport = parseReport({
   executions: [execution],
   generatedAt: "2026-08-19T14:30:00.000Z",
   project: { baseURL: config.baseURL },
@@ -128,8 +128,8 @@ const report: StatecraftReport = parseReport({
   summary: reportSummary,
 });
 const serializedReport: string = serializeReport(report);
-const resultValidationError: StatecraftError = new ResultValidationError([]);
-const reportValidationError: StatecraftError = new ReportValidationError([]);
+const resultValidationError: UIWitnessError = new ResultValidationError([]);
+const reportValidationError: UIWitnessError = new ReportValidationError([]);
 const resultIssue: ResultValidationIssue = {
   code: "invalid_value",
   message: "Invalid result.",
@@ -153,9 +153,9 @@ void reportValidationError;
 void reportIssue;
 
 export type PublicTypeContract = {
-  config: StatecraftConfig;
+  config: UIWitnessConfig;
   coverage: CoverageSummary;
-  errorCode: StatecraftErrorCode;
+  errorCode: UIWitnessErrorCode;
   failurePolicy: FailurePolicy;
   issue: ConfigValidationIssue;
   issueCode: ConfigValidationIssueCode;
@@ -164,7 +164,7 @@ export type PublicTypeContract = {
   viewport: ViewportDefinition;
 };
 
-const invalidReport: StatecraftReport = {
+const invalidReport: UIWitnessReport = {
   ...report,
   // @ts-expect-error Only report schema version 1 is supported.
   schemaVersion: 2,
@@ -202,3 +202,16 @@ defineConfig({
   themes: ["light"],
   viewports: { desktop: { height: 900, width: 1440 } },
 });
+
+// @ts-expect-error Legacy StatecraftConfig aliases are intentionally not exported.
+type LegacyConfig = import("uiwitness-core").StatecraftConfig;
+// @ts-expect-error Legacy StatecraftReport aliases are intentionally not exported.
+type LegacyReport = import("uiwitness-core").StatecraftReport;
+// @ts-expect-error Legacy StatecraftError aliases are intentionally not exported.
+type LegacyError = typeof import("uiwitness-core").StatecraftError;
+// @ts-expect-error Legacy StatecraftErrorCode aliases are intentionally not exported.
+type LegacyErrorCode = import("uiwitness-core").StatecraftErrorCode;
+void (null as unknown as LegacyConfig);
+void (null as unknown as LegacyReport);
+void (null as unknown as LegacyError);
+void (null as unknown as LegacyErrorCode);

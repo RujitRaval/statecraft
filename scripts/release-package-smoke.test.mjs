@@ -48,12 +48,12 @@ function packageNameFromTarball(tarball) {
 }
 
 test("derives stable npm tarball names", () => {
-  assert.equal(releaseTarballName("statecraft-ui", "1.2.3"), "statecraft-ui-1.2.3.tgz");
+  assert.equal(releaseTarballName("uiwitness", "1.2.3"), "uiwitness-1.2.3.tgz");
   assert.equal(releaseTarballName("@example/tool", "1.2.3"), "example-tool-1.2.3.tgz");
 });
 
 test("validates npm publish identities across supported JSON summary shapes", () => {
-  const name = "statecraft-ui-core";
+  const name = "uiwitness-core";
   const version = "1.2.3";
   assert.doesNotThrow(() => assertPublishSummaryIdentity({ name, version }, name, version));
   assert.doesNotThrow(() =>
@@ -106,7 +106,7 @@ test("runs bounded shell-free release commands", async () => {
 test("plans new publishes, skips byte-identical versions, and rejects collisions", () => {
   const candidate = {
     integrity: "sha512-same",
-    name: "statecraft-ui-core",
+    name: "uiwitness-core",
     registryIntegrity: undefined,
     tarball: "/tmp/core.tgz",
     version: "1.2.3",
@@ -144,8 +144,8 @@ test("plans new publishes, skips byte-identical versions, and rejects collisions
 
 test("publishes missing tarballs in dependency order and resumes identical versions", async (context) => {
   const { input, integrities } = await createTarballFixture(context);
-  const registry = new Map([["statecraft-ui-core", integrities.get("statecraft-ui-core")]]);
-  const latest = new Map([["statecraft-ui-core", checkedInRelease.packageVersion]]);
+  const registry = new Map([["uiwitness-core", integrities.get("uiwitness-core")]]);
+  const latest = new Map([["uiwitness-core", checkedInRelease.packageVersion]]);
   const published = [];
   let failRunnerOnce = true;
   const execute = async (command, args) => {
@@ -162,7 +162,7 @@ test("publishes missing tarballs in dependency order and resumes identical versi
     assert.deepEqual(args.slice(2), ["--access", "public", "--provenance"]);
     const name = packageNameFromTarball(args[1]);
     assert.notEqual(name, undefined);
-    if (name === "statecraft-ui-runner-playwright" && failRunnerOnce) {
+    if (name === "uiwitness-runner-playwright" && failRunnerOnce) {
       failRunnerOnce = false;
       return { code: 1, signal: null, stderr: "simulated registry outage", stdout: "" };
     }
@@ -179,14 +179,14 @@ test("publishes missing tarballs in dependency order and resumes identical versi
     tag: `v${checkedInRelease.packageVersion}`,
   };
   await assert.rejects(publishReleasePackages(options), /simulated registry outage/u);
-  assert.deepEqual(published, [releaseTarballName("statecraft-ui-report", checkedInRelease.packageVersion)]);
+  assert.deepEqual(published, [releaseTarballName("uiwitness-report", checkedInRelease.packageVersion)]);
 
   const plan = await publishReleasePackages(options);
   assert.deepEqual(plan.map(({ action }) => action), ["skip", "skip", "publish", "publish"]);
   assert.deepEqual(published, [
-    releaseTarballName("statecraft-ui-report", checkedInRelease.packageVersion),
-    releaseTarballName("statecraft-ui-runner-playwright", checkedInRelease.packageVersion),
-    releaseTarballName("statecraft-ui", checkedInRelease.packageVersion),
+    releaseTarballName("uiwitness-report", checkedInRelease.packageVersion),
+    releaseTarballName("uiwitness-runner-playwright", checkedInRelease.packageVersion),
+    releaseTarballName("uiwitness", checkedInRelease.packageVersion),
   ]);
   const retry = await publishReleasePackages(options);
   assert.deepEqual(retry.map(({ action }) => action), ["skip", "skip", "skip", "skip"]);
@@ -286,7 +286,7 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
   const symlinkTarballs = await createTarballFixture(context);
   const coreTarball = path.join(
     symlinkTarballs.input,
-    releaseTarballName("statecraft-ui-core", checkedInRelease.packageVersion),
+    releaseTarballName("uiwitness-core", checkedInRelease.packageVersion),
   );
   const externalTarballRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-external-"));
   context.after(() => rm(externalTarballRoot, { force: true, recursive: true }));
@@ -306,7 +306,7 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
   };
   const reportTarball = path.join(
     directoryTarballs.input,
-    releaseTarballName("statecraft-ui-report", checkedInRelease.packageVersion),
+    releaseTarballName("uiwitness-report", checkedInRelease.packageVersion),
   );
   await unlink(reportTarball);
   await mkdir(reportTarball);

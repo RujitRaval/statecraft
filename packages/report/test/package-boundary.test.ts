@@ -21,7 +21,7 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("statecraft-ui-report package boundary", () => {
+describe("uiwitness-report package boundary", () => {
   it("defines a publishable ESM build with a small documented API", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const manifest = JSON.parse(
@@ -29,7 +29,7 @@ describe("statecraft-ui-report package boundary", () => {
     ) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "statecraft-ui-report",
+      name: "uiwitness-report",
       type: "module",
       exports: {
         ".": {

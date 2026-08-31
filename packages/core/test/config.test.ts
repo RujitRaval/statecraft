@@ -4,10 +4,10 @@ import {
   ConfigValidationError,
   defineConfig,
   parseConfig,
-  type StatecraftConfig,
+  type UIWitnessConfig,
 } from "../src/index.js";
 
-function validConfig(): StatecraftConfig {
+function validConfig(): UIWitnessConfig {
   return {
     baseURL: "http://localhost:3000",
     failOn: {
@@ -142,7 +142,7 @@ describe("parseConfig", () => {
     const error = captureValidationError(mutate());
 
     expect(error.code).toBe("CONFIG_INVALID");
-    expect(error.message).toBe("Invalid Statecraft configuration.");
+    expect(error.message).toBe("Invalid UIWitness configuration.");
     expect(error.issues).toEqual(expect.arrayContaining([expect.objectContaining(expected)]));
   });
 

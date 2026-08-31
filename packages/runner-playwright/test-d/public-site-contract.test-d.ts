@@ -1,4 +1,4 @@
-import { PUBLIC_SITE_CHECK_CONTRACT } from "statecraft-ui-runner-playwright/public-site-contract";
+import { PUBLIC_SITE_CHECK_CONTRACT } from "uiwitness-runner-playwright/public-site-contract";
 
 const mobileWidth: 390 = PUBLIC_SITE_CHECK_CONTRACT.viewports.mobile.width;
 const lightTheme: "light" = PUBLIC_SITE_CHECK_CONTRACT.themes[0];

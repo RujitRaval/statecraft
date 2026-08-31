@@ -126,7 +126,7 @@ async function assertInstalledPackage(packageRoot, contract, packageVersion) {
   assert.equal(manifest.name, contract.name);
   assert.equal(manifest.version, packageVersion);
   assert.equal(manifest.private, undefined);
-  assert.equal(manifest.repository.url, "git+https://github.com/RujitRaval/statecraft.git");
+  assert.equal(manifest.repository.url, "git+https://github.com/RujitRaval/uiwitness.git");
   assert.equal(manifest.publishConfig.access, "public");
   for (const dependency of Object.keys(contract.dependencies)) {
     assert.equal(manifest.dependencies[dependency], packageVersion);
@@ -231,10 +231,10 @@ export async function runReleasePackageSmoke({
     await writeFile(
       importProbe,
       [
-        'import { defineConfig, parseReport } from "statecraft-ui-core";',
-        'import { renderReportHtml } from "statecraft-ui-report";',
-        'import { runExecutionCells } from "statecraft-ui-runner-playwright";',
-        'import { runCli } from "statecraft-ui";',
+        'import { defineConfig, parseReport } from "uiwitness-core";',
+        'import { renderReportHtml } from "uiwitness-report";',
+        'import { runExecutionCells } from "uiwitness-runner-playwright";',
+        'import { runCli } from "uiwitness";',
         "if (![defineConfig, parseReport, renderReportHtml, runExecutionCells, runCli].every((value) => typeof value === \"function\")) process.exit(1);",
         "",
       ].join("\n"),
@@ -244,27 +244,27 @@ export async function runReleasePackageSmoke({
     assertCommand(imports, "Importing packed package APIs");
 
     const cliManifest = JSON.parse(
-      await readFile(path.join(consumerRoot, "node_modules", "statecraft-ui", "package.json"), "utf8"),
+      await readFile(path.join(consumerRoot, "node_modules", "uiwitness", "package.json"), "utf8"),
     );
-    assert.equal(cliManifest.bin.statecraft, "./dist/bin.js");
+    assert.equal(cliManifest.bin.uiwitness, "./dist/bin.js");
     const cliBinPath = path.join(
       consumerRoot,
       "node_modules",
-      "statecraft-ui",
-      cliManifest.bin.statecraft,
+      "uiwitness",
+      cliManifest.bin.uiwitness,
     );
-    const help = await runCommand("npm", ["exec", "--offline", "--", "statecraft", "--help"], {
+    const help = await runCommand("npm", ["exec", "--offline", "--", "uiwitness", "--help"], {
       cwd: consumerRoot,
     });
     assertCommand(help, "Running the packed CLI");
     assert.match(help.stdout, /statecraft scan/u);
 
-    const init = await runCommand("npm", ["exec", "--offline", "--", "statecraft", "init"], {
+    const init = await runCommand("npm", ["exec", "--offline", "--", "uiwitness", "init"], {
       cwd: consumerRoot,
     });
     assertCommand(init, "Initializing with the packed CLI");
     const generatedConfigPath = path.join(consumerRoot, "statecraft.config.mts");
-    assert.match(await readFile(generatedConfigPath, "utf8"), /from "statecraft-ui"/u);
+    assert.match(await readFile(generatedConfigPath, "utf8"), /from "uiwitness"/u);
     assert.match(
       await readFile(path.join(consumerRoot, "statecraft", "scenarios", "home", "success.mts"), "utf8"),
       /export default scenario/u,

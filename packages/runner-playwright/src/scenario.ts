@@ -1,7 +1,7 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { MatrixCell } from "statecraft-ui-core";
+import type { MatrixCell } from "uiwitness-core";
 import type { BrowserContext, Page } from "playwright";
 
 import {
@@ -42,7 +42,7 @@ export type ScenarioAssertionHook = (
 ) => Promise<void>;
 
 /** Trusted local scenario code loaded from a state's setup module. */
-export interface StatecraftScenario {
+export interface UIWitnessScenario {
   readonly afterNavigate?: ScenarioHook | undefined;
   readonly assert?: ScenarioAssertionHook | undefined;
   readonly beforeNavigate?: ScenarioHook | undefined;
@@ -110,7 +110,7 @@ function scenarioHook(
 function normalizeScenario(
   moduleNamespace: unknown,
   scenarioPath: string,
-): StatecraftScenario {
+): UIWitnessScenario {
   const defaultExport = isRecord(moduleNamespace)
     ? moduleNamespace["default"]
     : undefined;
@@ -141,7 +141,7 @@ function normalizeScenario(
 export function validateScenario(
   scenario: unknown,
   scenarioSource: string,
-): StatecraftScenario {
+): UIWitnessScenario {
   return normalizeScenario({ default: scenario }, scenarioSource);
 }
 
@@ -149,7 +149,7 @@ export function validateScenario(
 export async function loadScenario(
   scenarioPath: string,
   options: LoadScenarioOptions = {},
-): Promise<StatecraftScenario> {
+): Promise<UIWitnessScenario> {
   const baseDirectory = options.baseDirectory ?? process.cwd();
   const absolutePath = path.resolve(baseDirectory, scenarioPath);
   const moduleUrl = pathToFileURL(absolutePath);
@@ -185,7 +185,7 @@ export function scenarioContextForExecution(
 
 /** Runs the pre-navigation hook, caller-owned work, then post-navigation hook. */
 export async function runScenarioLifecycle<Value>(
-  scenario: StatecraftScenario,
+  scenario: UIWitnessScenario,
   context: ScenarioContext,
   execute: ScenarioCellExecutor<Value>,
 ): Promise<Value> {

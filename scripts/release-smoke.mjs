@@ -163,7 +163,7 @@ export async function parseBuiltReport(
   assert.equal(
     typeof module.parseReport,
     "function",
-    "Built statecraft-ui-core does not export parseReport.",
+    "Built uiwitness-core does not export parseReport.",
   );
   return module.parseReport(value);
 }
@@ -235,11 +235,11 @@ async function resolveCliBin() {
     await readFile(path.join(packageRoot, "package.json"), "utf8"),
   );
   assert.equal(
-    typeof manifest.bin?.statecraft,
+    typeof manifest.bin?.uiwitness,
     "string",
-    "statecraft-ui does not declare the statecraft bin target.",
+    "uiwitness does not declare the uiwitness bin target.",
   );
-  return path.resolve(packageRoot, manifest.bin.statecraft);
+  return path.resolve(packageRoot, manifest.bin.uiwitness);
 }
 
 async function recordArtifactPath(projectRoot, outputFile) {

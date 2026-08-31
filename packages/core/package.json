@@ -1,16 +1,16 @@
 {
-  "name": "statecraft-ui-core",
-  "version": "0.24.13",
-  "description": "Core contracts for Statecraft UI product-state coverage.",
+  "name": "uiwitness-core",
+  "version": "0.25.0",
+  "description": "Core contracts for UIWitness UI product-state coverage.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "url": "git+https://github.com/RujitRaval/uiwitness.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "homepage": "https://github.com/RujitRaval/uiwitness#readme",
   "bugs": {
-    "url": "https://github.com/RujitRaval/statecraft/issues"
+    "url": "https://github.com/RujitRaval/uiwitness/issues"
   },
   "keywords": [
     "ui-testing",

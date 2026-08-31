@@ -1,4 +1,4 @@
-import type { MatrixCell } from "statecraft-ui-core";
+import type { MatrixCell } from "uiwitness-core";
 import type { Page } from "playwright";
 
 import {
@@ -23,7 +23,7 @@ import {
   type RunScenarioCellsOptions,
   type ScenarioNavigationMetadata,
   type ScenarioContext,
-  type StatecraftScenario,
+  type UIWitnessScenario,
 } from "./scenario.js";
 
 /** Optional deterministic readiness gates applied after afterNavigate. */
@@ -41,7 +41,7 @@ export interface RunNavigatedScenarioCellsOptions
   readonly navigationTimeoutMs?: number | undefined;
   readonly readiness?: DeterministicReadinessOptions | undefined;
   /** Trusted in-memory scenario used for every cell instead of loading setup paths. */
-  readonly scenario?: StatecraftScenario | undefined;
+  readonly scenario?: UIWitnessScenario | undefined;
 }
 
 /** Stable navigation metadata available after deterministic readiness. */
@@ -62,7 +62,7 @@ interface NavigationSettings {
   readonly navigationTimeoutMs: number;
   readonly readinessSelector?: string | undefined;
   readonly readinessTimeoutMs: number;
-  readonly scenario?: StatecraftScenario | undefined;
+  readonly scenario?: UIWitnessScenario | undefined;
 }
 
 /** @internal Lets higher-level runner stages surround the navigation lifecycle. */
@@ -78,7 +78,7 @@ export interface NavigatedScenarioLifecycle {
 /** @internal Successful navigation state needed by higher-level stages. */
 export interface NavigatedScenarioLifecycleResult {
   readonly context: NavigatedScenarioContext;
-  readonly scenario: StatecraftScenario;
+  readonly scenario: UIWitnessScenario;
 }
 
 /** @internal Executes one higher-level stage around the navigation lifecycle. */

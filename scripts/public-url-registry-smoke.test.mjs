@@ -100,7 +100,7 @@ test("installs exact registry packages with bounded propagation retries", async 
     REGISTRY_INSTALL_RETRY_DELAY_MS,
   ]);
   const install = commands[1].args;
-  assert.deepEqual(install.slice(-2), ["statecraft-ui@0.24.9", `playwright@${PLAYWRIGHT_VERSION}`]);
+  assert.deepEqual(install.slice(-2), ["uiwitness@0.24.9", `playwright@${PLAYWRIGHT_VERSION}`]);
   assert.deepEqual(install.slice(install.indexOf("--registry"), install.indexOf("--registry") + 2), ["--registry", NPM_REGISTRY]);
   const installCommands = commands.filter(({ args }) => args[0] === "install");
   assert.equal(installCommands.every(({ args }) => args.includes("--prefer-online")), true);
@@ -326,16 +326,16 @@ test("verifies every installed public package and both CommonJS npm project shap
   const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-install-test-"));
   context.after(() => rm(root, { force: true, recursive: true }));
   for (const name of [
-    "statecraft-ui-core",
-    "statecraft-ui-report",
-    "statecraft-ui-runner-playwright",
-    "statecraft-ui",
+    "uiwitness-core",
+    "uiwitness-report",
+    "uiwitness-runner-playwright",
+    "uiwitness",
     "playwright",
   ]) {
     await mkdir(path.join(root, "node_modules", name), { recursive: true });
     await writeFile(path.join(root, "node_modules", name, "package.json"), JSON.stringify({
-      ...(name === "statecraft-ui" ? { bin: { statecraft: "./dist/bin.js" } } : {}),
-      ...(name === "statecraft-ui-runner-playwright" ? { dependencies: { playwright: PLAYWRIGHT_VERSION } } : {}),
+      ...(name === "uiwitness" ? { bin: { uiwitness: "./dist/bin.js" } } : {}),
+      ...(name === "uiwitness-runner-playwright" ? { dependencies: { playwright: PLAYWRIGHT_VERSION } } : {}),
       name,
       version: name === "playwright" ? PLAYWRIGHT_VERSION : "0.24.9",
     }));
@@ -344,25 +344,25 @@ test("verifies every installed public package and both CommonJS npm project shap
   for (const type of [undefined, "commonjs"]) {
     await writeFile(path.join(root, "package.json"), JSON.stringify({
       ...(type === undefined ? {} : { type }),
-      devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+      devDependencies: { playwright: PLAYWRIGHT_VERSION, "uiwitness": "0.24.9" },
     }));
     assert.equal(
       await assertRegistryInstall(root, "0.24.9"),
-      path.join(root, "node_modules", "statecraft-ui", "dist", "bin.js"),
+      path.join(root, "node_modules", "uiwitness", "dist", "bin.js"),
     );
   }
   await writeFile(path.join(root, "package.json"), JSON.stringify({
     type: "module",
-    devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+    devDependencies: { playwright: PLAYWRIGHT_VERSION, "uiwitness": "0.24.9" },
   }));
   await assert.rejects(assertRegistryInstall(root, "0.24.9"), /CommonJS package mode/u);
   await writeFile(path.join(root, "package.json"), JSON.stringify({
     type: "commonjs",
-    devDependencies: { playwright: PLAYWRIGHT_VERSION, "statecraft-ui": "0.24.9" },
+    devDependencies: { playwright: PLAYWRIGHT_VERSION, "uiwitness": "0.24.9" },
   }));
   await writeFile(
-    path.join(root, "node_modules", "statecraft-ui-core", "package.json"),
-    JSON.stringify({ name: "statecraft-ui-core", version: "0.24.8" }),
+    path.join(root, "node_modules", "uiwitness-core", "package.json"),
+    JSON.stringify({ name: "uiwitness-core", version: "0.24.8" }),
   );
   await assert.rejects(assertRegistryInstall(root, "0.24.9"), /did not resolve to the release version/u);
 });
@@ -493,8 +493,8 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
     await writeEvidence(consumerRoot);
     if (args.includes("--write-config")) {
       await mkdir(path.join(consumerRoot, "statecraft", "scenarios", "public"), { recursive: true });
-      await writeFile(path.join(consumerRoot, "statecraft.config.mts"), 'import { defineConfig } from "statecraft-ui";\nexport default defineConfig({});\n');
-      await writeFile(path.join(consumerRoot, "statecraft", "scenarios", "public", "default.mts"), 'import { publicSiteScenario } from "statecraft-ui/public-site-scenario";\nexport default publicSiteScenario;\n');
+      await writeFile(path.join(consumerRoot, "statecraft.config.mts"), 'import { defineConfig } from "uiwitness";\nexport default defineConfig({});\n');
+      await writeFile(path.join(consumerRoot, "statecraft", "scenarios", "public", "default.mts"), 'import { publicSiteScenario } from "uiwitness/public-site-scenario";\nexport default publicSiteScenario;\n');
       return { code: 0, signal: null, stderr: "", stdout: "Saved the discovered public surface.\nNext: add real product states, then run `npx statecraft scan`.\n" };
     }
     if (args.at(-1) === "scan") {
@@ -505,7 +505,7 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
 
   await assert.rejects(readFile(path.join(consumerRoot, "statecraft.config.mts")), { code: "ENOENT" });
   await runRegistryJourney({
-    cliBinPath: "/registry/node_modules/statecraft-ui/dist/bin.js",
+    cliBinPath: "/registry/node_modules/uiwitness/dist/bin.js",
     consumerRoot,
     execute,
     fixtureUrl,

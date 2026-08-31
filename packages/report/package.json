@@ -1,16 +1,16 @@
 {
-  "name": "statecraft-ui-report",
-  "version": "0.24.13",
-  "description": "Deterministic report transformation and offline HTML generation for Statecraft.",
+  "name": "uiwitness-report",
+  "version": "0.25.0",
+  "description": "Deterministic report transformation and offline HTML generation for UIWitness.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "url": "git+https://github.com/RujitRaval/uiwitness.git",
     "directory": "packages/report"
   },
-  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "homepage": "https://github.com/RujitRaval/uiwitness#readme",
   "bugs": {
-    "url": "https://github.com/RujitRaval/statecraft/issues"
+    "url": "https://github.com/RujitRaval/uiwitness/issues"
   },
   "keywords": [
     "ui-testing",
@@ -43,11 +43,11 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter statecraft-ui-core build",
+    "pretypecheck": "corepack pnpm --filter uiwitness-core build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "statecraft-ui-core": "workspace:*"
+    "uiwitness-core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

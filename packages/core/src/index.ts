@@ -6,21 +6,21 @@ export type {
   FailurePolicy,
   RouteDefinition,
   StateDefinition,
-  StatecraftConfig,
+  UIWitnessConfig,
   ViewportDefinition,
 } from "./config.js";
 export {
   ConfigValidationError,
   ReportValidationError,
   ResultValidationError,
-  StatecraftError,
+  UIWitnessError,
 } from "./errors.js";
 export type {
   ConfigValidationIssue,
   ConfigValidationIssueCode,
   ReportValidationIssue,
   ResultValidationIssue,
-  StatecraftErrorCode,
+  UIWitnessErrorCode,
 } from "./errors.js";
 export { expandMatrix } from "./matrix.js";
 export type { MatrixCell, MatrixFilter } from "./matrix.js";
@@ -46,5 +46,5 @@ export type {
   ExecutionStatus,
   FailedRequestDiagnostic,
   ReportSummary,
-  StatecraftReport,
+  UIWitnessReport,
 } from "./results.js";

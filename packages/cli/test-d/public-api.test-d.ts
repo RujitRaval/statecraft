@@ -34,7 +34,7 @@ import {
   type ScanErrorCode,
   type ScanOptions,
   type ScanResult,
-} from "statecraft-ui";
+} from "uiwitness";
 
 const checkOptions: CheckOptions = {
   cwd: "/tmp/example",

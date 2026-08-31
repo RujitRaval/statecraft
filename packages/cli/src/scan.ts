@@ -2,8 +2,8 @@ import { dirname, resolve } from "node:path";
 
 import {
   expandMatrix,
-  type StatecraftReport,
-} from "statecraft-ui-core";
+  type UIWitnessReport,
+} from "uiwitness-core";
 
 import { loadConfig } from "./config.js";
 
@@ -39,7 +39,7 @@ export interface ScanOptions {
 export interface ScanResult {
   readonly configPath: string;
   readonly htmlReportPath: ".statecraft/report/index.html";
-  readonly report: StatecraftReport;
+  readonly report: UIWitnessReport;
   readonly reportPath: ".statecraft/report/statecraft.json";
 }
 
@@ -71,7 +71,7 @@ export async function scanProject(
       options.routeId === undefined ? undefined : [options.routeId],
   });
   const { runPersistedScenarioCells } = await import(
-    "statecraft-ui-runner-playwright"
+    "uiwitness-runner-playwright"
   );
   const run = await runPersistedScenarioCells(cells, {
     baseURL: loaded.config.baseURL,

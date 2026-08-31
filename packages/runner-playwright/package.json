@@ -1,16 +1,16 @@
 {
-  "name": "statecraft-ui-runner-playwright",
-  "version": "0.24.13",
-  "description": "Playwright execution lifecycle for Statecraft.",
+  "name": "uiwitness-runner-playwright",
+  "version": "0.25.0",
+  "description": "Playwright execution lifecycle for UIWitness.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "url": "git+https://github.com/RujitRaval/uiwitness.git",
     "directory": "packages/runner-playwright"
   },
-  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "homepage": "https://github.com/RujitRaval/uiwitness#readme",
   "bugs": {
-    "url": "https://github.com/RujitRaval/statecraft/issues"
+    "url": "https://github.com/RujitRaval/uiwitness/issues"
   },
   "keywords": [
     "playwright",
@@ -47,12 +47,12 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter statecraft-ui-core build && corepack pnpm --filter statecraft-ui-report build",
+    "pretypecheck": "corepack pnpm --filter uiwitness-core build && corepack pnpm --filter uiwitness-report build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "statecraft-ui-core": "workspace:*",
-    "statecraft-ui-report": "workspace:*",
+    "uiwitness-core": "workspace:*",
+    "uiwitness-report": "workspace:*",
     "playwright": "1.62.1"
   },
   "devDependencies": {

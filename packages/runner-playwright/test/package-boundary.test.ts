@@ -26,7 +26,7 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("statecraft-ui-runner-playwright package boundary", () => {
+describe("uiwitness-runner-playwright package boundary", () => {
   it("defines a publishable ESM build with pinned runtime dependencies", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
@@ -34,11 +34,11 @@ describe("statecraft-ui-runner-playwright package boundary", () => {
 
     expect(manifest).toMatchObject({
       dependencies: {
-        "statecraft-ui-core": "workspace:*",
-        "statecraft-ui-report": "workspace:*",
+        "uiwitness-core": "workspace:*",
+        "uiwitness-report": "workspace:*",
         playwright: "1.62.1",
       },
-      name: "statecraft-ui-runner-playwright",
+      name: "uiwitness-runner-playwright",
       type: "module",
       exports: {
         ".": {

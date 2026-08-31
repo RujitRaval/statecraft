@@ -21,14 +21,14 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("statecraft-ui-core package boundary", () => {
+describe("uiwitness-core package boundary", () => {
   it("defines a publishable ESM build with deterministic dist paths", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
     const manifest = JSON.parse(contents) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "statecraft-ui-core",
+      name: "uiwitness-core",
       type: "module",
       exports: {
         ".": {
@@ -54,7 +54,7 @@ describe("statecraft-ui-core package boundary", () => {
       "REPORT_SCHEMA_VERSION",
       "ReportValidationError",
       "ResultValidationError",
-      "StatecraftError",
+      "UIWitnessError",
       "calculateCoverage",
       "defineConfig",
       "expandMatrix",

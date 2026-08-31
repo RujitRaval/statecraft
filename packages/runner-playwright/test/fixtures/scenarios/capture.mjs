@@ -30,7 +30,7 @@ async function emitDiagnostics(page, stateId) {
   if (stateId === "nonfatal" || stateId === "all-diagnostics") {
     await page.evaluate(() => {
       console.error(
-        "request https://statecraft.invalid/private?token=visible#fragment " +
+        "request https://uiwitness.invalid/private?token=visible#fragment " +
           "Bearer bearer-value api_key=plain-value",
       );
       return fetch("/failed-resource?token=visible&mode=test#fragment").catch(
@@ -42,7 +42,7 @@ async function emitDiagnostics(page, stateId) {
     await page.evaluate(() => {
       setTimeout(() => {
         throw new Error(
-          "page failed at https://statecraft.invalid/private?secret=visible#fragment token=plain-value",
+          "page failed at https://uiwitness.invalid/private?secret=visible#fragment token=plain-value",
         );
       }, 0);
     });

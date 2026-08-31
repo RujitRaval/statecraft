@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "statecraft-ui-core";
+import { calculateCoverage, parseReport, REPORT_SCHEMA_VERSION } from "uiwitness-core";
 import { describe, expect, it } from "vitest";
 
 import { renderReportHtml } from "../src/render.js";
@@ -88,7 +88,7 @@ describe("renderReportHtml", () => {
     const report = parseReport({
       executions: [],
       generatedAt: "2026-08-20T18:00:00.000Z",
-      project: { baseURL: "https://statecraft.invalid" },
+      project: { baseURL: "https://uiwitness.invalid" },
       schemaVersion: REPORT_SCHEMA_VERSION,
       summary: {
         coverage: calculateCoverage([], []),
@@ -123,7 +123,7 @@ describe("renderReportHtml", () => {
               {
                 errorText: "net::ERR_CONNECTION_RESET",
                 method: "POST",
-                url: "https://statecraft.invalid/api/widget?token=secret",
+                url: "https://uiwitness.invalid/api/widget?token=secret",
               },
             ],
             navigationStatus: null,

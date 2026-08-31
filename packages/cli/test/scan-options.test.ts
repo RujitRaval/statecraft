@@ -8,12 +8,12 @@ import {
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
-import { parseReport } from "statecraft-ui-core";
+import { parseReport } from "uiwitness-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const runPersistedScenarioCellsMock = vi.hoisted(() => vi.fn());
 
-vi.mock("statecraft-ui-runner-playwright", () => ({
+vi.mock("uiwitness-runner-playwright", () => ({
   runPersistedScenarioCells: runPersistedScenarioCellsMock,
 }));
 import { scanProject } from "../src/scan.js";
@@ -42,7 +42,7 @@ describe("scanProject options", () => {
     await writeFile(
       configPath,
       `export default {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   failOn: { consoleError: true, failedRequest: true, pageError: true },
   routes: [{ id: "home", path: "/", states: [{ id: "success", setup: "./scenario.mjs" }] }],
   themes: ["light"],
@@ -53,7 +53,7 @@ describe("scanProject options", () => {
     const report = parseReport({
       executions: [],
       generatedAt: "2026-08-20T18:00:00.000Z",
-      project: { baseURL: "https://statecraft.invalid" },
+      project: { baseURL: "https://uiwitness.invalid" },
       schemaVersion: 1,
       summary: {
         coverage: {
@@ -80,7 +80,7 @@ describe("scanProject options", () => {
 
     expect(runPersistedScenarioCellsMock).toHaveBeenCalledOnce();
     expect(runPersistedScenarioCellsMock.mock.calls[0]![1]).toEqual({
-      baseURL: "https://statecraft.invalid",
+      baseURL: "https://uiwitness.invalid",
       failOn: {
         consoleError: true,
         pageError: true,
@@ -104,7 +104,7 @@ describe("scanProject options", () => {
       join(project, "custom.mjs"),
       `process.chdir(${JSON.stringify(redirectedDirectory)});
 export default {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   routes: [{ id: "home", path: "/", states: [{ id: "success", setup: "./scenario.mjs" }] }],
   themes: ["light"],
   viewports: { compact: { height: 240, width: 320 } },
@@ -114,7 +114,7 @@ export default {
     const report = parseReport({
       executions: [],
       generatedAt: "2026-08-20T18:00:00.000Z",
-      project: { baseURL: "https://statecraft.invalid" },
+      project: { baseURL: "https://uiwitness.invalid" },
       schemaVersion: 1,
       summary: {
         coverage: {

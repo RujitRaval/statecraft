@@ -3,20 +3,20 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig, type MatrixCell } from "statecraft-ui-core";
+import { expandMatrix, parseConfig, type MatrixCell } from "uiwitness-core";
 
 import {
   runCapturedScenarioCells,
   ScenarioCaptureError,
   type CapturedScenarioCell,
-  type StatecraftScenario,
+  type UIWitnessScenario,
 } from "../src/index.js";
 import { sanitizeDiagnosticText } from "../src/capture.js";
 
 const scenarioBaseDirectory = fileURLToPath(
   new URL("./fixtures/scenarios/", import.meta.url),
 );
-const baseURL = "https://statecraft.invalid/base/";
+const baseURL = "https://uiwitness.invalid/base/";
 const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
 
 async function localOrigin(): Promise<{
@@ -123,9 +123,9 @@ describe("runCapturedScenarioCells", () => {
         },
         navigation: {
           requestedUrl:
-            "https://statecraft.invalid/capture?source=statecraft#panel",
+            "https://uiwitness.invalid/capture?source=statecraft#panel",
           status: 206,
-          url: "https://statecraft.invalid/capture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/capture?source=statecraft#panel",
         },
       });
       expect(capture.durationMs).toBeGreaterThanOrEqual(0);
@@ -148,7 +148,7 @@ describe("runCapturedScenarioCells", () => {
       const capture = fulfilledValue(outcomes[0]!);
 
       expect(capture.diagnostics.consoleErrors).toEqual([
-        "request https://statecraft.invalid/private?token=%5BREDACTED%5D " +
+        "request https://uiwitness.invalid/private?token=%5BREDACTED%5D " +
           "Bearer [REDACTED] api_key=[REDACTED]",
         "Failed to load resource: net::ERR_FAILED",
       ]);
@@ -157,7 +157,7 @@ describe("runCapturedScenarioCells", () => {
           errorText: "net::ERR_FAILED",
           method: "GET",
           url:
-            "https://statecraft.invalid/failed-resource?token=%5BREDACTED%5D&mode=%5BREDACTED%5D",
+            "https://uiwitness.invalid/failed-resource?token=%5BREDACTED%5D&mode=%5BREDACTED%5D",
         },
       ]);
       expect(JSON.stringify(capture.diagnostics)).not.toMatch(
@@ -201,7 +201,7 @@ describe("runCapturedScenarioCells", () => {
       expect(pageError.evidence.screenshot).not.toBeNull();
       expect(pageError.evidence.assertionStatus).toBe("passed");
       expect(pageError.evidence.diagnostics.pageErrors).toEqual([
-        "page failed at https://statecraft.invalid/private?secret=%5BREDACTED%5D token=[REDACTED]",
+        "page failed at https://uiwitness.invalid/private?secret=%5BREDACTED%5D token=[REDACTED]",
       ]);
 
       const assertionError = captureReason(outcomes[1]!);
@@ -290,7 +290,7 @@ describe("runCapturedScenarioCells", () => {
           errorText: "net::ERR_FAILED",
           method: "GET",
           url:
-            "https://statecraft.invalid/capture?source=%5BREDACTED%5D",
+            "https://uiwitness.invalid/capture?source=%5BREDACTED%5D",
         },
       ]);
     } finally {
@@ -299,7 +299,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("discards a screenshot when an assertion replaces the main document", async () => {
-    const scenario: StatecraftScenario = {
+    const scenario: UIWitnessScenario = {
       async beforeNavigate({ page }) {
         await page.route("**/*", async (route) => {
           await route.fulfill({
@@ -354,9 +354,9 @@ describe("runCapturedScenarioCells", () => {
       ]);
       expect(reason.evidence.navigation).toEqual({
         requestedUrl:
-          "https://statecraft.invalid/capture?source=statecraft#panel",
+          "https://uiwitness.invalid/capture?source=statecraft#panel",
         status: 206,
-        url: "https://statecraft.invalid/capture?source=statecraft#panel",
+        url: "https://uiwitness.invalid/capture?source=statecraft#panel",
       });
       expect(reason.evidence.diagnostics.navigationStatus).toBe(206);
       expect((reason.cause as Error).message).not.toContain("visible");
@@ -560,12 +560,12 @@ describe("diagnostic sanitization", () => {
           "user",
           ":",
           "pass",
-          "@statecraft.invalid/private?token=visible&empty=#fragment ",
+          "@uiwitness.invalid/private?token=visible&empty=#fragment ",
         ].join("") +
           "Bearer auth-value api_key=plain-value",
       ),
     ).toBe(
-      "https://statecraft.invalid/private?token=%5BREDACTED%5D " +
+      "https://uiwitness.invalid/private?token=%5BREDACTED%5D " +
         "Bearer [REDACTED] api_key=[REDACTED]",
     );
     expect(sanitizeDiagnosticText("Authorization: Basic dXNlcjpwYXNz")).toBe(

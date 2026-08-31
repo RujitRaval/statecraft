@@ -8,34 +8,34 @@ export const RELEASE_PACKAGES = [
   {
     dependencies: {},
     directory: "packages/core",
-    name: "statecraft-ui-core",
+    name: "uiwitness-core",
   },
   {
-    dependencies: { "statecraft-ui-core": "workspace:*" },
+    dependencies: { "uiwitness-core": "workspace:*" },
     directory: "packages/report",
-    name: "statecraft-ui-report",
+    name: "uiwitness-report",
   },
   {
     dependencies: {
-      "statecraft-ui-core": "workspace:*",
-      "statecraft-ui-report": "workspace:*",
+      "uiwitness-core": "workspace:*",
+      "uiwitness-report": "workspace:*",
     },
     directory: "packages/runner-playwright",
-    name: "statecraft-ui-runner-playwright",
+    name: "uiwitness-runner-playwright",
   },
   {
     dependencies: {
-      "statecraft-ui-core": "workspace:*",
-      "statecraft-ui-runner-playwright": "workspace:*",
+      "uiwitness-core": "workspace:*",
+      "uiwitness-runner-playwright": "workspace:*",
     },
     directory: "packages/cli",
-    name: "statecraft-ui",
+    name: "uiwitness",
   },
 ];
 
-const expectedRepository = "git+https://github.com/RujitRaval/statecraft.git";
-const expectedHomepage = "https://github.com/RujitRaval/statecraft#readme";
-const expectedBugs = "https://github.com/RujitRaval/statecraft/issues";
+const expectedRepository = "git+https://github.com/RujitRaval/uiwitness.git";
+const expectedHomepage = "https://github.com/RujitRaval/uiwitness#readme";
+const expectedBugs = "https://github.com/RujitRaval/uiwitness/issues";
 const expectedEngine = "^22.20.0 || ^24.0.0";
 const expectedFiles = [
   "dist/**/*.js",
@@ -99,8 +99,8 @@ export function validateManifest(manifest, contract, packageVersion) {
     invariant(manifest.dependencies?.[name] === specifier, `${label}: ${name} must use ${specifier}.`);
   }
 
-  if (contract.name === "statecraft-ui") {
-    invariant(manifest.bin?.statecraft === "./dist/bin.js", `${label}: statecraft bin target is invalid.`);
+  if (contract.name === "uiwitness") {
+    invariant(manifest.bin?.uiwitness === "./dist/bin.js", `${label}: uiwitness bin target is invalid.`);
   }
 }
 

@@ -51,7 +51,7 @@ jobs:
       - name: Install locked dependencies
         run: corepack pnpm install --frozen-lockfile
       - name: Install pinned Chromium
-        run: corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install --with-deps chromium
+        run: corepack pnpm --filter uiwitness-runner-playwright exec playwright install --with-deps chromium
       - name: Run repository verification
         run: node scripts/run-ci.mjs
       - name: Run production release smoke

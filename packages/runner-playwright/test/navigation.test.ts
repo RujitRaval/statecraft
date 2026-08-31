@@ -4,14 +4,14 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig, type MatrixCell } from "statecraft-ui-core";
+import { expandMatrix, parseConfig, type MatrixCell } from "uiwitness-core";
 
 import { runNavigatedScenarioCells } from "../src/index.js";
 
 const scenarioBaseDirectory = fileURLToPath(
   new URL("./fixtures/scenarios/", import.meta.url),
 );
-const baseURL = "https://statecraft.invalid/base/";
+const baseURL = "https://uiwitness.invalid/base/";
 const missingBrowserExecutable = path.join(
   process.cwd(),
   "statecraft-missing-navigation-browser-executable",
@@ -144,21 +144,21 @@ describe("runNavigatedScenarioCells", () => {
       expect(values.map((value) => value?.navigation)).toEqual([
         {
           requestedUrl:
-            "https://statecraft.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=statecraft#panel",
           status: 207,
-          url: "https://statecraft.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
         },
         {
           requestedUrl:
-            "https://statecraft.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=statecraft#panel",
           status: 207,
-          url: "https://statecraft.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
         },
         {
           requestedUrl:
-            "https://statecraft.invalid/fixture?source=statecraft#panel",
+            "https://uiwitness.invalid/fixture?source=statecraft#panel",
           status: 207,
-          url: "https://statecraft.invalid/fixture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/fixture?source=statecraft#panel",
         },
       ]);
       expect(values.map((value) => value?.pageState.boot.theme)).toEqual([
@@ -383,9 +383,9 @@ describe("runNavigatedScenarioCells", () => {
           status: "fulfilled",
           value: {
             requestedUrl:
-              "https://statecraft.invalid/fixture?source=statecraft#panel",
+              "https://uiwitness.invalid/fixture?source=statecraft#panel",
             status: 207,
-            url: "https://statecraft.invalid/same-origin",
+            url: "https://uiwitness.invalid/same-origin",
           },
         },
       ]);

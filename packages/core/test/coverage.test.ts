@@ -6,10 +6,10 @@ import {
   parseConfig,
   type CoverageObservation,
   type MatrixCell,
-  type StatecraftConfig,
+  type UIWitnessConfig,
 } from "../src/index.js";
 
-function coverageConfig(): StatecraftConfig {
+function coverageConfig(): UIWitnessConfig {
   return parseConfig({
     baseURL: "http://localhost:3000",
     routes: [

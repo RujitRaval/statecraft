@@ -146,7 +146,7 @@ export default {
       await page.waitForLoadState("load");
       await page.evaluate(() => {
         const font = new globalThis.FontFace(
-          "StatecraftDelayed",
+          "UIWitnessDelayed",
           "url('/slow-font.woff2')",
         );
         globalThis.document.fonts.add(font);
@@ -158,7 +158,7 @@ export default {
       await page.evaluate(
         ({ redirectUrl }) => {
           const font = new globalThis.FontFace(
-            "StatecraftDelayed",
+            "UIWitnessDelayed",
             "url('/slow-font.woff2')",
           );
           globalThis.document.fonts.add(font);
@@ -174,7 +174,7 @@ export default {
       await page.waitForLoadState("load");
       await page.evaluate(() => {
         const font = new globalThis.FontFace(
-          "StatecraftDelayed",
+          "UIWitnessDelayed",
           "url('/slow-font.woff2')",
         );
         globalThis.document.fonts.add(font);

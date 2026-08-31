@@ -61,7 +61,7 @@ async function projectFixture(): Promise<{
   await writeFile(
     configPath,
     `export default {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   routes: [
     { id: "dashboard", path: "/dashboard", states: [{ id: "success", setup: "./scenarios/pass.mjs" }] },
     { id: "settings", path: "/settings", states: [{ id: "error", setup: "./scenarios/fail.mjs" }] },
