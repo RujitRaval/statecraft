@@ -1,15 +1,15 @@
-# Releasing Statecraft
+# Releasing UIWitness
 
-Statecraft publishes four npm packages from one verified GitHub Release:
+UIWitness publishes four npm packages from one verified GitHub Release:
 
 | Package | Purpose |
 | --- | --- |
-| `statecraft-ui-core` | Browser-independent configuration, matrix, coverage, and report contracts |
-| `statecraft-ui-report` | Deterministic offline report transformation and rendering |
-| `statecraft-ui-runner-playwright` | Playwright execution and local result persistence |
-| `statecraft-ui` | Public API and the `statecraft` executable |
+| `uiwitness-core` | Browser-independent configuration, matrix, coverage, and report contracts |
+| `uiwitness-report` | Deterministic offline report transformation and rendering |
+| `uiwitness-runner-playwright` | Playwright execution and local result persistence |
+| `uiwitness` | Public API and the `uiwitness` executable |
 
-All four names were claimed by the verified `v0.24.0` release. Each package now trusts only `RujitRaval/statecraft`, `.github/workflows/release.yml`, and the `npm-publish` environment for OIDC publication; the one-time bootstrap token and GitHub `NPM_TOKEN` secret have been revoked.
+These manifests and checks prepare all four names for the ordered external cutover. Until that cutover is complete, do not treat local package smoke or repository metadata as proof that the UIWitness packages are published, that the repository has been renamed, or that trusted publishers are configured.
 
 ## Version contract
 
@@ -30,13 +30,13 @@ Use a locked dependency installation and the pinned Chromium build, then run bot
 
 ```bash
 corepack pnpm install --frozen-lockfile
-corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
+corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium
 node scripts/run-ci.mjs
 corepack pnpm release:package-smoke
 corepack pnpm release:smoke
 ```
 
-`release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, creates a CommonJS-default consumer with `npm init -y`, installs the exact tarballs, imports all public APIs, installs Chromium, and runs the generated `.mts` starter through a complete four-cell scan. Temporary tarballs, screenshots, and reports stay inside removed temporary directories; `*.tgz` and `.statecraft/` remain ignored.
+`release:package-smoke` builds and packs each public workspace, asks npm to validate a dry-run publication, creates a CommonJS-default consumer with `npm init -y`, installs the exact tarballs, imports all public APIs, installs Chromium, and runs the generated `.mts` starter through a complete four-cell scan. Temporary tarballs, screenshots, and reports stay inside removed temporary directories; `*.tgz` and `.uiwitness/` remain ignored.
 
 After npm publication, repeat the exact live-registry Quick Check journey for the released version:
 
@@ -46,7 +46,7 @@ corepack pnpm release:registry-public-url-smoke -- --version 0.24.11
 
 This creates another empty `npm init -y` consumer, accepts either an implicit CommonJS manifest or npm 11's explicit `"type": "commonjs"` form, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, and generated-source stability before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry. Transient install failures share one bounded ten-minute elapsed-time retry window. Each attempt forces online registry revalidation through its own temporary npm cache, while permanent failures stop immediately.
 
-## First publication bootstrap (completed for v0.24.0)
+## First publication bootstrap (pending external cutover)
 
 npm requires each package to exist before a trusted publisher can be configured. For the first release only:
 
@@ -55,14 +55,14 @@ npm requires each package to exist before a trusted publisher can be configured.
 3. Store the token only as the `NPM_TOKEN` secret in the protected `npm-publish` Environment.
 4. Merge a fully green release pull request and create a non-prerelease GitHub Release whose tag exactly matches `VERSION`, for example `v0.24.0`.
 5. Approve the protected Environment deployment and wait for the `Release` workflow to verify and publish all four packages.
-6. In npm package settings for each package, add the GitHub Actions trusted publisher for repository `RujitRaval/statecraft`, workflow `.github/workflows/release.yml`, and environment `npm-publish`.
+6. In npm package settings for each package, add the GitHub Actions trusted publisher for repository `RujitRaval/uiwitness`, workflow `.github/workflows/release.yml`, and environment `npm-publish`.
 7. Delete the `NPM_TOKEN` Environment secret and revoke the token in npm immediately.
 
-Statecraft completed this bootstrap on August 21, 2026. Do not recreate `NPM_TOKEN` for normal releases. Each package's publishing access requires two-factor authentication and disallows bypass-2FA tokens; OIDC trusted publishing remains compatible with that restrictive setting.
+This bootstrap has not yet occurred for the UIWitness package identities. Run it only in the approved external-cutover step after the rename implementation and distribution gates are green. The previous package set's trusted-publisher configuration does not transfer to new npm package identities.
 
 The workflow configures token authentication only when that bootstrap secret exists. After bootstrap, GitHub's short-lived OIDC identity supplies publication authority through the workflow's `id-token: write` permission, with no token-style npm configuration present to suppress the OIDC exchange. No npm token should remain configured. The Environment approval remains a deliberate human gate for every registry publication.
 
-## Normal release
+## Normal releases after bootstrap
 
 1. Start a focused branch from current `main`.
 2. Run GStack `review`, then GStack `ship`; ensure the selected four-component version has a zero fourth component and manifests are synchronized.

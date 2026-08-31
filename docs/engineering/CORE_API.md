@@ -1,11 +1,11 @@
-# `statecraft-ui-core` API
+# `uiwitness-core` API
 
-`statecraft-ui-core` provides Statecraft's published, deterministic, browser-independent contracts. Most users install `statecraft-ui`; direct consumers can build integrations against this package's stable configuration, matrix, coverage, artifact-path, and report boundaries.
+`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, matrix, coverage, artifact-path, and report boundaries.
 
 ## Configuration
 
 ```ts
-import { defineConfig } from "statecraft-ui-core";
+import { defineConfig } from "uiwitness-core";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
@@ -21,7 +21,7 @@ export default defineConfig({
       states: [
         {
           id: "success",
-          setup: "./statecraft/scenarios/dashboard/success.ts",
+          setup: "./uiwitness/scenarios/dashboard/success.ts",
         },
       ],
     },
@@ -31,30 +31,30 @@ export default defineConfig({
 
 `defineConfig(config)` is an identity helper that provides contextual TypeScript checking. It does not perform runtime validation or load scenario modules.
 
-`parseConfig(input)` strictly validates an unknown value and returns a `StatecraftConfig`. It rejects unknown properties, non-HTTP(S) base URLs, empty collections, invalid viewport dimensions, malformed IDs, duplicate route/state/theme IDs, empty scenario paths, and route paths that are not local slash-prefixed paths.
+`parseConfig(input)` strictly validates an unknown value and returns a `UIWitnessConfig`. It rejects unknown properties, non-HTTP(S) base URLs, empty collections, invalid viewport dimensions, malformed IDs, duplicate route/state/theme IDs, empty scenario paths, and route paths that are not local slash-prefixed paths.
 
 Route, state, theme, and viewport IDs use lowercase letters and numbers separated by single hyphens. Domain-specific IDs such as `payment-declined` are supported.
 
-The underlying Zod schema is intentionally private. Callers use `parseConfig` so validation behavior and errors remain Statecraft-owned contracts rather than validator-specific APIs.
+The underlying Zod schema is intentionally private. Callers use `parseConfig` so validation behavior and errors remain UIWitness-owned contracts rather than validator-specific APIs.
 
 ## Validation errors
 
-`parseConfig` throws `ConfigValidationError`, a `StatecraftError` with:
+`parseConfig` throws `ConfigValidationError`, a `UIWitnessError` with:
 
 - `code: "CONFIG_INVALID"` for machine-readable classification;
 - a deterministic `issues` array containing `code`, `path`, and `message`;
-- Statecraft-owned issue codes that do not expose Zod's internal issue types.
+- UIWitness-owned issue codes that do not expose Zod's internal issue types.
 
 Configuration and scenario modules are trusted local code running with the user's privileges. Validation checks their declared shape; it does not execute or inspect scenario modules.
 
 ## Matrix planning
 
-`expandMatrix(config, filter?)` expands a validated `StatecraftConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that the runner needs.
+`expandMatrix(config, filter?)` expands a validated `UIWitnessConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that the runner needs.
 
 Expansion follows routes and states in declaration order, viewport keys in deterministic ECMAScript property order, then themes in declaration order. Repeating the same validated input produces the same sequence. For normal named viewport IDs such as `mobile` and `desktop`, property order is declaration order; integer-like IDs are enumerated numerically before other keys. Filters do not change that order:
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { expandMatrix, parseConfig } from "uiwitness-core";
 
 const cells = expandMatrix(parseConfig(config), {
   routeIds: ["dashboard"],
@@ -73,7 +73,7 @@ The planner is pure and browser-independent. It does not load scenario modules, 
 `calculateCoverage(cells, observations)` calculates configured-state coverage without depending on runner or report contracts. The matrix is the source of truth for what was configured. Each `CoverageObservation` is a minimal exact coordinate plus a `passed` boolean:
 
 ```ts
-import { calculateCoverage, expandMatrix } from "statecraft-ui-core";
+import { calculateCoverage, expandMatrix } from "uiwitness-core";
 
 const cells = expandMatrix(config);
 const coverage = calculateCoverage(cells, [
@@ -108,10 +108,10 @@ The calculator is pure, does not mutate its inputs, and returns immutable summar
 `screenshotArtifactPath(cell)` returns an opaque `ScreenshotArtifactPath`: the project-relative PNG path reserved for a `MatrixCell`:
 
 ```ts
-import { screenshotArtifactPath } from "statecraft-ui-core";
+import { screenshotArtifactPath } from "uiwitness-core";
 
 const path = screenshotArtifactPath(cell);
-// .statecraft/artifacts/dashboard/success/desktop-light.png
+// .uiwitness/artifacts/dashboard/success/desktop-light.png
 ```
 
 The function is deterministic and pure: it does not inspect the clock, read directories, create files, or depend on the host path separator. Route and state IDs form directories; the viewport and theme form the PNG filename.
@@ -134,10 +134,10 @@ Diagnostics contain console-error strings, page-error strings, optional navigati
 
 When `screenshotPath` is present, parsing recomputes `screenshotArtifactPath` from the record's explicit coordinate and requires an exact match. The validated result therefore returns `ScreenshotArtifactPath | null` without trusting an arbitrary serialized string.
 
-`StatecraftReport` is the external JSON contract. Version 1 has this top-level shape:
+`UIWitnessReport` is the external JSON contract. Version 1 has this top-level shape:
 
 ```ts
-interface StatecraftReport {
+interface UIWitnessReport {
   schemaVersion: 1;
   generatedAt: string;
   project: { baseURL: string };
@@ -146,15 +146,15 @@ interface StatecraftReport {
 }
 ```
 
-Use `REPORT_SCHEMA_VERSION` when constructing the report, `parseReport(input)` when reading unknown data, and `serializeReport(report)` when writing `.statecraft/report/statecraft.json`. The serializer validates before producing deterministic two-space-indented JSON with a trailing newline; it does not read the clock or filesystem.
+Use `REPORT_SCHEMA_VERSION` when constructing the report, `parseReport(input)` when reading unknown data, and `serializeReport(report)` when writing `.uiwitness/report/uiwitness.json`. The serializer validates before producing deterministic two-space-indented JSON with a trailing newline; it does not read the clock or filesystem.
 
 Report validation rejects unsupported versions, malformed RFC 3339 generation times, unknown properties, duplicate execution coordinates, conflicting route/state/viewport metadata, inconsistent counts or duration, and coverage that differs from `calculateCoverage` over the execution records. Empty execution selections remain representable with zero-valued summary and coverage metrics.
 
-`ResultValidationError` and `ReportValidationError` use the stable `RESULT_INVALID` and `REPORT_INVALID` error codes. Their immutable issue arrays use the same Statecraft-owned issue categories and deterministic `$` paths as configuration validation. The underlying Zod schemas remain private.
+`ResultValidationError` and `ReportValidationError` use the stable `RESULT_INVALID` and `REPORT_INVALID` error codes. Their immutable issue arrays use the same UIWitness-owned issue categories and deterministic `$` paths as configuration validation. The underlying Zod schemas remain private.
 
 ## Exported types
 
-- `StatecraftConfig`
+- `UIWitnessConfig`
 - `ViewportDefinition`
 - `RouteDefinition`
 - `StateDefinition`
@@ -163,8 +163,8 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 - `CoverageObservation`, `CoverageMetric`, and `CoverageSummary`
 - `ScreenshotArtifactPath`
 - `ExecutionResult`, `ExecutionStatus`, `ExecutionFailure`, `ExecutionFailureCode`, `ExecutionDiagnostics`, and `FailedRequestDiagnostic`
-- `StatecraftReport` and `ReportSummary`
-- `StatecraftErrorCode`
+- `UIWitnessReport` and `ReportSummary`
+- `UIWitnessErrorCode`
 - `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, and `ConfigValidationIssueCode`
 
 Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. The `REPORT_SCHEMA_VERSION` constant is also exported.

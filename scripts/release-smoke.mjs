@@ -140,13 +140,13 @@ function executionCoordinate(execution) {
 }
 
 export function assertExpectedScanOutcome({ code, signal, stderr, stdout }) {
-  assert.equal(signal, null, `Statecraft scan terminated with signal ${signal}.`);
+  assert.equal(signal, null, `UIWitness scan terminated with signal ${signal}.`);
   assert.equal(
     code,
     1,
     `Expected the known-failure scan to exit 1, received ${code}.\n${stderr}`,
   );
-  assert.equal(stderr, "", `Statecraft scan wrote to stderr:\n${stderr}`);
+  assert.equal(stderr, "", `UIWitness scan wrote to stderr:\n${stderr}`);
   assert.match(stdout, /4 of 60 executions failed\./u);
 }
 
@@ -253,7 +253,7 @@ async function recordArtifactPath(projectRoot, outputFile) {
 
 export async function runReleaseSmoke({
   allocatePort = availablePort,
-  createProject = () => mkdtemp(path.join(tmpdir(), "statecraft-release-smoke-")),
+  createProject = () => mkdtemp(path.join(tmpdir(), "uiwitness-release-smoke-")),
   execute = runCommand,
   keepOutput = process.env["GITHUB_OUTPUT"] !== undefined,
   loadReport = parseBuiltReport,
@@ -277,7 +277,7 @@ export async function runReleaseSmoke({
     const baseURL = `http://127.0.0.1:${port}`;
     const environment = {
       ...process.env,
-      STATECRAFT_EXAMPLE_BASE_URL: baseURL,
+      UIWITNESS_EXAMPLE_BASE_URL: baseURL,
     };
     server = spawnProcess(
       process.execPath,
@@ -311,7 +311,7 @@ export async function runReleaseSmoke({
         await resolveCliBin(),
         "scan",
         "--config",
-        path.join(exampleRoot, "statecraft.config.ts"),
+        path.join(exampleRoot, "uiwitness.config.ts"),
       ],
       { cwd: smokeProjectRoot, env: environment },
     );

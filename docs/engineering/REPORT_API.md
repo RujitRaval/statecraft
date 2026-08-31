@@ -1,23 +1,23 @@
 # Report API
 
-`statecraft-ui-report` owns Phase 5's browser-independent transformation and offline HTML boundary. It depends only on `statecraft-ui-core`; it does not launch Playwright, discover configuration, choose exit codes, start a server, or access the network.
+`uiwitness-report` owns Phase 5's browser-independent transformation and offline HTML boundary. It depends only on `uiwitness-core`; it does not launch Playwright, discover configuration, choose exit codes, start a server, or access the network.
 
 ## Transformation
 
 ```ts
-import { transformReport } from "statecraft-ui-report";
+import { transformReport } from "uiwitness-report";
 
 const view = transformReport(schemaV1Report);
 ```
 
-`transformReport(input)` first delegates unknown data to the core `parseReport` contract. It then projects executions into immutable, first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution detail records. Screenshot references are converted from validated `.statecraft/artifacts/...` paths to report-relative `../artifacts/...` references. Route, state, viewport, and theme metadata always comes from execution records; the transformer never reconstructs metadata from filenames.
+`transformReport(input)` first delegates unknown data to the core `parseReport` contract. It then projects executions into immutable, first-seen-order viewport/theme columns, route groups, route/state rows, aligned cells, and execution detail records. Screenshot references are converted from validated `.uiwitness/artifacts/...` paths to report-relative `../artifacts/...` references. Route, state, viewport, and theme metadata always comes from execution records; the transformer never reconstructs metadata from filenames.
 
 The public `ReportViewModel` and its `ReportColumnView`, `ReportRouteView`, `ReportRowView`, and `ReportCellView` components are renderer-ready but contain no browser or filesystem behavior. Missing coordinates remain explicit `null` cells instead of being fabricated.
 
 ## Offline HTML
 
 ```ts
-import { renderReportHtml } from "statecraft-ui-report";
+import { renderReportHtml } from "uiwitness-report";
 
 const html = renderReportHtml(schemaV1Report);
 ```
@@ -30,6 +30,6 @@ The interaction script is constant and contains no report values. Its exact SHA-
 
 ## Publication boundary
 
-`statecraft-ui-report` deliberately owns no filesystem mutation. `REPORT_HTML_PATH` exposes the stable `.statecraft/report/index.html` project-relative contract, while the Playwright runner stages rendered HTML beside its JSON and PNG output. All three outputs publish under the runner's existing owned project lock and recovery transaction, preventing concurrent scans from mixing report generations. Existing HTML targets must be regular files, staged files use owner-only mode where supported, and a failed final HTML rename restores the previous screenshot, JSON, and HTML set.
+`uiwitness-report` deliberately owns no filesystem mutation. `REPORT_HTML_PATH` exposes the stable `.uiwitness/report/index.html` project-relative contract, while the Playwright runner stages rendered HTML beside its JSON and PNG output. All three outputs publish under the runner's existing owned project lock and recovery transaction, preventing concurrent scans from mixing report generations. Existing HTML targets must be regular files, staged files use owner-only mode where supported, and a failed final HTML rename restores the previous screenshot, JSON, and HTML set.
 
-`statecraft scan` returns both `htmlReportPath` and the machine-readable JSON `reportPath`, and its terminal summary points to the HTML document.
+`uiwitness scan` returns both `htmlReportPath` and the machine-readable JSON `reportPath`, and its terminal summary points to the HTML document.

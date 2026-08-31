@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  description: "A deterministic commerce operations fixture for Statecraft.",
+  description: "A deterministic commerce operations fixture for UIWitness.",
   title: "Northline Operations",
 };
 

@@ -1,10 +1,10 @@
-# Contributing to Statecraft
+# Contributing to UIWitness
 
-Statecraft has completed Phase 1 through Phase 7. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code. Keep proposals within an approved roadmap slice and preserve the local-first product boundary.
+UIWitness has completed Phase 1 through Phase 7. Read `AGENTS.md`, `codex/IMPLEMENTATION_SPEC.md`, and the relevant documents under `docs/` before changing code. Keep proposals within an approved roadmap slice and preserve the local-first product boundary.
 
 ## Where to contribute
 
-Good contribution surfaces include deterministic scenarios, additional fictional examples, report usability, documentation, and narrowly scoped adapters or policies that have an approved issue. Bug reports should include the command, exit code, sanitized terminal output, and the smallest safe reproduction. Never attach a `.statecraft/` bundle until you have checked every screenshot, URL, and diagnostic for sensitive data.
+Good contribution surfaces include deterministic scenarios, additional fictional examples, report usability, documentation, and narrowly scoped adapters or policies that have an approved issue. Bug reports should include the command, exit code, sanitized terminal output, and the smallest safe reproduction. Never attach a `.uiwitness/` bundle or legacy `.statecraft/` evidence until you have checked every screenshot, URL, and diagnostic for sensitive data.
 
 ## Branch and pull request workflow
 
@@ -26,7 +26,7 @@ Good contribution surfaces include deterministic scenarios, additional fictional
 
    ```bash
    corepack pnpm install --frozen-lockfile
-   corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
+   corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium
    ```
 
 5. Run the local checks:
@@ -60,7 +60,7 @@ Direct pushes and force-pushes to `main` are not part of the project workflow. P
 - Document public API changes and consider JSON schema compatibility.
 - Add or update an ADR for material architecture decisions.
 - Explain new dependencies in the pull request.
-- Never commit generated `.statecraft/` reports or secrets.
+- Never commit generated `.uiwitness/` reports, legacy `.statecraft/` evidence, or secrets.
 
 ## Commit and pull request quality
 

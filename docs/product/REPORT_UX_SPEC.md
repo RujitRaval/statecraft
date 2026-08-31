@@ -1,6 +1,6 @@
 # Report UX Specification
 
-The report is Statecraft's primary product surface and launch asset.
+The report is UIWitness's primary product surface and launch asset.
 
 ## Header
 Product name, "UI State Coverage Report", a viewport-scale evidence verdict, passed/expected executions, execution coverage, and generation metadata. Routes, states, executions, passed, failed, and duration form one ruled run tape rather than separate cards.
@@ -18,7 +18,7 @@ Route, state, viewport, theme, pass/fail.
 Fully offline; no CDN/server/font request; bundled CSS/JS; responsive; keyboard usable; screenshots dominate; purposeful finite motion only; reduced-motion safe; full-bleed and explicitly not dashboard-heavy.
 
 ## Launch test
-A report screenshot should explain Statecraft before a developer reads the README.
+A report screenshot should explain UIWitness before a developer reads the README.
 
 ## Phase 5 delivery
 

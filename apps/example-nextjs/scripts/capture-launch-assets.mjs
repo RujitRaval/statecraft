@@ -14,8 +14,8 @@ const reportPath = path.join(
   "index.html",
 );
 const assetsRoot = path.join(repositoryRoot, "docs", "assets");
-const overviewPath = path.join(assetsRoot, "statecraft-report-overview.png");
-const failurePath = path.join(assetsRoot, "statecraft-failure-detail.png");
+const overviewPath = path.join(assetsRoot, "uiwitness-report-overview.png");
+const failurePath = path.join(assetsRoot, "uiwitness-failure-detail.png");
 
 async function requireReport(sourceReportPath) {
   let report;

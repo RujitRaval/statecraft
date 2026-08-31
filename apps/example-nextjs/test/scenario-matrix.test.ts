@@ -10,11 +10,11 @@ import { expandMatrix, parseReport } from "uiwitness-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { customerData, longCustomerData } from "../lib/customers";
-import { longCustomerFixture } from "../statecraft/scenarios/shared.mjs";
+import { longCustomerFixture } from "../uiwitness/scenarios/shared.mjs";
 
 const appDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const configPath = join(appDirectory, "statecraft.config.ts");
-const baseUrlEnvironment = "STATECRAFT_EXAMPLE_BASE_URL";
+const configPath = join(appDirectory, "uiwitness.config.ts");
+const baseUrlEnvironment = "UIWITNESS_EXAMPLE_BASE_URL";
 const previousBaseURL = process.env[baseUrlEnvironment];
 let baseURL = "";
 let config: LoadedConfig;
@@ -159,9 +159,9 @@ describe("complete example scenario matrix", () => {
     ).toEqual(expectedCoordinates);
     expect(new Set(cells.map((cell) => cell.state.setup))).toEqual(
       new Set([
-        "./statecraft/scenarios/customers.mjs",
-        "./statecraft/scenarios/dashboard.mjs",
-        "./statecraft/scenarios/orders.mjs",
+        "./uiwitness/scenarios/customers.mjs",
+        "./uiwitness/scenarios/dashboard.mjs",
+        "./uiwitness/scenarios/orders.mjs",
       ]),
     );
     expect(longCustomerFixture).toEqual({
@@ -172,7 +172,7 @@ describe("complete example scenario matrix", () => {
 
   it("persists the offline report with only the four intentional failures", async () => {
     const projectDirectory = await mkdtemp(
-      join(tmpdir(), "statecraft-example-matrix-"),
+      join(tmpdir(), "uiwitness-example-matrix-"),
     );
     projectDirectories.push(projectDirectory);
     const stdout: string[] = [];

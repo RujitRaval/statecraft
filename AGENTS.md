@@ -1,4 +1,4 @@
-# Statecraft Agent Guide
+# UIWitness Agent Guide
 
 ## Source of truth
 
@@ -12,7 +12,7 @@ Before changing implementation code, read these files in order:
 6. `docs/engineering/TEST_STRATEGY.md`
 7. `docs/engineering/SECURITY_PRIVACY.md`
 
-Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic reporting, `statecraft check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate are implemented. Keep future work in an explicitly approved roadmap slice.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic reporting, `uiwitness check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate are implemented. Keep future work in an explicitly approved roadmap slice.
 
 ## Design system
 
@@ -46,7 +46,7 @@ corepack pnpm release:check
 corepack pnpm release:package-smoke
 ```
 
-Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. Install the pinned browser with `corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium` before running browser-backed tests.
+Run `corepack pnpm install --frozen-lockfile` first when dependencies are present. Install the pinned browser with `corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium` before running browser-backed tests.
 
 ## Engineering constraints
 
@@ -54,7 +54,7 @@ Run `corepack pnpm install --frozen-lockfile` first when dependencies are presen
 - Add tests with each capability and regression fix.
 - Keep public APIs small and documented.
 - Record material architecture decisions in `docs/decisions/`.
-- Do not commit `.statecraft/` because reports may contain screenshots and sensitive application data.
+- Do not commit `.uiwitness/` or legacy `.statecraft/` evidence because reports may contain screenshots and sensitive application data.
 - Justify major dependencies and prefer mature, narrowly scoped packages.
 
 ## Skill routing

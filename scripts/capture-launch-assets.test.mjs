@@ -25,7 +25,7 @@ test("launchDetailSelector rejects missing and selector-like values", () => {
 
 test("captureLaunchAssets captures the offline overview and approved failure", async (t) => {
   const temporaryRoot = await mkdtemp(
-    path.join(os.tmpdir(), "statecraft-launch-assets-"),
+    path.join(os.tmpdir(), "uiwitness-launch-assets-"),
   );
   t.after(() => rm(temporaryRoot, { force: true, recursive: true }));
 
@@ -116,8 +116,8 @@ test("captureLaunchAssets captures the offline overview and approved failure", a
   });
   assert.equal(routeAborted, true);
   assert.deepEqual(screenshots, [
-    path.join(targetAssetsRoot, "statecraft-report-overview.png"),
-    path.join(targetAssetsRoot, "statecraft-failure-detail.png"),
+    path.join(targetAssetsRoot, "uiwitness-report-overview.png"),
+    path.join(targetAssetsRoot, "uiwitness-failure-detail.png"),
   ]);
   assert.equal(styles.length, 1);
   assert.match(styles[0], /\.filter-rail\{position:static!important\}/u);
@@ -128,7 +128,7 @@ test("captureLaunchAssets captures the offline overview and approved failure", a
 
 test("captureLaunchAssets rejects a missing report before launching", async (t) => {
   const temporaryRoot = await mkdtemp(
-    path.join(os.tmpdir(), "statecraft-launch-assets-missing-"),
+    path.join(os.tmpdir(), "uiwitness-launch-assets-missing-"),
   );
   t.after(() => rm(temporaryRoot, { force: true, recursive: true }));
 

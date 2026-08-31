@@ -1,4 +1,4 @@
-# Design System — Statecraft
+# Design System — UIWitness
 
 ## Product Context
 
@@ -11,7 +11,7 @@
 
 Problems become impossible to miss. Healthy operations feel calm and exact; loading, empty, and failure states remain intentional, legible, and visually distinct.
 
-The Statecraft report expresses this as **signal fracture**: healthy evidence stays aligned and quiet, while failed evidence introduces a controlled vermilion cut, offset edge, or broken rule without obscuring the screenshot. See `docs/design/BRAND_RESEARCH.md` for the reference study and full experience rationale.
+The UIWitness report expresses this as **signal fracture**: healthy evidence stays aligned and quiet, while failed evidence introduces a controlled vermilion cut, offset edge, or broken rule without obscuring the screenshot. See `docs/design/BRAND_RESEARCH.md` for the reference study and full experience rationale.
 
 ## Aesthetic Direction
 

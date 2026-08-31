@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes target the latest published Statecraft release and the latest commit on `main`. Older releases may not receive fixes.
+Before the external cutover, security fixes target the latest commit on `main`. After the first UIWitness publication, fixes target the latest published UIWitness release and `main`; older releases may not receive fixes.
 
 ## Reporting a vulnerability
 
@@ -12,4 +12,4 @@ Include the affected version or commit, reproduction steps, impact, and any sugg
 
 ## Sensitive output
 
-Statecraft reports may contain application screenshots and diagnostics. Keep `.statecraft/` out of version control and review report artifacts before sharing them.
+UIWitness reports may contain application screenshots and diagnostics. Keep `.uiwitness/` and any legacy `.statecraft/` evidence out of version control, and review report artifacts before sharing them. UIWitness never migrates, uploads, or deletes the legacy evidence root automatically.

@@ -1112,7 +1112,7 @@ a:focus-visible {
 }
 
 /*
- * Intentional Statecraft fixture defect: the dark-theme order error signal
+ * Intentional UIWitness fixture defect: the dark-theme order error signal
  * loses all foreground contrast. The following Phase 6 matrix slice will
  * assert the expected contrast and preserve this cell as a known failure.
  */

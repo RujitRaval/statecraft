@@ -1,30 +1,30 @@
-# Statecraft
+# UIWitness
 
-[![CI](https://github.com/RujitRaval/statecraft/actions/workflows/ci.yml/badge.svg)](https://github.com/RujitRaval/statecraft/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/statecraft-ui.svg)](https://www.npmjs.com/package/statecraft-ui)
+[![CI](https://github.com/RujitRaval/uiwitness/actions/workflows/ci.yml/badge.svg)](https://github.com/RujitRaval/uiwitness/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/uiwitness.svg)](https://www.npmjs.com/package/uiwitness)
 [![license](https://img.shields.io/badge/license-MIT-171a16.svg)](LICENSE)
 
 **Find the UI states your product forgot.**
 
-Statecraft is a local-first product-state coverage tool. It renders your routes across meaningful states, viewports, and themes; runs assertions; captures screenshots and sanitized diagnostics; and produces one self-contained offline report.
+UIWitness is a local-first product-state coverage tool. It renders your routes across meaningful states, viewports, and themes; runs assertions; captures screenshots and sanitized diagnostics; and produces one self-contained offline report.
 
 ```bash
-npm install --save-dev statecraft-ui playwright@1.62.1
+npm install --save-dev uiwitness playwright@1.62.1
 npx playwright install chromium
-npx statecraft check https://example.com
-npx statecraft check https://example.com --write-config
-npx statecraft scan
+npx uiwitness check https://example.com
+npx uiwitness check https://example.com --write-config
+npx uiwitness scan
 ```
 
-![Statecraft report opening with the Evidence over instinct verdict and 93.33 percent coverage for 60 UI executions](docs/assets/statecraft-report-overview.png)
+![UIWitness report opening with the Evidence over instinct verdict and 93.33 percent coverage for 60 UI executions](docs/assets/uiwitness-report-overview.png)
 
-The screenshot above is the real 60-cell Northline example report. Four deliberately broken coordinates remain visible so the release gate proves Statecraft catches narrow-viewport overflow and theme-specific contrast failures.
+The screenshot above is the real 60-cell Northline example report. Four deliberately broken coordinates remain visible so the release gate proves UIWitness catches narrow-viewport overflow and theme-specific contrast failures.
 
 ## Product states, not just pixel changes
 
-Conventional visual regression asks whether an existing screenshot changed. Statecraft asks whether every important product state still works in the conditions you support.
+Conventional visual regression asks whether an existing screenshot changed. UIWitness asks whether every important product state still works in the conditions you support.
 
-| | Statecraft | Screenshot regression |
+| | UIWitness | Screenshot regression |
 | --- | --- | --- |
 | Primary question | Did each configured product state survive? | Did pixels change from a baseline? |
 | Coverage model | Route × state × viewport × theme | Screenshot cases you remembered to write |
@@ -35,42 +35,42 @@ Use it for loading, empty, error, unauthorized, long-content, responsive, and th
 
 ## Check a live website without config
 
-Point Statecraft at a public site you own or are authorized to test:
+Point UIWitness at a public site you own or are authorized to test:
 
 ```bash
-npx statecraft check https://example.com
+npx uiwitness check https://example.com
 ```
 
-Statecraft discovers up to five same-origin HTML pages, checks every page at mobile/desktop × light/dark, captures screenshots and sanitized browser evidence, and writes the kinetic offline report to `.statecraft/report/index.html`. Use `--max-pages <1-20>` for a different bounded discovery budget or `--headed` to watch the run. Add `--write-config` to save the discovered routes as an overwrite-safe `statecraft.config.mts` plus a shared public-site scenario, ready for `npx statecraft scan`. The command exits `0` when every cell passes, `1` when it finds failures, and `2` when usage, discovery, setup publication, or the run itself cannot complete.
+UIWitness discovers up to five same-origin HTML pages, checks every page at mobile/desktop × light/dark, captures screenshots and sanitized browser evidence, and writes the kinetic offline report to `.uiwitness/report/index.html`. Use `--max-pages <1-20>` for a different bounded discovery budget or `--headed` to watch the run. Add `--write-config` to save the discovered routes as an overwrite-safe `uiwitness.config.mts` plus a shared public-site scenario, ready for `npx uiwitness scan`. The command exits `0` when every cell passes, `1` when it finds failures, and `2` when usage, discovery, setup publication, or the run itself cannot complete.
 
-Quick Check covers public success surfaces. After promotion, edit the generated config and add loading, empty, error, authenticated, and long-content scenarios that a public crawl cannot reach. Without `--write-config`, Quick Check creates only ignored `.statecraft/` evidence and prints the exact promotion command.
+Quick Check covers public success surfaces. After promotion, edit the generated config and add loading, empty, error, authenticated, and long-content scenarios that a public crawl cannot reach. Without `--write-config`, Quick Check creates only ignored `.uiwitness/` evidence and prints the exact promotion command.
 
-The [public website Quick Check guide](docs/open-source/PUBLIC_URL_QUICK_CHECK.md) walks through the two-minute first run, interpreting the report, safe promotion, privacy boundaries, and the registry-only release proof behind this workflow.
+The [public website Quick Check guide](docs/open-source/PUBLIC_URL_QUICK_CHECK.md) walks through the two-minute first run, interpreting the report, safe promotion, privacy boundaries, and the registry-only release proof behind this workflow. Existing users can follow the [identity migration guide](docs/open-source/MIGRATING_TO_UIWITNESS.md) for package, command, config, scenario, and evidence-path mappings.
 
 ## Quick start
 
-Statecraft supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x.
+UIWitness supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.js 24.x.
 
 1. Install the CLI and its pinned browser runtime:
 
    ```bash
-   npm install --save-dev statecraft-ui playwright@1.62.1
+   npm install --save-dev uiwitness playwright@1.62.1
    npx playwright install chromium
    ```
 
 2. Generate an overwrite-safe starter config and scenario:
 
    ```bash
-   npx statecraft init
+   npx uiwitness init
    ```
 
-   This creates `statecraft.config.mts` and `statecraft/scenarios/home/success.mts`. The explicit ESM extensions work in both npm's default CommonJS projects and projects that set `"type": "module"`.
+   This creates `uiwitness.config.mts` and `uiwitness/scenarios/home/success.mts`. The explicit ESM extensions work in both npm's default CommonJS projects and projects that set `"type": "module"`.
 
 3. Start your application, then scan and open the report:
 
    ```bash
-   npx statecraft scan
-   npx statecraft open
+   npx uiwitness scan
+   npx uiwitness open
    ```
 
 `scan` exits `0` when all cells pass, `1` when completed cells expose product-state failures, and `2` for setup or configuration errors. A failing scan still writes its report whenever execution completed.
@@ -78,7 +78,7 @@ Statecraft supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.
 ## Configure a small, explicit matrix
 
 ```ts
-import { defineConfig } from "statecraft-ui";
+import { defineConfig } from "uiwitness";
 
 export default defineConfig({
   baseURL: "http://127.0.0.1:3000",
@@ -88,7 +88,7 @@ export default defineConfig({
       path: "/orders",
       states: ["success", "loading", "empty", "error"].map((id) => ({
         id,
-        setup: "./statecraft/scenarios/orders.mjs",
+        setup: "./uiwitness/scenarios/orders.mjs",
       })),
     },
   ],
@@ -120,27 +120,27 @@ export default {
 };
 ```
 
-See the [CLI and configuration specification](docs/product/CLI_AND_CONFIG_SPEC.md), [runner API](docs/engineering/RUNNER_API.md), and complete [Northline matrix](apps/example-nextjs/statecraft.config.ts).
+See the [CLI and configuration specification](docs/product/CLI_AND_CONFIG_SPEC.md), [runner API](docs/engineering/RUNNER_API.md), and complete [Northline matrix](apps/example-nextjs/uiwitness.config.ts).
 
 ## Inspect evidence offline
 
-Every completed scan writes a versioned report beneath `.statecraft/`:
+Every completed scan writes a versioned report beneath `.uiwitness/`:
 
 ```text
-.statecraft/
+.uiwitness/
 ├── artifacts/        # deterministic PNG evidence
 └── report/
     ├── index.html    # self-contained interactive report
-    └── statecraft.json
+    └── uiwitness.json
 ```
 
 Filter by route, state, viewport, theme, or status. Open a cell to inspect the exact screenshot, route metadata, assertion failures, console errors, page errors, and failed requests. The report needs no server, account, network request, or external asset.
 
-![Statecraft failure detail showing the Northline customer long-content mobile overflow and its assertion evidence](docs/assets/statecraft-failure-detail.png)
+![UIWitness failure detail showing the Northline customer long-content mobile overflow and its assertion evidence](docs/assets/uiwitness-failure-detail.png)
 
 ## GitHub Actions
 
-Statecraft is a normal CLI job; no custom Marketplace action or hosted service is required. The copy-ready [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) covers application readiness, Chromium installation, exit codes, privacy, and uploading the complete `.statecraft` bundle with `if: always()` so failures retain their evidence.
+UIWitness is a normal CLI job; no custom Marketplace action or hosted service is required. The copy-ready [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) covers application readiness, Chromium installation, exit codes, privacy, and uploading the complete `.uiwitness` bundle with `if: always()` so failures retain their evidence.
 
 Reports can contain screenshots, URLs, and application data. Treat artifacts from a public repository as public, use only fictional or approved test data, and choose the shortest useful retention period.
 
@@ -148,12 +148,12 @@ Reports can contain screenshots, URLs, and application data. Treat artifacts fro
 
 | Package | Purpose |
 | --- | --- |
-| [`statecraft-ui`](https://www.npmjs.com/package/statecraft-ui) | Public API and the `statecraft` executable |
-| [`statecraft-ui-core`](https://www.npmjs.com/package/statecraft-ui-core) | Browser-independent config, matrix, coverage, and report contracts |
-| [`statecraft-ui-runner-playwright`](https://www.npmjs.com/package/statecraft-ui-runner-playwright) | Isolated Playwright execution and local persistence |
-| [`statecraft-ui-report`](https://www.npmjs.com/package/statecraft-ui-report) | Deterministic offline report transformation and rendering |
+| [`uiwitness`](https://www.npmjs.com/package/uiwitness) | Public API and the `uiwitness` executable |
+| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, matrix, coverage, and report contracts |
+| [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution and local persistence |
+| [`uiwitness-report`](https://www.npmjs.com/package/uiwitness-report) | Deterministic offline report transformation and rendering |
 
-All four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. No long-lived npm token remains configured.
+After the external cutover, all four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. The one-time bootstrap token is revoked before the registry-verification gate, and normal releases keep no long-lived npm token configured.
 
 ## Local-first architecture
 
@@ -165,7 +165,7 @@ configure → expand matrix → run isolated browser cells → persist evidence 
 - One Chromium process is reused while every matrix cell gets a fresh browser context and page.
 - Screenshot paths, result schemas, coverage math, and report rendering are deterministic.
 - Console, page, and request diagnostics are sanitized before persistence.
-- `.statecraft/` is ignored because reports may contain sensitive application data.
+- `.uiwitness/` is ignored because reports may contain sensitive application data.
 
 Read the [architecture](docs/architecture/ARCHITECTURE.md), [security and privacy model](docs/engineering/SECURITY_PRIVACY.md), [report UX specification](docs/product/REPORT_UX_SPEC.md), and [brand research](docs/design/BRAND_RESEARCH.md) for the detailed contracts. The repository-level [design system](DESIGN.md) is the visual source of truth.
 
@@ -175,7 +175,7 @@ The workspace uses pnpm, strict TypeScript, Vitest, Playwright, and a polished N
 
 ```bash
 corepack pnpm install --frozen-lockfile
-corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
+corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium
 corepack pnpm lint
 corepack pnpm typecheck
 corepack pnpm test

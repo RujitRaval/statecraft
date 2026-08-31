@@ -1,11 +1,11 @@
 import { defineConfig } from "uiwitness";
 
 const scenario = (route: "customers" | "dashboard" | "orders"): string =>
-  `./statecraft/scenarios/${route}.mjs`;
+  `./uiwitness/scenarios/${route}.mjs`;
 
 export default defineConfig({
   baseURL:
-    process.env["STATECRAFT_EXAMPLE_BASE_URL"] ?? "http://127.0.0.1:3000",
+    process.env["UIWITNESS_EXAMPLE_BASE_URL"] ?? "http://127.0.0.1:3000",
   routes: [
     {
       id: "dashboard",

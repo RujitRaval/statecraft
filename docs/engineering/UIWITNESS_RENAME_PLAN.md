@@ -559,7 +559,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Architecture and Test Reviews.
   - Files: `packages/cli/**`, `packages/report/**`, snapshots and browser tests.
   - Verify: init, check, promotion, scan, open, report browser suite.
-- [ ] **T6 (P2, human: ~2 days / Codex: ~1 hour)**: Example/docs/assets: rename the example integration, active guidance, and launch evidence.
+- [x] **T6 (P2, human: ~2 days / Codex: ~1 hour)**: Example/docs/assets: renamed the example integration, active guidance, and launch evidence. Implemented the UIWitness example config, scenario root, environment contract, npm scripts, current documentation, tested migration guide with exact deprecation messages, and regenerated overview and failure-detail images from the verified 60-cell report.
   - Surfaced by: Complete-scope decision and outside documentation review.
   - Files: `apps/example-nextjs/**`, root/current docs, `docs/open-source/MIGRATING_TO_UIWITNESS.md`, `docs/assets/**`, capture tests.
   - Verify: 60-cell example gate, copy-paste migration commands and mappings, exact deprecation messages, docs check, regenerated assets, brand check.

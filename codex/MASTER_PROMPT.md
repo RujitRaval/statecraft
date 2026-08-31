@@ -1,10 +1,10 @@
 # Master Prompt for Codex
 
-You are implementing **Statecraft**, an open-source UI product-state coverage tool.
+You are implementing **UIWitness**, an open-source UI product-state coverage tool.
 
 Read every document in this folder before changing code. Treat `codex/IMPLEMENTATION_SPEC.md` as the detailed specification and `docs/` as supporting product, architecture, quality, security, and launch requirements.
 
-> **Statecraft finds, renders, and reports the UI states your product forgot.**
+> **UIWitness finds, renders, and reports the UI states your product forgot.**
 
 ## Rules
 - Do not silently broaden scope.
@@ -20,6 +20,6 @@ Read every document in this folder before changing code. Treat `codex/IMPLEMENTA
 - Explain major dependency additions.
 
 ## Current assignment
-Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic reporting, `statecraft check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate are implemented. Keep future work in an explicitly approved roadmap slice.
+Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic reporting, `uiwitness check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan release gate are implemented. Keep future work in an explicitly approved roadmap slice.
 
 At each handoff, provide the API added, behavior, fixture coverage, build/test commands, assumptions, unresolved questions, and the recommended next step.

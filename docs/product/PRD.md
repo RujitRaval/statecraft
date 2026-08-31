@@ -1,7 +1,7 @@
 # Product Requirements Document
 
 ## Vision
-Statecraft should define **UI product-state coverage**. Visual regression asks whether pixels changed; Statecraft asks whether important states exist and work across realistic conditions.
+UIWitness should define **UI product-state coverage**. Visual regression asks whether pixels changed; UIWitness asks whether important states exist and work across realistic conditions.
 
 ## Problem
 Production UIs routinely fail outside happy-path seed data: loading, empty, API failure, offline, unauthorized, long content, partial data, responsive layouts, and themes. These states are difficult to inspect systematically and are often skipped by humans and coding agents.
@@ -19,7 +19,7 @@ Local TypeScript/Node CLI; Playwright; type-safe config/scenarios; arbitrary nam
 No SaaS, accounts, cloud storage, billing, LLM requirement, automatic route/state discovery, pixel diffing, approval workflow, or broad framework support.
 
 ## Approved roadmap exception
-The Public URL Quick Check adds bounded, navigation-only route discovery for authorized public sites. It checks one `public` state across a fixed mobile/desktop by light/dark matrix and does not infer application states or replace explicit configured scans. Discovery, persisted evidence, `statecraft check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and a registry-only consumer release gate are implemented.
+The Public URL Quick Check adds bounded, navigation-only route discovery for authorized public sites. It checks one `public` state across a fixed mobile/desktop by light/dark matrix and does not infer application states or replace explicit configured scans. Discovery, persisted evidence, `uiwitness check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and a registry-only consumer release gate are implemented.
 
 ## Success
 A new developer can install, configure a few states, run one command, and understand a visually obvious UI problem from the report without author assistance. The report is strong enough to be the primary README/launch asset.

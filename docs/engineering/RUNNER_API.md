@@ -1,23 +1,23 @@
-# `statecraft-ui-runner-playwright` API
+# `uiwitness-runner-playwright` API
 
-`statecraft-ui-runner-playwright` owns Statecraft's published browser-specific execution boundary while `statecraft-ui-core` remains independent of Playwright. Most users install `statecraft-ui`; direct consumers can compose the programmatic runner APIs documented here.
+`uiwitness-runner-playwright` owns UIWitness's published browser-specific execution boundary while `uiwitness-core` remains independent of Playwright. Most users install `uiwitness`; direct consumers can compose the programmatic runner APIs documented here.
 
 ## Install the pinned browser
 
 After installing workspace dependencies, install the Chromium build paired with the pinned Playwright version:
 
 ```bash
-corepack pnpm --filter statecraft-ui-runner-playwright exec playwright install chromium
+corepack pnpm --filter uiwitness-runner-playwright exec playwright install chromium
 ```
 
 CI uses the same command with `--with-deps` on Ubuntu.
 
 ## Public URL route discovery
 
-`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a Statecraft configuration. The CLI composes it with `runPublicSiteChecks` through `statecraft check <url>` and can preserve the accepted surface through explicit overwrite-safe `--write-config` promotion.
+`discoverPublicRoutes(url, options?)` discovers a small public route surface without requiring a UIWitness configuration. The CLI composes it with `runPublicSiteChecks` through `uiwitness check <url>` and can preserve the accepted surface through explicit overwrite-safe `--write-config` promotion.
 
 ```ts
-import { discoverPublicRoutes } from "statecraft-ui-runner-playwright";
+import { discoverPublicRoutes } from "uiwitness-runner-playwright";
 
 const discovery = await discoverPublicRoutes("https://example.com/start", {
   maxPages: 5,
@@ -38,7 +38,7 @@ Discovery:
 4. Removes query strings and fragments, ignores downloads and common non-document resources, and visits unique paths sequentially in first-seen breadth-first order.
 5. Counts every navigation attempt against `maxPages`, including failed and skipped pages.
 
-An initial navigation or readiness failure, missing HTTP response, or non-HTML document rejects with a sanitized `PublicRouteDiscoveryError`. An initial HTML response is accepted regardless of HTTP status so a later check can report the status. For subsequent candidates, a navigation/readiness failure keeps the requested same-origin path as a leaf; a non-HTML response or cross-origin redirect is skipped. A redirected external destination may receive its ordinary GET before Playwright exposes the final URL, but Statecraft extracts and follows no links from it.
+An initial navigation or readiness failure, missing HTTP response, or non-HTML document rejects with a sanitized `PublicRouteDiscoveryError`. An initial HTML response is accepted regardless of HTTP status so a later check can report the status. For subsequent candidates, a navigation/readiness failure keeps the requested same-origin path as a leaf; a non-HTML response or cross-origin redirect is skipped. A redirected external destination may receive its ordinary GET before Playwright exposes the final URL, but UIWitness extracts and follows no links from it.
 
 `PublicRouteDiscoveryError.code` is one of:
 
@@ -66,7 +66,7 @@ See [ADR 0029](../decisions/0029-public-url-route-discovery.md) for the discover
 import {
   discoverPublicRoutes,
   runPublicSiteChecks,
-} from "statecraft-ui-runner-playwright";
+} from "uiwitness-runner-playwright";
 
 const discovery = await discoverPublicRoutes("https://example.com");
 const run = await runPublicSiteChecks(discovery, {
@@ -89,11 +89,11 @@ Light and dark are browser-native `prefers-color-scheme` preferences; Quick Chec
 
 The trusted `publicSiteScenario` fails on a final main-document HTTP status of 400 or higher and on document-level horizontal overflow greater than `PUBLIC_SITE_OVERFLOW_TOLERANCE_PX` (one CSS pixel). The existing capture policy fails uncaught page errors and navigation failures. Console errors and subordinate request failures are retained as sanitized warnings and never fail this workflow. The screenshot is taken before assertions, so HTTP, overflow, and page-error failures keep visual evidence when capture itself succeeds. A main-frame navigation guard remains active through screenshot and assertion completion; any replacement document discards the PNG and fails the cell instead of allowing mismatched URL and pixel evidence.
 
-The result uses the existing schema-v1 JSON and self-contained HTML report under `.statecraft/`. Output remains private local evidence. Callers must check only sites they own or are authorized to test because normal page loads execute the site's JavaScript and requests.
+The result uses the existing schema-v1 JSON and self-contained HTML report under `.uiwitness/`. Output remains private local evidence. Callers must check only sites they own or are authorized to test because normal page loads execute the site's JavaScript and requests.
 
 The runner's navigated, captured, and persisted option shapes also accept a trusted in-memory `scenario` override for programmatic orchestration. When supplied, it is runtime-validated once and used for every cell instead of importing each state's `setup` path. The exported `publicSiteScenario` is the default export behind the generated trusted local scenario module, so promoted configured scans reuse the exact same assertions instead of copying them.
 
-`statecraft-ui-runner-playwright/public-site-contract` is a lightweight export containing the frozen Quick Check viewports, themes, and diagnostic failure policy. The runner and CLI config generator share it so a promoted scan reproduces the same fixed matrix without importing Playwright at setup-render time.
+`uiwitness-runner-playwright/public-site-contract` is a lightweight export containing the frozen Quick Check viewports, themes, and diagnostic failure policy. The runner and CLI config generator share it so a promoted scan reproduces the same fixed matrix without importing Playwright at setup-render time.
 
 See [ADR 0030](../decisions/0030-public-site-check-evidence.md) for the fixed matrix, assertion precision, and evidence decisions.
 
@@ -102,8 +102,8 @@ See [ADR 0030](../decisions/0030-public-site-check-evidence.md) for the fixed ma
 `runExecutionCells(cells, execute, options?)` accepts matrix cells from `expandMatrix` and invokes the callback once for every cell in configured order.
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
-import { runExecutionCells } from "statecraft-ui-runner-playwright";
+import { expandMatrix, parseConfig } from "uiwitness-core";
+import { runExecutionCells } from "uiwitness-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const cells = expandMatrix(config);
@@ -130,8 +130,8 @@ A rejected cell does not abort later cells. Initial or replacement browser launc
 `runScenarioCells(cells, execute, options?)` layers typed local scenario loading onto the isolated cell lifecycle. Each state's `setup` path is resolved relative to `options.scenarioBaseDirectory`; programmatic callers that omit it use `process.cwd()`.
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
-import { runScenarioCells } from "statecraft-ui-runner-playwright";
+import { expandMatrix, parseConfig } from "uiwitness-core";
+import { runScenarioCells } from "uiwitness-runner-playwright";
 
 const cells = expandMatrix(parseConfig(unknownConfig));
 const outcomes = await runScenarioCells(
@@ -148,9 +148,9 @@ const outcomes = await runScenarioCells(
 A scenario is trusted local ESM code with an object default export:
 
 ```ts
-import type { StatecraftScenario } from "statecraft-ui-runner-playwright";
+import type { UIWitnessScenario } from "uiwitness-runner-playwright";
 
-const scenario: StatecraftScenario = {
+const scenario: UIWitnessScenario = {
   async beforeNavigate({ page }) {
     await page.route("**/api/dashboard", async (route) => {
       await route.fulfill({ json: { projects: [] } });
@@ -173,8 +173,8 @@ The runner runtime-checks the default export and the optional `beforeNavigate`, 
 `runNavigatedScenarioCells(cells, execute, options)` owns the normal Phase 3 path through theme setup, hooks, navigation, and deterministic readiness. Its callback runs after readiness, which gives the following screenshot/diagnostics slice a stable capture seam without changing lifecycle order.
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
-import { runNavigatedScenarioCells } from "statecraft-ui-runner-playwright";
+import { expandMatrix, parseConfig } from "uiwitness-core";
+import { runNavigatedScenarioCells } from "uiwitness-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const outcomes = await runNavigatedScenarioCells(
@@ -212,11 +212,11 @@ Arbitrary theme IDs are intentionally supported through `data-theme`; only the c
 `runCapturedScenarioCells(cells, options)` owns the complete capture lifecycle through assertion and diagnostic failure policy. It returns settled cell outcomes and deliberately has no output-directory or artifact-path option.
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { expandMatrix, parseConfig } from "uiwitness-core";
 import {
   runCapturedScenarioCells,
   ScenarioCaptureError,
-} from "statecraft-ui-runner-playwright";
+} from "uiwitness-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const outcomes = await runCapturedScenarioCells(expandMatrix(config), {
@@ -256,11 +256,11 @@ The runner never reads diagnostic request/response headers, cookies, bodies, or 
 
 ## Result translation and local persistence
 
-`runPersistedScenarioCells(cells, options)` is the complete programmatic Phase 3 entry point. It runs capture, translates every settled outcome into the core `ExecutionResult` contract, calculates configured-state coverage, validates a schema-v1 `StatecraftReport`, writes deterministic screenshots, and serializes `.statecraft/report/statecraft.json`.
+`runPersistedScenarioCells(cells, options)` is the complete programmatic Phase 3 entry point. It runs capture, translates every settled outcome into the core `ExecutionResult` contract, calculates configured-state coverage, validates a schema-v1 `UIWitnessReport`, writes deterministic screenshots, and serializes `.uiwitness/report/uiwitness.json`.
 
 ```ts
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
-import { runPersistedScenarioCells } from "statecraft-ui-runner-playwright";
+import { expandMatrix, parseConfig } from "uiwitness-core";
+import { runPersistedScenarioCells } from "uiwitness-runner-playwright";
 
 const config = parseConfig(unknownConfig);
 const run = await runPersistedScenarioCells(expandMatrix(config), {
@@ -272,7 +272,7 @@ const run = await runPersistedScenarioCells(expandMatrix(config), {
 });
 
 run.reportPath;
-// .statecraft/report/statecraft.json
+// .uiwitness/report/uiwitness.json
 run.report.summary.coverage.execution;
 ```
 
@@ -280,14 +280,14 @@ The project directory must already exist and defaults to `process.cwd()`. Cells 
 
 Each successful capture becomes a passed execution with its deterministic `screenshotArtifactPath(cell)`. A rejected `ScenarioCaptureError` becomes a failed execution with the same stable failures, diagnostics, duration, safe URL metadata, and a screenshot path when capture completed before the later failure. Unexpected context or cleanup failures become sanitized `INTERNAL_ERROR` results without screenshots. Result parsing redacts route, execution, failed-request, and project URL credentials, fragments, and query values before anything reaches disk.
 
-Publication uses a private staging directory and local run lock inside `.statecraft/`. The lock keeps an immutable process owner plus append-only publishing/recovery markers and is acquired before Chromium launches, so two programmatic runs cannot interleave capture and publication for one project. An abandoned capture-phase lock and its uncommitted staging are recovered when its owner is no longer alive; a small durable claim keyed to that abandoned owner prevents delayed recovery contenders from moving a newer live lock. The publishing marker is created only immediately before the first destructive rename, and publishing or recovery state is preserved for inspection. Once every screenshot plus the validated JSON and rendered HTML payloads are ready, the runner hides the prior report files, replaces the complete `.statecraft/artifacts/` tree so filtered or removed cells cannot leave stale screenshots, then publishes new JSON and HTML. Artifact, JSON, and HTML symbolic links are rejected, and new or existing runner directories/files use owner-only modes where supported. A failed publication restores artifacts before making the previous JSON and HTML visible; if recovery itself fails, the runner preserves staging data and the owned lock for manual recovery instead of deleting the last good copies. Filesystem validation, locking, and publication errors reject the run instead of fabricating per-cell browser failures.
+Publication uses a private staging directory and local run lock inside `.uiwitness/`. The lock keeps an immutable process owner plus append-only publishing/recovery markers and is acquired before Chromium launches, so two programmatic runs cannot interleave capture and publication for one project. An abandoned capture-phase lock and its uncommitted staging are recovered when its owner is no longer alive; a small durable claim keyed to that abandoned owner prevents delayed recovery contenders from moving a newer live lock. The publishing marker is created only immediately before the first destructive rename, and publishing or recovery state is preserved for inspection. Once every screenshot plus the validated JSON and rendered HTML payloads are ready, the runner hides the prior report files, replaces the complete `.uiwitness/artifacts/` tree so filtered or removed cells cannot leave stale screenshots, then publishes new JSON and HTML. Artifact, JSON, and HTML symbolic links are rejected, and new or existing runner directories/files use owner-only modes where supported. A failed publication restores artifacts before making the previous JSON and HTML visible; if recovery itself fails, the runner preserves staging data and the owned lock for manual recovery instead of deleting the last good copies. Filesystem validation, locking, and publication errors reject the run instead of fabricating per-cell browser failures.
 
-This API does not discover configuration, print terminal output, choose exit codes, or open a report. It delegates browser-independent HTML rendering to `statecraft-ui-report` so all generated output can share one publication transaction.
+This API does not discover configuration, print terminal output, choose exit codes, or open a report. It delegates browser-independent HTML rendering to `uiwitness-report` so all generated output can share one publication transaction.
 
 ## Current boundary
 
-Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `statecraft scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery, runner-owned fixed-matrix evidence, CLI `statecraft check` orchestration, and overwrite-safe permanent setup generation.
+Phase 3 is complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and coordinated deterministic output persistence. Phase 4 consumes this API through `uiwitness scan`; the completed Phase 5 report package transforms and renders the validated report before the runner publishes HTML with its JSON and screenshots. The approved Quick Check roadmap now has bounded discovery, runner-owned fixed-matrix evidence, CLI `uiwitness check` orchestration, and overwrite-safe permanent setup generation.
 
 ## Dependency decision
 
-Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `statecraft-ui-report` for deterministic HTML rendering; no browser dependency enters `statecraft-ui-core` or the report package.
+Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `uiwitness-report` for deterministic HTML rendering; no browser dependency enters `uiwitness-core` or the report package.

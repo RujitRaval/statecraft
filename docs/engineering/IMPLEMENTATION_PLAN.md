@@ -25,7 +25,7 @@ Offline HTML, summary, matrix, thumbnails, detail view, filters, responsive/keyb
 
 ## Phase 6 - Example
 Polished Next.js dashboard with `/dashboard`, `/orders`, `/customers/[id]`; meaningful states and intentional defects.
-**Gate:** report screenshot makes Statecraft's value obvious.
+**Gate:** report screenshot makes UIWitness's value obvious.
 **Status:** complete; the design system, Next.js foundation, deterministic dashboard, orders and customer contracts, meaningful state surfaces, focused responsive/theme defects, complete 60-cell scan matrix, and four-cell known-failure report gate are implemented.
 
 ## Phase 7 - Release
@@ -34,7 +34,7 @@ README, CI usage, contributor docs, GIF/screenshots, package metadata, smoke tes
 **Status:** complete; clean-checkout production build and built-CLI consumer smoke coverage, exact known-failure validation, short-lived report artifacts, documented GitHub Actions usage, public npm packages, artifact-level consumer verification, protected release automation, real report launch assets, and final contributor/release guidance are implemented.
 
 ## Approved roadmap - Public URL Quick Check
-Bounded same-origin discovery, a fixed public-site evidence matrix, kinetic report presentation, CLI orchestration, and overwrite-safe promotion into permanent Statecraft setup.
+Bounded same-origin discovery, a fixed public-site evidence matrix, kinetic report presentation, CLI orchestration, and overwrite-safe promotion into permanent UIWitness setup.
 **Gate:** a developer can point one command at an authorized live site, receive actionable local evidence, and promote the useful surface without hand-authoring boilerplate.
 **Status:** complete; CLI `check <url>` composes discovery, four-cell-per-page evidence capture, page-level summaries, stable exit codes, the offline report, and overwrite-safe `--write-config` promotion. The public launch guide and post-publication registry-only check → promotion → scan consumer gate prove the documented journey from an empty npm project.
 

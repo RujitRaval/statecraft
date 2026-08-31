@@ -1,16 +1,16 @@
 {
-  "name": "@statecraft/example-nextjs",
+  "name": "@uiwitness/example-nextjs",
   "version": "0.0.0",
   "private": true,
-  "description": "Polished deterministic Next.js fixture for Statecraft.",
+  "description": "Polished deterministic Next.js fixture for UIWitness.",
   "type": "module",
   "scripts": {
     "build": "node scripts/next.mjs build",
     "dev": "node scripts/next.mjs dev",
     "launch:assets": "node scripts/capture-launch-assets.mjs",
-    "prestatecraft:scan": "corepack pnpm --filter uiwitness... build",
+    "preuiwitness:scan": "corepack pnpm --filter uiwitness... build",
     "pretypecheck": "corepack pnpm --filter uiwitness... build",
-    "statecraft:scan": "node ../../packages/cli/dist/bin.js scan",
+    "uiwitness:scan": "node ../../packages/cli/dist/bin.js scan",
     "start": "node scripts/next.mjs start",
     "typecheck": "node scripts/next.mjs typegen && tsc --noEmit"
   },

@@ -13,7 +13,7 @@
     "brand:check": "node scripts/check-brand.mjs",
     "build": "corepack pnpm --recursive --if-present build",
     "lint": "corepack pnpm brand:check && eslint . --max-warnings=0",
-    "launch:assets": "corepack pnpm --filter @statecraft/example-nextjs launch:assets",
+    "launch:assets": "corepack pnpm --filter @uiwitness/example-nextjs launch:assets",
     "release:check": "node scripts/check-release-packages.mjs",
     "release:package-smoke": "corepack pnpm build && node scripts/release-package-smoke.mjs",
     "release:registry-public-url-smoke": "node scripts/public-url-registry-smoke.mjs",
