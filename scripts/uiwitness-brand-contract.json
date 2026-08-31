@@ -25,7 +25,7 @@
     {
       "path": "CHANGELOG.md",
       "contentCounts": {
-        "lower": 35,
+        "lower": 36,
         "title": 15
       }
     },
@@ -322,8 +322,8 @@
     {
       "path": "scripts/release-package-smoke.test.mjs",
       "contentCounts": {
-        "lower": 1,
-        "title": 1
+        "lower": 2,
+        "title": 2
       }
     },
     {
