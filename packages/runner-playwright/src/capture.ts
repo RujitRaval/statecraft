@@ -6,7 +6,7 @@ import type {
   ExecutionFailureCode,
   FailurePolicy,
   MatrixCell,
-} from "statecraft-ui-core";
+} from "uiwitness-core";
 import type { ConsoleMessage, Page, Request } from "playwright";
 
 import type { CellExecutionOutcome } from "./lifecycle.js";
@@ -18,7 +18,7 @@ import {
 import {
   ScenarioLoadError,
   type AssertionScenarioContext,
-  type StatecraftScenario,
+  type UIWitnessScenario,
 } from "./scenario.js";
 
 const maxDiagnosticLength = 2_000;
@@ -143,7 +143,7 @@ function sanitizeEmbeddedRouteUrl(value: string): string {
   const trailingPunctuationPattern = /[),.;}]+$/u;
   const punctuation = value.match(trailingPunctuationPattern)?.[0] ?? "";
   const candidate = punctuation.length === 0 ? value : value.slice(0, -punctuation.length);
-  const referenceOrigin = "https://statecraft.invalid";
+  const referenceOrigin = "https://uiwitness.invalid";
   let url: URL;
   try {
     url = new URL(candidate, referenceOrigin);
@@ -416,7 +416,7 @@ export async function runCapturedScenarioCells(
       const collector = new DiagnosticCollector(context.page);
       let navigation: NavigationMetadata | null = null;
       let assertionContext: AssertionScenarioContext | undefined;
-      let scenario: StatecraftScenario;
+      let scenario: UIWitnessScenario;
       let screenshot: Uint8Array | null = null;
       collector.start();
 

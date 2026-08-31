@@ -1,5 +1,5 @@
-/** Stable machine-readable categories for errors produced by Statecraft core. */
-export type StatecraftErrorCode =
+/** Stable machine-readable categories for errors produced by UIWitness core. */
+export type UIWitnessErrorCode =
   | "CONFIG_INVALID"
   | "REPORT_INVALID"
   | "RESULT_INVALID";
@@ -25,44 +25,44 @@ export type ResultValidationIssue = ConfigValidationIssue;
 export type ReportValidationIssue = ConfigValidationIssue;
 
 /** Base class for errors callers may classify without inspecting messages. */
-export class StatecraftError extends Error {
-  readonly code: StatecraftErrorCode;
+export class UIWitnessError extends Error {
+  readonly code: UIWitnessErrorCode;
 
-  constructor(code: StatecraftErrorCode, message: string) {
+  constructor(code: UIWitnessErrorCode, message: string) {
     super(message);
-    this.name = "StatecraftError";
+    this.name = "UIWitnessError";
     this.code = code;
   }
 }
 
-/** Thrown when an unknown value cannot be parsed as a Statecraft config. */
-export class ConfigValidationError extends StatecraftError {
+/** Thrown when an unknown value cannot be parsed as a UIWitness config. */
+export class ConfigValidationError extends UIWitnessError {
   readonly issues: readonly ConfigValidationIssue[];
 
   constructor(issues: readonly ConfigValidationIssue[]) {
-    super("CONFIG_INVALID", "Invalid Statecraft configuration.");
+    super("CONFIG_INVALID", "Invalid UIWitness configuration.");
     this.name = "ConfigValidationError";
     this.issues = Object.freeze(issues.map((issue) => Object.freeze({ ...issue })));
   }
 }
 
 /** Thrown when an unknown value cannot be parsed as an execution result. */
-export class ResultValidationError extends StatecraftError {
+export class ResultValidationError extends UIWitnessError {
   readonly issues: readonly ResultValidationIssue[];
 
   constructor(issues: readonly ResultValidationIssue[]) {
-    super("RESULT_INVALID", "Invalid Statecraft execution result.");
+    super("RESULT_INVALID", "Invalid UIWitness execution result.");
     this.name = "ResultValidationError";
     this.issues = Object.freeze(issues.map((issue) => Object.freeze({ ...issue })));
   }
 }
 
 /** Thrown when an unknown value cannot be parsed as a versioned report. */
-export class ReportValidationError extends StatecraftError {
+export class ReportValidationError extends UIWitnessError {
   readonly issues: readonly ReportValidationIssue[];
 
   constructor(issues: readonly ReportValidationIssue[]) {
-    super("REPORT_INVALID", "Invalid Statecraft report.");
+    super("REPORT_INVALID", "Invalid UIWitness report.");
     this.name = "ReportValidationError";
     this.issues = Object.freeze(issues.map((issue) => Object.freeze({ ...issue })));
   }

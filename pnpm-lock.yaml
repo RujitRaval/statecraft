@@ -60,10 +60,10 @@ importers:
       playwright:
         specifier: 1.62.1
         version: 1.62.1
-      statecraft-ui:
+      uiwitness:
         specifier: workspace:*
         version: link:../../packages/cli
-      statecraft-ui-core:
+      uiwitness-core:
         specifier: workspace:*
         version: link:../../packages/core
       typescript:
@@ -75,10 +75,10 @@ importers:
 
   packages/cli:
     dependencies:
-      statecraft-ui-core:
+      uiwitness-core:
         specifier: workspace:*
         version: link:../core
-      statecraft-ui-runner-playwright:
+      uiwitness-runner-playwright:
         specifier: workspace:*
         version: link:../runner-playwright
     devDependencies:
@@ -110,7 +110,7 @@ importers:
 
   packages/report:
     dependencies:
-      statecraft-ui-core:
+      uiwitness-core:
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -129,10 +129,10 @@ importers:
       playwright:
         specifier: 1.62.1
         version: 1.62.1
-      statecraft-ui-core:
+      uiwitness-core:
         specifier: workspace:*
         version: link:../core
-      statecraft-ui-report:
+      uiwitness-report:
         specifier: workspace:*
         version: link:../report
     devDependencies:

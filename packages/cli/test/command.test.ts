@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { parseReport } from "statecraft-ui-core";
+import { parseReport } from "uiwitness-core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { CheckOptions, CheckResult } from "../src/check.js";
@@ -181,7 +181,7 @@ function completedCheck(
             failures: [],
             routeId: "home-abc",
             routePath: "/",
-            scenarioSource: "statecraft:public-site",
+            scenarioSource: "uiwitness:public-site",
             screenshotPath: `.statecraft/artifacts/home-abc/public/${viewportId}-${theme}.png`,
             stateId: "public",
             status: "passed" as const,
@@ -212,7 +212,7 @@ function completedCheck(
               ],
           routeId: "pricing-def",
           routePath: "/pricing",
-          scenarioSource: "statecraft:public-site",
+          scenarioSource: "uiwitness:public-site",
           screenshotPath: ".statecraft/artifacts/pricing-def/public/mobile-light.png",
           stateId: "public",
           status,

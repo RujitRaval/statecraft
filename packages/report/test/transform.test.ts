@@ -1,4 +1,4 @@
-import { parseReport } from "statecraft-ui-core";
+import { parseReport } from "uiwitness-core";
 import { describe, expect, it } from "vitest";
 
 import { transformReport } from "../src/transform.js";
@@ -51,7 +51,7 @@ describe("transformReport", () => {
 
   it("validates unknown report data before transformation", () => {
     expect(() => transformReport({ schemaVersion: 99 })).toThrow(
-      "Invalid Statecraft report.",
+      "Invalid UIWitness report.",
     );
   });
 

@@ -25,9 +25,9 @@ import {
   type ExecutionFailure,
   type ExecutionResult,
   type MatrixCell,
-  type StatecraftReport,
-} from "statecraft-ui-core";
-import { REPORT_HTML_PATH, renderReportHtml } from "statecraft-ui-report";
+  type UIWitnessReport,
+} from "uiwitness-core";
+import { REPORT_HTML_PATH, renderReportHtml } from "uiwitness-report";
 
 import {
   diagnosticErrorMessage,
@@ -67,7 +67,7 @@ export interface RunPersistedScenarioCellsOptions
 /** The validated report and its stable project-relative JSON and HTML locations. */
 export interface PersistedScenarioRun {
   readonly htmlReportPath: typeof REPORT_HTML_PATH;
-  readonly report: StatecraftReport;
+  readonly report: UIWitnessReport;
   readonly reportPath: typeof reportProjectPath;
 }
 
@@ -217,7 +217,7 @@ function reportFor(
   artifacts: readonly ExecutionArtifact[],
   baseURL: string,
   generatedAt: string,
-): StatecraftReport {
+): UIWitnessReport {
   const executions = artifacts.map(({ result }) => result);
   const passed = executions.filter(({ status }) => status === "passed").length;
   return parseReport({
@@ -741,7 +741,7 @@ export async function acquirePersistenceLock(
 export async function persistReport(
   root: string,
   lock: PersistenceLock,
-  report: StatecraftReport,
+  report: UIWitnessReport,
   artifacts: readonly ExecutionArtifact[],
   operations: PublicationOperations = publicationOperations,
 ): Promise<void> {

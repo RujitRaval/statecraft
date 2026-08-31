@@ -4,7 +4,7 @@ import {
   expandMatrix,
   parseConfig,
   type MatrixCell,
-} from "statecraft-ui-core";
+} from "uiwitness-core";
 import type { LaunchOptions } from "playwright";
 
 import type { PublicRouteDiscovery } from "./discovery.js";

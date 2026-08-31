@@ -45,7 +45,7 @@ export type {
   ScenarioAssertionHook,
   ScenarioHook,
   ScenarioLoadErrorCode,
-  StatecraftScenario,
+  UIWitnessScenario,
 } from "./scenario.js";
 export {
   PUBLIC_SITE_OVERFLOW_TOLERANCE_PX,

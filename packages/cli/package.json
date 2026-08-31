@@ -1,16 +1,16 @@
 {
-  "name": "statecraft-ui",
-  "version": "0.24.13",
-  "description": "Zero-config public-site checks and configured UI state coverage for Statecraft.",
+  "name": "uiwitness",
+  "version": "0.25.0",
+  "description": "Zero-config public-site checks and configured UI state coverage for UIWitness.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RujitRaval/statecraft.git",
+    "url": "git+https://github.com/RujitRaval/uiwitness.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://github.com/RujitRaval/statecraft#readme",
+  "homepage": "https://github.com/RujitRaval/uiwitness#readme",
   "bugs": {
-    "url": "https://github.com/RujitRaval/statecraft/issues"
+    "url": "https://github.com/RujitRaval/uiwitness/issues"
   },
   "keywords": [
     "cli",
@@ -23,7 +23,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "statecraft": "./dist/bin.js"
+    "uiwitness": "./dist/bin.js"
   },
   "files": [
     "dist/**/*.js",
@@ -51,12 +51,12 @@
   },
   "scripts": {
     "build": "node ../../scripts/clean-package.mjs && tsc -p tsconfig.build.json",
-    "pretypecheck": "corepack pnpm --filter statecraft-ui-core build && corepack pnpm --filter statecraft-ui-report build && corepack pnpm --filter statecraft-ui-runner-playwright build",
+    "pretypecheck": "corepack pnpm --filter uiwitness-core build && corepack pnpm --filter uiwitness-report build && corepack pnpm --filter uiwitness-runner-playwright build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "statecraft-ui-core": "workspace:*",
-    "statecraft-ui-runner-playwright": "workspace:*"
+    "uiwitness-core": "workspace:*",
+    "uiwitness-runner-playwright": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.20.1",

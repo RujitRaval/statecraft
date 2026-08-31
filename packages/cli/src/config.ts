@@ -3,7 +3,7 @@ import { access, open, realpath, stat } from "node:fs/promises";
 import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { parseConfig, type StatecraftConfig } from "statecraft-ui-core";
+import { parseConfig, type UIWitnessConfig } from "uiwitness-core";
 
 /** Config filenames recognized during default project-root discovery. */
 export const DEFAULT_CONFIG_FILENAMES: readonly string[] = Object.freeze([
@@ -79,7 +79,7 @@ export class ConfigLoadError extends Error {
 
 /** A validated Statecraft config paired with its canonical source path. */
 export interface LoadedConfig {
-  readonly config: StatecraftConfig;
+  readonly config: UIWitnessConfig;
   readonly path: string;
 }
 

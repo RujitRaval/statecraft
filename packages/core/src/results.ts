@@ -88,8 +88,8 @@ export interface ReportSummary {
   readonly states: number;
 }
 
-/** Version 1 of Statecraft's external JSON report. */
-export interface StatecraftReport {
+/** Version 1 of UIWitness's external JSON report. */
+export interface UIWitnessReport {
   readonly schemaVersion: typeof REPORT_SCHEMA_VERSION;
   readonly generatedAt: string;
   readonly project: {
@@ -146,7 +146,7 @@ function sanitizeHttpUrl(value: string): string {
 }
 
 function isLocalRoutePath(value: string): boolean {
-  const referenceBase = new URL("https://statecraft.invalid");
+  const referenceBase = new URL("https://uiwitness.invalid");
   try {
     return (
       value.startsWith("/") &&
@@ -158,7 +158,7 @@ function isLocalRoutePath(value: string): boolean {
 }
 
 function sanitizeRoutePath(value: string): string {
-  const referenceBase = new URL("https://statecraft.invalid");
+  const referenceBase = new URL("https://uiwitness.invalid");
   const url = new URL(value, referenceBase);
   if (url.search.length === 0 && url.hash.length === 0) {
     return value;
@@ -348,7 +348,7 @@ const reportSchema = z
         context.addIssue({
           code: "custom",
           message: "Execution coordinates must be unique.",
-          params: { statecraftIssueCode: "duplicate" },
+          params: { uiwitnessIssueCode: "duplicate" },
           path: ["executions", index],
         });
       }
@@ -468,7 +468,7 @@ function formatIssuePath(path: readonly PropertyKey[]): string {
 function issueCode(issue: ZodIssue): ConfigValidationIssueCode {
   if (
     issue.code === "custom" &&
-    issue.params?.["statecraftIssueCode"] === "duplicate"
+    issue.params?.["uiwitnessIssueCode"] === "duplicate"
   ) {
     return "duplicate";
   }
@@ -499,17 +499,17 @@ export function parseExecutionResult(input: unknown): ExecutionResult {
 }
 
 /** Parses an unknown value into the supported versioned report contract. */
-export function parseReport(input: unknown): StatecraftReport {
+export function parseReport(input: unknown): UIWitnessReport {
   const result = reportSchema.safeParse(input);
   if (!result.success) {
     throw new ReportValidationError(
       result.error.issues.map(toIssue) as readonly ReportValidationIssue[],
     );
   }
-  return result.data as StatecraftReport;
+  return result.data as UIWitnessReport;
 }
 
 /** Serializes a validated report as deterministic, newline-terminated JSON. */
-export function serializeReport(report: StatecraftReport): string {
+export function serializeReport(report: UIWitnessReport): string {
   return `${JSON.stringify(parseReport(report), null, 2)}\n`;
 }

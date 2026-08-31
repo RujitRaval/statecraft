@@ -25,7 +25,7 @@ import {
   screenshotArtifactPath,
   serializeReport,
   type MatrixCell,
-} from "statecraft-ui-core";
+} from "uiwitness-core";
 
 import { runPersistedScenarioCells } from "../src/index.js";
 import {
@@ -40,7 +40,7 @@ import {
 const scenarioBaseDirectory = fileURLToPath(
   new URL("./fixtures/scenarios/", import.meta.url),
 );
-const baseURL = "https://statecraft.invalid/base/";
+const baseURL = "https://uiwitness.invalid/base/";
 
 function persistenceCells(states: readonly string[]): readonly MatrixCell[] {
   return expandMatrix(
@@ -188,7 +188,7 @@ describe("runPersistedScenarioCells", () => {
         failures: [],
         routePath: "/capture?source=%5BREDACTED%5D",
         screenshotPath: screenshotArtifactPath(cells[0]!),
-        url: "https://statecraft.invalid/capture?source=%5BREDACTED%5D",
+        url: "https://uiwitness.invalid/capture?source=%5BREDACTED%5D",
       });
       expect(run.report.executions[1]).toMatchObject({
         failures: [
@@ -1016,7 +1016,7 @@ describe("runPersistedScenarioCells", () => {
         ],
         screenshotPath: null,
         status: "failed",
-        url: "https://statecraft.invalid/capture?source=%5BREDACTED%5D",
+        url: "https://uiwitness.invalid/capture?source=%5BREDACTED%5D",
       }),
       screenshot: null,
     });
@@ -1317,7 +1317,7 @@ describe("runPersistedScenarioCells", () => {
           projectDirectory: project.path,
           scenarioBaseDirectory,
         }),
-      ).rejects.toThrow("Invalid Statecraft execution result.");
+      ).rejects.toThrow("Invalid UIWitness execution result.");
       await expectMissing(join(project.path, ".statecraft"));
     } finally {
       await project.cleanup();
@@ -1334,7 +1334,7 @@ describe("runPersistedScenarioCells", () => {
           projectDirectory: project.path,
           scenarioBaseDirectory,
         }),
-      ).rejects.toThrow("Invalid Statecraft report.");
+      ).rejects.toThrow("Invalid UIWitness report.");
       await expectMissing(join(project.path, ".statecraft"));
     } finally {
       await project.cleanup();

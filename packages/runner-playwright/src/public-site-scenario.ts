@@ -1,20 +1,20 @@
 import type {
   AssertionScenarioContext,
-  StatecraftScenario,
+  UIWitnessScenario,
 } from "./scenario.js";
 
 /** Horizontal overflow at or below this CSS-pixel delta is ignored. */
 export const PUBLIC_SITE_OVERFLOW_TOLERANCE_PX = 1;
 
 /** @internal Stable source recorded for Quick Check's trusted in-memory scenario. */
-export const publicSiteScenarioSource = "statecraft:public-site";
+export const publicSiteScenarioSource = "uiwitness:public-site";
 
 /**
- * High-confidence assertions for a public page that Statecraft cannot otherwise
+ * High-confidence assertions for a public page that UIWitness cannot otherwise
  * control. Console errors and subordinate request failures remain diagnostics;
  * the caller-owned failure policy decides whether they fail an execution.
  */
-export const publicSiteScenario: StatecraftScenario = Object.freeze({
+export const publicSiteScenario: UIWitnessScenario = Object.freeze({
   assert: async ({
     navigation,
     page,

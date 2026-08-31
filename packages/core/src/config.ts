@@ -32,8 +32,8 @@ export interface FailurePolicy {
   readonly pageError?: boolean | undefined;
 }
 
-/** The complete user-authored Statecraft configuration contract. */
-export interface StatecraftConfig {
+/** The complete user-authored UIWitness configuration contract. */
+export interface UIWitnessConfig {
   readonly baseURL: string;
   readonly failOn?: FailurePolicy | undefined;
   readonly routes: readonly RouteDefinition[];
@@ -56,7 +56,7 @@ function isHttpUrl(value: string): boolean {
 }
 
 function isLocalRoutePath(value: string): boolean {
-  const referenceBase = new URL("https://statecraft.invalid");
+  const referenceBase = new URL("https://uiwitness.invalid");
   try {
     return (
       value.startsWith("/") &&
@@ -92,7 +92,7 @@ function addDuplicateIdIssues(
       context.addIssue({
         code: "custom",
         message: `Duplicate ${label} id "${value.id}".`,
-        params: { statecraftIssueCode: "duplicate" },
+        params: { uiwitnessIssueCode: "duplicate" },
         path: [...pathPrefix, index, "id"],
       });
     }
@@ -138,7 +138,7 @@ const configSchema = z
             context.addIssue({
               code: "custom",
               message: `Duplicate theme id "${theme}".`,
-              params: { statecraftIssueCode: "duplicate" },
+              params: { uiwitnessIssueCode: "duplicate" },
               path: [index],
             });
           }
@@ -159,7 +159,7 @@ const configSchema = z
  * Provides contextual typing for a config module without changing its value.
  * Runtime validation remains explicit through {@link parseConfig}.
  */
-export function defineConfig(config: StatecraftConfig): StatecraftConfig {
+export function defineConfig(config: UIWitnessConfig): UIWitnessConfig {
   return config;
 }
 
@@ -179,7 +179,7 @@ function formatIssuePath(path: readonly PropertyKey[]): string {
 function issueCode(issue: ZodIssue): ConfigValidationIssueCode {
   if (
     issue.code === "custom" &&
-    issue.params?.["statecraftIssueCode"] === "duplicate"
+    issue.params?.["uiwitnessIssueCode"] === "duplicate"
   ) {
     return "duplicate";
   }
@@ -201,7 +201,7 @@ function toConfigIssue(issue: ZodIssue): ConfigValidationIssue {
 }
 
 /** Parses an unknown value or throws a stable, validator-independent error. */
-export function parseConfig(input: unknown): StatecraftConfig {
+export function parseConfig(input: unknown): UIWitnessConfig {
   const result = configSchema.safeParse(input);
   if (!result.success) {
     throw new ConfigValidationError(result.error.issues.map(toConfigIssue));

@@ -22,7 +22,7 @@ const require = createRequire(import.meta.url);
 
 interface PackageManifest {
   bin?: {
-    statecraft?: string;
+    uiwitness?: string;
   };
   exports?: {
     "."?: {
@@ -39,17 +39,17 @@ interface PackageManifest {
   type?: string;
 }
 
-describe("statecraft-ui package boundary", () => {
+describe("uiwitness package boundary", () => {
   it("defines a publishable ESM build with deterministic dist paths", async () => {
     const manifestUrl = new URL("../package.json", import.meta.url);
     const contents = await readFile(manifestUrl, "utf8");
     const manifest = JSON.parse(contents) as PackageManifest;
 
     expect(manifest).toMatchObject({
-      name: "statecraft-ui",
+      name: "uiwitness",
       type: "module",
       bin: {
-        statecraft: "./dist/bin.js",
+        uiwitness: "./dist/bin.js",
       },
       exports: {
         ".": {
@@ -70,7 +70,7 @@ describe("statecraft-ui package boundary", () => {
       manifest.exports?.["./public-site-scenario"]?.import;
     const scenarioTypesPath =
       manifest.exports?.["./public-site-scenario"]?.types;
-    const binPath = manifest.bin?.statecraft;
+    const binPath = manifest.bin?.uiwitness;
     expect(importPath).toBeDefined();
     expect(typesPath).toBeDefined();
     expect(binPath).toBeDefined();
@@ -155,7 +155,7 @@ describe("statecraft-ui package boundary", () => {
       await mkdir(packageModules, { recursive: true });
       await symlink(
         fileURLToPath(new URL("../", import.meta.url)),
-        join(packageModules, "statecraft-ui"),
+        join(packageModules, "uiwitness"),
         process.platform === "win32" ? "junction" : "dir",
       );
       await writeFile(
@@ -223,7 +223,7 @@ describe("statecraft-ui package boundary", () => {
       await writeFile(
         join(project, "scan.config.mjs"),
         `export default {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   routes: [{ id: "home", path: "/", states: [{ id: "success", setup: "./scan-scenario.mjs" }] }],
   themes: ["light"],
   viewports: { compact: { height: 240, width: 320 } },

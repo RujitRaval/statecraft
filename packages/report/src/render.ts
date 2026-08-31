@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { ExecutionResult } from "statecraft-ui-core";
+import type { ExecutionResult } from "uiwitness-core";
 
 import {
   transformReport,

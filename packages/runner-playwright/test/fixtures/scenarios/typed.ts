@@ -1,6 +1,6 @@
-import type { StatecraftScenario } from "../../../src/index.js";
+import type { UIWitnessScenario } from "../../../src/index.js";
 
-const scenario: StatecraftScenario = {
+const scenario: UIWitnessScenario = {
   async beforeNavigate({ page }) {
     void page;
   },

@@ -547,7 +547,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Code Quality Review D4.
   - Files: `scripts/check-brand.mjs`, `scripts/check-brand.test.mjs`, root scripts, CI/release workflows.
   - Verify: positive/negative tests, exact path-plus-pattern handling for both approved rename records, and zero unclassified occurrences.
-- [ ] **T3 (P1, human: ~2 days / Codex: ~1 hour)**: Package/API identity: rename manifests, dependencies, imports, executable, symbols, and release inventory.
+- [x] **T3 (P1, human: ~2 days / Codex: ~1 hour)**: Package/API identity: rename manifests, dependencies, imports, executable, symbols, and release inventory. Implemented with the four canonical UIWitness package identities at `0.25.0`, the `uiwitness` executable, renamed public symbols and internal identity literals, future repository metadata, updated workspace consumers, negative type-contract assertions against legacy aliases, and package/release smoke coverage.
   - Surfaced by: Architecture Review and complete-scope decision.
   - Files: root manifest/lock/version, `packages/**`, package/type tests, release metadata validator.
   - Verify: build, typecheck, public API tests, release contract.

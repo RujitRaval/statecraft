@@ -1,4 +1,4 @@
-import type { StatecraftReport } from "statecraft-ui-core";
+import type { UIWitnessReport } from "uiwitness-core";
 import {
   REPORT_HTML_PATH,
   renderReportHtml,
@@ -8,9 +8,9 @@ import {
   type ReportRouteView,
   type ReportRowView,
   type ReportViewModel,
-} from "statecraft-ui-report";
+} from "uiwitness-report";
 
-declare const report: StatecraftReport;
+declare const report: UIWitnessReport;
 
 const reportPath: ".statecraft/report/index.html" = REPORT_HTML_PATH;
 const html: string = renderReportHtml(report);

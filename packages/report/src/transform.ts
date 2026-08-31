@@ -2,8 +2,8 @@ import {
   parseReport,
   type ExecutionResult,
   type ReportSummary,
-  type StatecraftReport,
-} from "statecraft-ui-core";
+  type UIWitnessReport,
+} from "uiwitness-core";
 
 /** One viewport/theme column in the offline report matrix. */
 export interface ReportColumnView {
@@ -44,7 +44,7 @@ export interface ReportViewModel {
   readonly executions: readonly ReportCellView[];
   readonly generatedAt: string;
   readonly routes: readonly ReportRouteView[];
-  readonly schemaVersion: StatecraftReport["schemaVersion"];
+  readonly schemaVersion: UIWitnessReport["schemaVersion"];
   readonly summary: ReportSummary;
 }
 

@@ -1,7 +1,7 @@
 import type {
   RouteDefinition,
   StateDefinition,
-  StatecraftConfig,
+  UIWitnessConfig,
   ViewportDefinition,
 } from "./config.js";
 
@@ -35,7 +35,7 @@ function selected(
  * filter values never reorder or duplicate cells.
  */
 export function expandMatrix(
-  config: StatecraftConfig,
+  config: UIWitnessConfig,
   filter: MatrixFilter = {},
 ): readonly MatrixCell[] {
   const routeIds =

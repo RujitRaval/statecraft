@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
-import type { StatecraftReport } from "statecraft-ui-core";
-import { PUBLIC_SITE_CHECK_CONTRACT } from "statecraft-ui-runner-playwright/public-site-contract";
+import type { UIWitnessReport } from "uiwitness-core";
+import { PUBLIC_SITE_CHECK_CONTRACT } from "uiwitness-runner-playwright/public-site-contract";
 
 import type { CheckDiscovery } from "./check.js";
 import {
@@ -18,7 +18,7 @@ const SCENARIO_RELATIVE_PATH = join(
 );
 const SCENARIO_CONFIG_PATH = "./statecraft/scenarios/public/default.mts";
 
-const SCENARIO_TEMPLATE = `import { publicSiteScenario } from "statecraft-ui/public-site-scenario";
+const SCENARIO_TEMPLATE = `import { publicSiteScenario } from "uiwitness/public-site-scenario";
 
 export default publicSiteScenario;
 `;
@@ -30,7 +30,7 @@ export interface PublicSiteSetupResult {
   readonly scenarioPath: string;
 }
 
-function routeIdForPath(report: StatecraftReport, path: string): string {
+function routeIdForPath(report: UIWitnessReport, path: string): string {
   const routeIds = new Set(
     report.executions
       .filter(
@@ -49,7 +49,7 @@ function routeIdForPath(report: StatecraftReport, path: string): string {
 
 function configTemplate(
   discovery: CheckDiscovery,
-  report: StatecraftReport,
+  report: UIWitnessReport,
 ): string {
   const configValue = (value: unknown): string =>
     JSON.stringify(value, null, 2).replaceAll("\n", "\n  ");
@@ -69,7 +69,7 @@ function configTemplate(
     })
     .join(",\n");
 
-  return `import { defineConfig } from "statecraft-ui";
+  return `import { defineConfig } from "uiwitness";
 
 export default defineConfig({
   baseURL: ${JSON.stringify(discovery.baseURL)},
@@ -94,7 +94,7 @@ export function planPublicSiteSetup(
 export async function publishPublicSiteSetup(
   plan: ConfigPublicationPlan,
   discovery: CheckDiscovery,
-  report: StatecraftReport,
+  report: UIWitnessReport,
 ): Promise<PublicSiteSetupResult> {
   await publishConfigLast(plan, {
     config: configTemplate(discovery, report),

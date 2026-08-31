@@ -4,6 +4,22 @@ All notable changes to Statecraft will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.0.0] - 2026-08-31
+
+### Added
+
+- Developers can use the canonical `uiwitness`, `uiwitness-core`, `uiwitness-report`, and `uiwitness-runner-playwright` package identities, with `uiwitness` as the sole CLI executable.
+- Public TypeScript contracts now expose the `UIWitnessConfig`, `UIWitnessReport`, `UIWitnessError`, `UIWitnessErrorCode`, and `UIWitnessScenario` names.
+
+### Changed
+
+- Workspace consumers, CI filters, package metadata, and release inventory now resolve the UIWitness package graph at `0.25.0`.
+- Packed-consumer verification now proves that all four UIWitness tarballs install, import, and run together from an isolated project.
+
+### Removed
+
+- The new public packages intentionally omit legacy package identities, branded type aliases, and the prior executable because Gate 0 found no compatibility promise requiring a bridge.
+
 ## [0.24.13.0] - 2026-08-30
 
 ### Changed

@@ -11,7 +11,7 @@ import {
   screenshotArtifactPath,
   serializeReport,
   type ExecutionResult,
-  type StatecraftReport,
+  type UIWitnessReport,
 } from "../src/index.js";
 
 const cells = expandMatrix(
@@ -76,7 +76,7 @@ function result(
   };
 }
 
-function validReport(): StatecraftReport {
+function validReport(): UIWitnessReport {
   return {
     executions: [result(0, "passed"), result(1, "failed")],
     generatedAt: "2026-08-19T14:30:00.000Z",
@@ -299,7 +299,7 @@ describe("parseReport", () => {
     });
 
     expect(error.code).toBe("REPORT_INVALID");
-    expect(error.message).toBe("Invalid Statecraft report.");
+    expect(error.message).toBe("Invalid UIWitness report.");
     expect(error.issues).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -495,7 +495,7 @@ describe("parseReport", () => {
 
   it("accepts a zero-execution report with zero-valued metrics", () => {
     const zero = { covered: 0, percentage: 0, total: 0 };
-    const report: StatecraftReport = {
+    const report: UIWitnessReport = {
       executions: [],
       generatedAt: "2026-08-19T14:30:00.000Z",
       project: { baseURL: "http://localhost:3000" },
@@ -531,7 +531,7 @@ describe("serializeReport", () => {
   it("produces deterministic, pretty, newline-terminated JSON", () => {
     const report = validReport();
     const first = serializeReport(report);
-    const reordered: StatecraftReport = {
+    const reordered: UIWitnessReport = {
       summary: {
         states: report.summary.states,
         routes: report.summary.routes,
@@ -568,7 +568,7 @@ describe("serializeReport", () => {
     const forged = {
       ...report,
       summary: { ...report.summary, passed: 99 },
-    } as StatecraftReport;
+    } as UIWitnessReport;
 
     expect(() => serializeReport(forged)).toThrow(ReportValidationError);
   });
@@ -592,7 +592,7 @@ describe("serializeReport", () => {
           "https://example.com?token=secret#debug",
         ),
       },
-    } as StatecraftReport;
+    } as UIWitnessReport;
 
     const serialized = serializeReport(unsafe);
 

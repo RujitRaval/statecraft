@@ -3,7 +3,7 @@ import path from "node:path";
 import type { Browser, BrowserContext } from "playwright";
 import { describe, expect, it } from "vitest";
 
-import { expandMatrix, parseConfig } from "statecraft-ui-core";
+import { expandMatrix, parseConfig } from "uiwitness-core";
 
 import { runExecutionCells } from "../src/index.js";
 import { renderFixturePage } from "./fixtures/page.js";
@@ -45,12 +45,12 @@ describe("runExecutionCells", () => {
 
       await renderFixturePage(page);
       const initialCookies = await context.cookies(
-        "https://statecraft.invalid",
+        "https://uiwitness.invalid",
       );
       await context.addCookies([
         {
           name: "statecraft-cell",
-          url: "https://statecraft.invalid",
+          url: "https://uiwitness.invalid",
           value: cell.viewportId,
         },
       ]);

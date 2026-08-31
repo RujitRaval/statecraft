@@ -130,7 +130,7 @@ export async function installRegistryConsumer({
     registry,
   ];
   const installSpecifications = [
-    `statecraft-ui@${normalizedVersion}`,
+    `uiwitness@${normalizedVersion}`,
     `playwright@${PLAYWRIGHT_VERSION}`,
   ];
   const installRetryDeadline = now() + REGISTRY_INSTALL_RETRY_WINDOW_MS;
@@ -197,7 +197,7 @@ export async function assertRegistryInstall(consumerRoot, version) {
     true,
     "npm init -y must produce either implicit or explicit CommonJS package mode.",
   );
-  assert.equal(rootManifest.devDependencies["statecraft-ui"], version);
+  assert.equal(rootManifest.devDependencies["uiwitness"], version);
   assert.equal(rootManifest.devDependencies.playwright, PLAYWRIGHT_VERSION);
 
   for (const contract of RELEASE_PACKAGES) {
@@ -205,14 +205,14 @@ export async function assertRegistryInstall(consumerRoot, version) {
     assert.equal(manifest.name, contract.name);
     assert.equal(manifest.version, version, `${contract.name} did not resolve to the release version.`);
   }
-  const runner = await installedManifest(consumerRoot, "statecraft-ui-runner-playwright");
+  const runner = await installedManifest(consumerRoot, "uiwitness-runner-playwright");
   assert.equal(runner.dependencies.playwright, PLAYWRIGHT_VERSION);
   const playwright = await installedManifest(consumerRoot, "playwright");
   assert.equal(playwright.version, PLAYWRIGHT_VERSION);
 
-  const cliManifest = await installedManifest(consumerRoot, "statecraft-ui");
-  assert.equal(cliManifest.bin.statecraft, "./dist/bin.js");
-  return path.join(consumerRoot, "node_modules", "statecraft-ui", cliManifest.bin.statecraft);
+  const cliManifest = await installedManifest(consumerRoot, "uiwitness");
+  assert.equal(cliManifest.bin.uiwitness, "./dist/bin.js");
+  return path.join(consumerRoot, "node_modules", "uiwitness", cliManifest.bin.uiwitness);
 }
 
 function expectedCoordinates() {
@@ -307,8 +307,8 @@ export async function runRegistryJourney({
   assert.match(promote.stdout, /Next: add real product states, then run `npx statecraft scan`\./u);
   const config = await readFile(configPath, "utf8");
   const scenario = await readFile(scenarioPath, "utf8");
-  assert.match(config, /from "statecraft-ui"/u);
-  assert.match(scenario, /from "statecraft-ui\/public-site-scenario"/u);
+  assert.match(config, /from "uiwitness"/u);
+  assert.match(scenario, /from "uiwitness\/public-site-scenario"/u);
   assert.deepEqual(await assertPublicReport(consumerRoot), checkCoordinates);
 
   const scan = await runCli(["scan"]);
@@ -413,7 +413,7 @@ async function main() {
   const { version, withDeps } = parseRegistrySmokeArguments(process.argv.slice(2));
   const result = await runPublicUrlRegistrySmoke({ version, withDeps });
   console.log(
-    `Registry public URL smoke passed: statecraft-ui@${result.version} completed check -> --write-config -> scan with ${result.executions}/${result.executions} cells from npm registry artifacts.`,
+    `Registry public URL smoke passed: uiwitness@${result.version} completed check -> --write-config -> scan with ${result.executions}/${result.executions} cells from npm registry artifacts.`,
   );
 }
 

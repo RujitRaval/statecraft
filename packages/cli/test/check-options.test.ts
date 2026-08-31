@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 
-import { parseReport } from "statecraft-ui-core";
+import { parseReport } from "uiwitness-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const discoverPublicRoutesMock = vi.hoisted(() => vi.fn());
@@ -23,7 +23,7 @@ const PublicRouteDiscoveryErrorMock = vi.hoisted(
     },
 );
 
-vi.mock("statecraft-ui-runner-playwright", () => ({
+vi.mock("uiwitness-runner-playwright", () => ({
   discoverPublicRoutes: discoverPublicRoutesMock,
   PublicRouteDiscoveryError: PublicRouteDiscoveryErrorMock,
   runPublicSiteChecks: runPublicSiteChecksMock,
@@ -71,7 +71,7 @@ function discoveredReport() {
     failures: [],
     routeId,
     routePath,
-    scenarioSource: "statecraft:public-site",
+    scenarioSource: "uiwitness:public-site",
     screenshotPath: `.statecraft/artifacts/${routeId}/public/mobile-light.png`,
     stateId: "public",
     status: "passed" as const,
@@ -325,7 +325,7 @@ describe("checkPublicSite options", () => {
         join(project, "statecraft", "scenarios", "public", "default.mts"),
         "utf8",
       ),
-    ).resolves.toBe(`import { publicSiteScenario } from "statecraft-ui/public-site-scenario";
+    ).resolves.toBe(`import { publicSiteScenario } from "uiwitness/public-site-scenario";
 
 export default publicSiteScenario;
 `);

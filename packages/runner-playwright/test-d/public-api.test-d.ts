@@ -43,9 +43,9 @@ import {
   type ScenarioHook,
   type ScenarioAssertionHook,
   type ScenarioLoadErrorCode,
-  type StatecraftScenario,
+  type UIWitnessScenario,
   type PublicRouteDiscoveryErrorCode,
-} from "statecraft-ui-runner-playwright";
+} from "uiwitness-runner-playwright";
 
 declare const execution: CellExecutionContext;
 
@@ -63,7 +63,7 @@ const discoveryOptions: DiscoverPublicRoutesOptions = {
   readinessTimeoutMs: 10_000,
 };
 const discovery: Promise<PublicRouteDiscovery> = discoverPublicRoutes(
-  "https://statecraft.invalid",
+  "https://uiwitness.invalid",
   discoveryOptions,
 );
 const discoveryRoute: Promise<DiscoveredPublicRoute | undefined> =
@@ -74,7 +74,7 @@ const discoveryError = new PublicRouteDiscoveryError(
 );
 const discoveryErrorCode: PublicRouteDiscoveryErrorCode = discoveryError.code;
 declare const scenarioContext: ScenarioContext;
-declare const scenario: StatecraftScenario;
+declare const scenario: UIWitnessScenario;
 const hook: ScenarioHook = async (context) => {
   void context.page;
 };
@@ -87,7 +87,7 @@ const scenarioOptions: RunScenarioCellsOptions = {
 const loadOptions: LoadScenarioOptions = {
   baseDirectory: process.cwd(),
 };
-const loadedScenario: Promise<StatecraftScenario> = loadScenario(
+const loadedScenario: Promise<UIWitnessScenario> = loadScenario(
   execution.cell.state.setup,
   loadOptions,
 );
@@ -103,7 +103,7 @@ const readiness: DeterministicReadinessOptions = {
   timeoutMs: 10_000,
 };
 const navigationOptions: RunNavigatedScenarioCellsOptions = {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   navigationTimeoutMs: 30_000,
   readiness,
   scenario,
@@ -119,7 +119,7 @@ const navigationOutcomes: Promise<readonly CellExecutionOutcome<string>[]> =
     navigationOptions,
   );
 const captureOptions: RunCapturedScenarioCellsOptions = {
-  baseURL: "https://statecraft.invalid",
+  baseURL: "https://uiwitness.invalid",
   failOn: { consoleError: true, failedRequest: false, pageError: true },
   scenarioBaseDirectory: process.cwd(),
 };
@@ -200,6 +200,9 @@ const invalid: CellExecutionOutcome<string> = {
   status: "pending",
 };
 
+// @ts-expect-error Legacy StatecraftScenario aliases are intentionally not exported.
+type LegacyScenario = import("uiwitness-runner-playwright").StatecraftScenario;
+
 void outcomes.then((result) => {
   // @ts-expect-error The returned outcome collection is immutable.
   result.push(fulfilled);
@@ -231,3 +234,4 @@ void screenshotBytes;
 void overflowTolerance;
 void inspectOutcome;
 void invalid;
+void (null as unknown as LegacyScenario);

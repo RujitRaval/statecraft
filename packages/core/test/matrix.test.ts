@@ -4,10 +4,10 @@ import {
   expandMatrix,
   parseConfig,
   type MatrixCell,
-  type StatecraftConfig,
+  type UIWitnessConfig,
 } from "../src/index.js";
 
-function matrixConfig(): StatecraftConfig {
+function matrixConfig(): UIWitnessConfig {
   return parseConfig({
     baseURL: "http://localhost:3000",
     routes: [

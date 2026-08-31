@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { ConfigValidationError } from "statecraft-ui-core";
+import { ConfigValidationError } from "uiwitness-core";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

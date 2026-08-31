@@ -9,7 +9,7 @@ import {
 const SCENARIO_DIRECTORY = join("statecraft", "scenarios", "home");
 const SCENARIO_FILENAME = join(SCENARIO_DIRECTORY, "success.mts");
 
-const CONFIG_TEMPLATE = `import { defineConfig } from "statecraft-ui";
+const CONFIG_TEMPLATE = `import { defineConfig } from "uiwitness";
 
 export default defineConfig({
   baseURL: "http://localhost:3000",
