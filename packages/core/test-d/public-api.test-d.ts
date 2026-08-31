@@ -27,6 +27,8 @@ import {
   type MatrixCell,
   type MatrixFilter,
   type RouteDefinition,
+  type ReportExecutionResult,
+  type ReportScreenshotArtifactPath,
   type ReportSummary,
   type ReportValidationIssue,
   type ResultValidationIssue,
@@ -128,6 +130,9 @@ const report: UIWitnessReport = parseReport({
   summary: reportSummary,
 });
 const serializedReport: string = serializeReport(report);
+const reportExecution: ReportExecutionResult = report.executions[0]!;
+const readableScreenshotPath: ReportScreenshotArtifactPath | null =
+  reportExecution.screenshotPath;
 const resultValidationError: UIWitnessError = new ResultValidationError([]);
 const reportValidationError: UIWitnessError = new ReportValidationError([]);
 const resultIssue: ResultValidationIssue = {
@@ -148,6 +153,8 @@ void executionFailure;
 void execution;
 void report;
 void serializedReport;
+void reportExecution;
+void readableScreenshotPath;
 void resultValidationError;
 void reportValidationError;
 void reportIssue;

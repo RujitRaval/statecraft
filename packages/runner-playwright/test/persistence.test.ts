@@ -21,6 +21,7 @@ import { describe, expect, it } from "vitest";
 import {
   expandMatrix,
   parseConfig,
+  parseExecutionResult,
   parseReport,
   screenshotArtifactPath,
   serializeReport,
@@ -152,8 +153,8 @@ describe("runPersistedScenarioCells", () => {
         scenarioBaseDirectory,
       });
 
-      expect(run.reportPath).toBe(".statecraft/report/statecraft.json");
-      expect(run.htmlReportPath).toBe(".statecraft/report/index.html");
+      expect(run.reportPath).toBe(".uiwitness/report/uiwitness.json");
+      expect(run.htmlReportPath).toBe(".uiwitness/report/index.html");
       expect(run.report).toMatchObject({
         generatedAt: "2026-08-20T15:00:00.000Z",
         project: { baseURL },
@@ -225,7 +226,7 @@ describe("runPersistedScenarioCells", () => {
         }
       }
       await expectMissing(
-        join(project.path, ".statecraft/artifacts/capture/screenshot-fail/compact-light.png"),
+        join(project.path, ".uiwitness/artifacts/capture/screenshot-fail/compact-light.png"),
       );
 
       const reportPath = join(project.path, run.reportPath);
@@ -236,11 +237,11 @@ describe("runPersistedScenarioCells", () => {
         expect((await stat(reportPath)).mode & 0o777).toBe(0o600);
         expect(
           (
-            await stat(join(project.path, ".statecraft/report/index.html"))
+            await stat(join(project.path, ".uiwitness/report/index.html"))
           ).mode & 0o777,
         ).toBe(0o600);
         expect(
-          (await stat(join(project.path, ".statecraft/artifacts"))).mode &
+          (await stat(join(project.path, ".uiwitness/artifacts"))).mode &
             0o777,
         ).toBe(0o700);
       }
@@ -638,19 +639,19 @@ describe("runPersistedScenarioCells", () => {
 
   it("replaces stale artifacts, JSON, and HTML as one report set", async () => {
     const project = await temporaryProject();
-    const statecraftRoot = join(project.path, ".statecraft");
-    const artifactsRoot = join(statecraftRoot, "artifacts");
-    const reportRoot = join(statecraftRoot, "report");
+    const uiwitnessRoot = join(project.path, ".uiwitness");
+    const artifactsRoot = join(uiwitnessRoot, "artifacts");
+    const reportRoot = join(uiwitnessRoot, "report");
 
     try {
       await mkdir(join(artifactsRoot, "stale"), { recursive: true });
       await mkdir(reportRoot, { recursive: true });
       if (process.platform !== "win32") {
-        await chmod(statecraftRoot, 0o755);
+        await chmod(uiwitnessRoot, 0o755);
         await chmod(reportRoot, 0o755);
       }
       await writeFile(join(artifactsRoot, "stale/old.png"), "old");
-      await writeFile(join(reportRoot, "statecraft.json"), "stale");
+      await writeFile(join(reportRoot, "uiwitness.json"), "stale");
       await writeFile(join(reportRoot, "index.html"), "stale report UI");
 
       const run = await runPersistedScenarioCells([], {
@@ -665,16 +666,16 @@ describe("runPersistedScenarioCells", () => {
       expect(await readFile(join(reportRoot, "index.html"), "utf8")).toContain(
         "UI State Coverage Report",
       );
-      expect((await readdir(statecraftRoot)).sort()).toEqual([
+      expect((await readdir(uiwitnessRoot)).sort()).toEqual([
         "artifacts",
         "report",
       ]);
       expect((await readdir(reportRoot)).sort()).toEqual([
         "index.html",
-        "statecraft.json",
+        "uiwitness.json",
       ]);
       if (process.platform !== "win32") {
-        expect((await stat(statecraftRoot)).mode & 0o777).toBe(0o700);
+        expect((await stat(uiwitnessRoot)).mode & 0o777).toBe(0o700);
         expect((await stat(reportRoot)).mode & 0o777).toBe(0o700);
       }
     } finally {
@@ -683,16 +684,68 @@ describe("runPersistedScenarioCells", () => {
   });
 
   it.skipIf(process.platform === "win32")(
+    "publishes beside an unreadable legacy evidence tree without touching it",
+    async () => {
+      const project = await temporaryProject();
+      const legacyRoot = join(project.path, ".statecraft");
+      const legacyArtifact = join(
+        legacyRoot,
+        "artifacts/dashboard/success/desktop-light.png",
+      );
+      const legacyReport = join(legacyRoot, "report/statecraft.json");
+      const artifactBytes = Uint8Array.of(137, 80, 78, 71, 13, 10, 26, 10);
+      const reportBytes = '{"schemaVersion":1,"legacy":true}\n';
+
+      try {
+        await mkdir(join(legacyRoot, "artifacts/dashboard/success"), {
+          recursive: true,
+        });
+        await mkdir(join(legacyRoot, "report"), { recursive: true });
+        await writeFile(legacyArtifact, artifactBytes);
+        await writeFile(legacyReport, reportBytes);
+        await chmod(legacyRoot, 0o000);
+
+        const run = await runPersistedScenarioCells([], {
+          baseURL,
+          generatedAt: new Date("2026-08-20T15:01:30.000Z"),
+          projectDirectory: project.path,
+          scenarioBaseDirectory,
+        });
+
+        expect(run.reportPath).toBe(".uiwitness/report/uiwitness.json");
+        await expect(
+          access(join(project.path, ".uiwitness/report/index.html")),
+        ).resolves.toBeUndefined();
+      } finally {
+        await chmod(legacyRoot, 0o700).catch(() => undefined);
+      }
+
+      try {
+        await expect(readFile(legacyArtifact)).resolves.toEqual(
+          Buffer.from(artifactBytes),
+        );
+        await expect(readFile(legacyReport, "utf8")).resolves.toBe(reportBytes);
+        expect((await readdir(project.path)).sort()).toEqual([
+          ".statecraft",
+          ".uiwitness",
+        ]);
+      } finally {
+        await project.cleanup();
+      }
+    },
+  );
+
+  it.skipIf(process.platform === "win32")(
     "rejects symbolic-link artifact roots without writing outside the project",
     async () => {
       const project = await temporaryProject();
       const outside = await temporaryProject();
-      const statecraftRoot = join(project.path, ".statecraft");
+      const uiwitnessRoot = join(project.path, ".uiwitness");
 
       try {
-        await mkdir(statecraftRoot);
+        await mkdir(uiwitnessRoot);
         await writeFile(join(outside.path, "marker"), "unchanged");
-        await symlink(outside.path, join(statecraftRoot, "artifacts"));
+        await symlink(outside.path, join(uiwitnessRoot, "artifacts"));
 
         await expect(
           runPersistedScenarioCells([], {
@@ -701,12 +754,12 @@ describe("runPersistedScenarioCells", () => {
             scenarioBaseDirectory,
           }),
         ).rejects.toThrow(
-          ".statecraft/artifacts must be a real directory, not a symbolic link.",
+          ".uiwitness/artifacts must be a real directory, not a symbolic link.",
         );
         expect(await readFile(join(outside.path, "marker"), "utf8")).toBe(
           "unchanged",
         );
-        await expectMissing(join(outside.path, "statecraft.json"));
+        await expectMissing(join(outside.path, "uiwitness.json"));
       } finally {
         await project.cleanup();
         await outside.cleanup();
@@ -719,13 +772,13 @@ describe("runPersistedScenarioCells", () => {
     async () => {
       const project = await temporaryProject();
       const outside = await temporaryProject();
-      const reportRoot = join(project.path, ".statecraft/report");
-      const outsideReport = join(outside.path, "statecraft.json");
+      const reportRoot = join(project.path, ".uiwitness/report");
+      const outsideReport = join(outside.path, "uiwitness.json");
 
       try {
         await mkdir(reportRoot, { recursive: true });
         await writeFile(outsideReport, "outside report");
-        await symlink(outsideReport, join(reportRoot, "statecraft.json"));
+        await symlink(outsideReport, join(reportRoot, "uiwitness.json"));
 
         await expect(
           runPersistedScenarioCells([], {
@@ -734,11 +787,11 @@ describe("runPersistedScenarioCells", () => {
             scenarioBaseDirectory,
           }),
         ).rejects.toThrow(
-          ".statecraft/report/statecraft.json must be a regular file, not a symbolic link.",
+          ".uiwitness/report/uiwitness.json must be a regular file, not a symbolic link.",
         );
         expect(await readFile(outsideReport, "utf8")).toBe("outside report");
         await expectMissing(
-          join(project.path, ".statecraft/.runner-persistence-lock"),
+          join(project.path, ".uiwitness/.runner-persistence-lock"),
         );
       } finally {
         await project.cleanup();
@@ -752,7 +805,7 @@ describe("runPersistedScenarioCells", () => {
     async () => {
       const project = await temporaryProject();
       const outside = await temporaryProject();
-      const reportRoot = join(project.path, ".statecraft/report");
+      const reportRoot = join(project.path, ".uiwitness/report");
       const outsideHtml = join(outside.path, "index.html");
 
       try {
@@ -767,11 +820,11 @@ describe("runPersistedScenarioCells", () => {
             scenarioBaseDirectory,
           }),
         ).rejects.toThrow(
-          ".statecraft/report/index.html must be a regular file, not a symbolic link.",
+          ".uiwitness/report/index.html must be a regular file, not a symbolic link.",
         );
         expect(await readFile(outsideHtml, "utf8")).toBe("outside HTML");
         await expectMissing(
-          join(project.path, ".statecraft/.runner-persistence-lock"),
+          join(project.path, ".uiwitness/.runner-persistence-lock"),
         );
       } finally {
         await project.cleanup();
@@ -785,13 +838,13 @@ describe("runPersistedScenarioCells", () => {
     async () => {
       const project = await temporaryProject();
       const outside = await temporaryProject();
-      const statecraftRoot = join(project.path, ".statecraft");
+      const uiwitnessRoot = join(project.path, ".uiwitness");
       const marker = join(outside.path, "marker");
 
       try {
-        await mkdir(statecraftRoot);
+        await mkdir(uiwitnessRoot);
         await writeFile(marker, "unchanged");
-        await symlink(outside.path, join(statecraftRoot, "report"));
+        await symlink(outside.path, join(uiwitnessRoot, "report"));
 
         await expect(
           runPersistedScenarioCells([], {
@@ -803,7 +856,7 @@ describe("runPersistedScenarioCells", () => {
           "report must be a real directory, not a symbolic link.",
         );
         expect(await readFile(marker, "utf8")).toBe("unchanged");
-        await expectMissing(join(outside.path, "statecraft.json"));
+        await expectMissing(join(outside.path, "uiwitness.json"));
       } finally {
         await project.cleanup();
         await outside.cleanup();
@@ -815,7 +868,7 @@ describe("runPersistedScenarioCells", () => {
     const project = await temporaryProject();
     const lock = join(
       project.path,
-      ".statecraft/.runner-persistence-lock",
+      ".uiwitness/.runner-persistence-lock",
     );
 
     try {
@@ -871,12 +924,12 @@ describe("runPersistedScenarioCells", () => {
 
   it("recovers an abandoned capture-phase lock before running", async () => {
     const project = await temporaryProject();
-    const lock = join(project.path, ".statecraft/.runner-persistence-lock");
+    const lock = join(project.path, ".uiwitness/.runner-persistence-lock");
 
     try {
       await mkdir(lock, { recursive: true });
       await mkdir(
-        join(project.path, ".statecraft/.runner-persistence-stage-abandoned"),
+        join(project.path, ".uiwitness/.runner-persistence-stage-abandoned"),
       );
       await writeFile(
         join(lock, "owner.json"),
@@ -896,10 +949,10 @@ describe("runPersistedScenarioCells", () => {
       expect(run.report.executions).toEqual([]);
       await expectMissing(lock);
       await expectMissing(
-        join(project.path, ".statecraft/.runner-persistence-stage-abandoned"),
+        join(project.path, ".uiwitness/.runner-persistence-stage-abandoned"),
       );
       expect(
-        (await readdir(join(project.path, ".statecraft"))).some((entry) =>
+        (await readdir(join(project.path, ".uiwitness"))).some((entry) =>
           entry.startsWith(".runner-persistence-lock.claimed-"),
         ),
       ).toBe(true);
@@ -912,7 +965,7 @@ describe("runPersistedScenarioCells", () => {
     "preserves abandoned %s-phase recovery state",
     async (phase) => {
       const project = await temporaryProject();
-      const lock = join(project.path, ".statecraft/.runner-persistence-lock");
+      const lock = join(project.path, ".uiwitness/.runner-persistence-lock");
 
       try {
         await mkdir(lock, { recursive: true });
@@ -936,7 +989,7 @@ describe("runPersistedScenarioCells", () => {
             scenarioBaseDirectory,
           }),
         ).rejects.toThrow(
-          ".statecraft contains recovery state from an interrupted result-persistence run.",
+          ".uiwitness contains recovery state from an interrupted result-persistence run.",
         );
         expect((await stat(lock)).isDirectory()).toBe(true);
         expect(await readFile(join(lock, phase), "utf8")).toBe(`${phase}\n`);
@@ -948,7 +1001,7 @@ describe("runPersistedScenarioCells", () => {
 
   it("allows only one concurrent recovery claimant for an abandoned lock", async () => {
     const project = await temporaryProject();
-    const lock = join(project.path, ".statecraft/.runner-persistence-lock");
+    const lock = join(project.path, ".uiwitness/.runner-persistence-lock");
 
     try {
       await mkdir(lock, { recursive: true });
@@ -984,13 +1037,13 @@ describe("runPersistedScenarioCells", () => {
   });
 
   it("derives one permanent takeover claim for each observed stale owner", () => {
-    const lock = "/project/.statecraft/.runner-persistence-lock";
+    const lock = "/project/.uiwitness/.runner-persistence-lock";
     const first = takeoverClaimPath(lock, "observed-owner");
 
     expect(takeoverClaimPath(lock, "observed-owner")).toBe(first);
     expect(takeoverClaimPath(lock, "newer-owner")).not.toBe(first);
     expect(first).toMatch(
-      /^\/project\/\.statecraft\/\.runner-persistence-lock\.claimed-[a-f0-9]{64}$/,
+      /^\/project\/\.uiwitness\/\.runner-persistence-lock\.claimed-[a-f0-9]{64}$/,
     );
   });
 
@@ -1141,7 +1194,7 @@ describe("runPersistedScenarioCells", () => {
         "recovery\n",
       );
       const recoveryDirectory = (await readdir(
-        join(project.path, ".statecraft"),
+        join(project.path, ".uiwitness"),
       )).find(
         (entry) =>
           entry !== ".runner-persistence-lock" &&
@@ -1152,15 +1205,15 @@ describe("runPersistedScenarioCells", () => {
         await readFile(
           join(
             project.path,
-            ".statecraft",
+            ".uiwitness",
             recoveryDirectory ?? "missing",
-            "previous-statecraft.json",
+            "previous-uiwitness.json",
           ),
           "utf8",
         ),
       ).toBe(serializeReport(initial.report));
       await expectMissing(
-        join(project.path, ".statecraft/report/statecraft.json"),
+        join(project.path, ".uiwitness/report/uiwitness.json"),
       );
     } finally {
       await project.cleanup();
@@ -1184,11 +1237,11 @@ describe("runPersistedScenarioCells", () => {
       );
       const nextCell = persistenceCells(["replacement"])[0]!;
       const nextScreenshotPath = screenshotArtifactPath(nextCell);
-      const nextExecution = {
+      const nextExecution = parseExecutionResult({
         ...initial.report.executions[0]!,
         screenshotPath: nextScreenshotPath,
         stateId: nextCell.state.id,
-      };
+      });
       const next = parseReport({
         ...initial.report,
         executions: [nextExecution],
@@ -1202,7 +1255,7 @@ describe("runPersistedScenarioCells", () => {
           project.path,
           lock,
           next,
-          [{ result: next.executions[0]!, screenshot: Uint8Array.of(1, 2, 3) }],
+          [{ result: nextExecution, screenshot: Uint8Array.of(1, 2, 3) }],
           {
             remove: rm,
             rename: async (source, destination) => {
@@ -1224,14 +1277,14 @@ describe("runPersistedScenarioCells", () => {
         parseReport(
           JSON.parse(
             await readFile(
-              join(project.path, ".statecraft/report/statecraft.json"),
+              join(project.path, ".uiwitness/report/uiwitness.json"),
               "utf8",
             ),
           ),
         ),
       ).toEqual(initial.report);
       const html = await readFile(
-        join(project.path, ".statecraft/report/index.html"),
+        join(project.path, ".uiwitness/report/index.html"),
         "utf8",
       );
       expect(html).toContain("2026-08-20T15:02:30.000Z");
@@ -1284,7 +1337,7 @@ describe("runPersistedScenarioCells", () => {
         "recovery\n",
       );
       expect(
-        (await readdir(join(project.path, ".statecraft"))).some((entry) =>
+        (await readdir(join(project.path, ".uiwitness"))).some((entry) =>
           entry.startsWith(".runner-persistence-stage-"),
         ),
       ).toBe(true);
@@ -1292,7 +1345,7 @@ describe("runPersistedScenarioCells", () => {
         parseReport(
           JSON.parse(
             await readFile(
-              join(project.path, ".statecraft/report/statecraft.json"),
+              join(project.path, ".uiwitness/report/uiwitness.json"),
               "utf8",
             ),
           ),
@@ -1318,7 +1371,7 @@ describe("runPersistedScenarioCells", () => {
           scenarioBaseDirectory,
         }),
       ).rejects.toThrow("Invalid UIWitness execution result.");
-      await expectMissing(join(project.path, ".statecraft"));
+      await expectMissing(join(project.path, ".uiwitness"));
     } finally {
       await project.cleanup();
     }
@@ -1335,7 +1388,7 @@ describe("runPersistedScenarioCells", () => {
           scenarioBaseDirectory,
         }),
       ).rejects.toThrow("Invalid UIWitness report.");
-      await expectMissing(join(project.path, ".statecraft"));
+      await expectMissing(join(project.path, ".uiwitness"));
     } finally {
       await project.cleanup();
     }
@@ -1380,7 +1433,7 @@ describe("runPersistedScenarioCells", () => {
           scenarioBaseDirectory,
         }),
       ).rejects.toThrow(RangeError);
-      await expectMissing(join(project.path, ".statecraft"));
+      await expectMissing(join(project.path, ".uiwitness"));
     } finally {
       await project.cleanup();
     }

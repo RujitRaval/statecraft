@@ -112,16 +112,16 @@ describe("statecraft check", () => {
         expect(stdout).toContain(`Site: ${fixture.origin}/`);
         expect(stdout).toContain("Pages: 2 discovered · 2 scanned · 0 skipped");
         expect(stdout).toContain("4 of 8 checks failed.");
-        expect(stdout).toContain("Report: .statecraft/report/index.html");
+        expect(stdout).toContain("Report: .uiwitness/report/index.html");
         expect(stdout).toContain("Saved the discovered public surface.");
         expect(stdout).toContain(
           "Next: add real product states, then run `npx statecraft scan`.",
         );
         const reportPath = join(
           project,
-          ".statecraft",
+          ".uiwitness",
           "report",
-          "statecraft.json",
+          "uiwitness.json",
         );
         const reportContents = await readFile(reportPath, "utf8");
         const report = parseReport(JSON.parse(reportContents));
@@ -169,7 +169,7 @@ describe("statecraft check", () => {
         }
         expect(reportContents).not.toContain("private=value");
         const html = await readFile(
-          join(project, ".statecraft", "report", "index.html"),
+          join(project, ".uiwitness", "report", "index.html"),
           "utf8",
         );
         expect(html).toContain('data-brand-system="kinetic-evidence-v1"');

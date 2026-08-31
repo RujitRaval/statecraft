@@ -1,6 +1,6 @@
 export { renderReportHtml } from "./render.js";
 /** Stable project-relative location of the generated offline report. */
-export const REPORT_HTML_PATH = ".statecraft/report/index.html" as const;
+export const REPORT_HTML_PATH = ".uiwitness/report/index.html" as const;
 export { transformReport } from "./transform.js";
 export type {
   ReportCellView,

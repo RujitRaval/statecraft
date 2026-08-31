@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 
 import type { MatrixCell } from "./matrix.js";
 
-const artifactsRoot = ".statecraft/artifacts";
+const artifactsRoot = ".uiwitness/artifacts";
 const maxEncodedSegmentLength = 120;
 const sha256HexLength = 64;
 const digestMarker = "~~";
@@ -12,11 +12,22 @@ const lowercaseLetterOrDigit = /^[a-z0-9]$/;
 const windowsReservedBasename =
   /^(?:aux|com[1-9]|con|lpt[1-9]|nul|prn)$/;
 declare const screenshotArtifactPathBrand: unique symbol;
+declare const legacyScreenshotArtifactPathBrand: unique symbol;
 
 /** An opaque project-relative PNG path produced by {@link screenshotArtifactPath}. */
 export type ScreenshotArtifactPath = string & {
   readonly [screenshotArtifactPathBrand]: true;
 };
+
+/** A schema-v1 screenshot path read from evidence created before UIWitness. */
+export type LegacyScreenshotArtifactPath = string & {
+  readonly [legacyScreenshotArtifactPathBrand]: true;
+};
+
+/** Either screenshot root accepted while reading a schema-v1 report. */
+export type ReportScreenshotArtifactPath =
+  | LegacyScreenshotArtifactPath
+  | ScreenshotArtifactPath;
 
 function encodeCodePoint(codePoint: number): string {
   return `~${codePoint.toString(16).toUpperCase().padStart(6, "0")}`;

@@ -147,7 +147,7 @@ describe("uiwitness package boundary", () => {
       ).rejects.toMatchObject({
         code: 2,
         stderr: expect.stringContaining(
-          "No Statecraft HTML report found at .statecraft/report/index.html.",
+          "No Statecraft HTML report found at .uiwitness/report/index.html.",
         ),
       });
 
@@ -241,10 +241,10 @@ describe("uiwitness package boundary", () => {
         stdout: expect.stringContaining("All 1 execution passed."),
       });
       await expect(
-        access(join(project, ".statecraft", "report", "statecraft.json")),
+        access(join(project, ".uiwitness", "report", "uiwitness.json")),
       ).resolves.toBeUndefined();
       await expect(
-        readFile(join(project, ".statecraft", "report", "index.html"), "utf8"),
+        readFile(join(project, ".uiwitness", "report", "index.html"), "utf8"),
       ).resolves.toContain("UI State Coverage Report");
 
       await expect(

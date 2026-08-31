@@ -71,9 +71,9 @@ describe("scanProject options", () => {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".statecraft/report/index.html",
+      htmlReportPath: ".uiwitness/report/index.html",
       report,
-      reportPath: ".statecraft/report/statecraft.json",
+      reportPath: ".uiwitness/report/uiwitness.json",
     });
 
     await scanProject({ configPath, cwd: project, headed: true });
@@ -132,9 +132,9 @@ export default {
       },
     });
     runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".statecraft/report/index.html",
+      htmlReportPath: ".uiwitness/report/index.html",
       report,
-      reportPath: ".statecraft/report/statecraft.json",
+      reportPath: ".uiwitness/report/uiwitness.json",
     });
 
     try {

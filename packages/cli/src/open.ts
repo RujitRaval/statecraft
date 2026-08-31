@@ -4,8 +4,8 @@ import { join, resolve } from "node:path";
 
 import { launchReport } from "./launcher.js";
 
-const REPORT_RELATIVE_PATH = ".statecraft/report/index.html" as const;
-const REPORT_SEGMENTS = [".statecraft", "report", "index.html"] as const;
+const REPORT_RELATIVE_PATH = ".uiwitness/report/index.html" as const;
+const REPORT_SEGMENTS = [".uiwitness", "report", "index.html"] as const;
 
 /** Stable categories for expected latest-report opening failures. */
 export type OpenReportErrorCode =

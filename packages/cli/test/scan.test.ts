@@ -93,8 +93,8 @@ describe("scanProject", () => {
     });
 
     expect(run.configPath).toBe(await realpath(fixture.configPath));
-    expect(run.htmlReportPath).toBe(".statecraft/report/index.html");
-    expect(run.reportPath).toBe(".statecraft/report/statecraft.json");
+    expect(run.htmlReportPath).toBe(".uiwitness/report/index.html");
+    expect(run.reportPath).toBe(".uiwitness/report/uiwitness.json");
     expect(run.report.summary).toMatchObject({
       executions: 1,
       failed: 0,
@@ -158,7 +158,7 @@ describe("scanProject", () => {
       routeId: "missing",
     });
     await expect(
-      access(join(fixture.project, ".statecraft")),
+      access(join(fixture.project, ".uiwitness")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 });

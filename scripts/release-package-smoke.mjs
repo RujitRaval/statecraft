@@ -298,7 +298,7 @@ export async function runReleasePackageSmoke({
     assertCommand(scan, "Scanning the default CommonJS npm consumer");
     assert.match(scan.stdout, /All 4 executions passed\./u);
     const report = JSON.parse(
-      await readFile(path.join(consumerRoot, ".statecraft", "report", "statecraft.json"), "utf8"),
+      await readFile(path.join(consumerRoot, ".uiwitness", "report", "uiwitness.json"), "utf8"),
     );
     assert.equal(report.schemaVersion, 1);
     assert.deepEqual(
@@ -310,7 +310,7 @@ export async function runReleasePackageSmoke({
       { executions: 4, failed: 0, passed: 4 },
     );
     assert.equal(report.executions.length, 4);
-    const artifactRoot = path.join(consumerRoot, ".statecraft", "artifacts");
+    const artifactRoot = path.join(consumerRoot, ".uiwitness", "artifacts");
     const artifactPrefix = `${artifactRoot}${path.sep}`;
     const artifactRealRoot = await realpath(artifactRoot);
     const artifactRealPrefix = `${artifactRealRoot}${path.sep}`;
@@ -333,7 +333,7 @@ export async function runReleasePackageSmoke({
       assert.equal(screenshotMetadata.size > 0, true);
     }
     assert.match(
-      await readFile(path.join(consumerRoot, ".statecraft", "report", "index.html"), "utf8"),
+      await readFile(path.join(consumerRoot, ".uiwitness", "report", "index.html"), "utf8"),
       /UI State Coverage Report/u,
     );
 

@@ -191,13 +191,13 @@ describe("complete example scenario matrix", () => {
 
     const reportPath = join(
       projectDirectory,
-      ".statecraft",
+      ".uiwitness",
       "report",
-      "statecraft.json",
+      "uiwitness.json",
     );
     const htmlPath = join(
       projectDirectory,
-      ".statecraft",
+      ".uiwitness",
       "report",
       "index.html",
     );

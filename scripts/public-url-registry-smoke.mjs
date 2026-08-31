@@ -224,7 +224,7 @@ function expectedCoordinates() {
 }
 
 export async function assertPublicReport(consumerRoot) {
-  const reportPath = path.join(consumerRoot, ".statecraft", "report", "statecraft.json");
+  const reportPath = path.join(consumerRoot, ".uiwitness", "report", "uiwitness.json");
   const report = JSON.parse(await readFile(reportPath, "utf8"));
   assert.equal(report.schemaVersion, 1);
   assert.deepEqual(
@@ -248,7 +248,7 @@ export async function assertPublicReport(consumerRoot) {
     expectedCoordinates(),
   );
 
-  const artifactRoot = path.join(consumerRoot, ".statecraft", "artifacts");
+  const artifactRoot = path.join(consumerRoot, ".uiwitness", "artifacts");
   const consumerRootReal = await realpath(consumerRoot);
   const artifactRootReal = await realpath(artifactRoot);
   assert.equal(
@@ -267,7 +267,7 @@ export async function assertPublicReport(consumerRoot) {
     assert.equal(metadata.isFile(), true);
     assert.equal(metadata.size > 0, true);
   }
-  const html = await readFile(path.join(consumerRoot, ".statecraft", "report", "index.html"), "utf8");
+  const html = await readFile(path.join(consumerRoot, ".uiwitness", "report", "index.html"), "utf8");
   assert.match(html, /data-brand-system="kinetic-evidence-v1"/u);
   return expectedCoordinates();
 }

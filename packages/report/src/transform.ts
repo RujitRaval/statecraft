@@ -1,6 +1,6 @@
 import {
   parseReport,
-  type ExecutionResult,
+  type ReportExecutionResult,
   type ReportSummary,
   type UIWitnessReport,
 } from "uiwitness-core";
@@ -17,7 +17,7 @@ export interface ReportColumnView {
 /** One validated execution prepared for report rendering. */
 export interface ReportCellView {
   readonly detailId: string;
-  readonly execution: ExecutionResult;
+  readonly execution: ReportExecutionResult;
   readonly screenshotHref: string | null;
 }
 
@@ -62,7 +62,9 @@ interface RouteBuilder {
   readonly rows: RowBuilder[];
 }
 
-function freezeExecution(execution: ExecutionResult): ExecutionResult {
+function freezeExecution(
+  execution: ReportExecutionResult,
+): ReportExecutionResult {
   return Object.freeze({
     ...execution,
     diagnostics: Object.freeze({
@@ -102,13 +104,17 @@ function rowKey(routeId: string, stateId: string): string {
   return JSON.stringify([routeId, stateId]);
 }
 
-function screenshotHref(execution: ExecutionResult): string | null {
+function screenshotHref(execution: ReportExecutionResult): string | null {
   if (execution.screenshotPath === null) {
     return null;
   }
-  const prefix = ".statecraft/";
-  if (!execution.screenshotPath.startsWith(prefix)) {
-    throw new TypeError("Screenshot paths must stay inside .statecraft/.");
+  const prefix = [".uiwitness/", ".statecraft/"].find((candidate) =>
+    execution.screenshotPath?.startsWith(candidate),
+  );
+  if (prefix === undefined) {
+    throw new TypeError(
+      "Screenshot paths must stay inside .uiwitness/ or .statecraft/.",
+    );
   }
   return `../${execution.screenshotPath.slice(prefix.length)}`;
 }

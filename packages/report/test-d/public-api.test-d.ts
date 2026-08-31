@@ -12,7 +12,7 @@ import {
 
 declare const report: UIWitnessReport;
 
-const reportPath: ".statecraft/report/index.html" = REPORT_HTML_PATH;
+const reportPath: ".uiwitness/report/index.html" = REPORT_HTML_PATH;
 const html: string = renderReportHtml(report);
 const view: ReportViewModel = transformReport(report);
 const columns: readonly ReportColumnView[] = view.columns;

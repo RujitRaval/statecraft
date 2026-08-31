@@ -63,6 +63,7 @@ test("ignores generated and dependency directories", async (t) => {
   await write(root, "README.md", "# Fixture\n");
   await write(root, "node_modules/package/BROKEN.md", "broken");
   await write(root, ".statecraft/BROKEN.md", "broken");
+  await write(root, ".uiwitness/BROKEN.md", "broken");
 
   const result = await checkDocs({ root, requiredFiles: ["README.md"] });
   assert.equal(result.filesChecked, 1);

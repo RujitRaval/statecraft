@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { ExecutionResult } from "uiwitness-core";
+import type { ReportExecutionResult } from "uiwitness-core";
 
 import {
   transformReport,
@@ -59,7 +59,7 @@ function diagnosticList(values: readonly string[], empty: string): string {
   return `<ul>${values.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>`;
 }
 
-function requestList(execution: ExecutionResult): string {
+function requestList(execution: ReportExecutionResult): string {
   if (execution.diagnostics.failedRequests.length === 0) {
     return '<p class="empty-detail">No failed requests captured.</p>';
   }
@@ -71,7 +71,7 @@ function requestList(execution: ExecutionResult): string {
     .join("")}</ul>`;
 }
 
-function failures(execution: ExecutionResult): string {
+function failures(execution: ReportExecutionResult): string {
   if (execution.failures.length === 0) {
     return '<p class="empty-detail">No execution failures.</p>';
   }

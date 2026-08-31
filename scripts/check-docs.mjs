@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 const defaultIgnoredDirectories = new Set([
   ".git",
   ".statecraft",
+  ".uiwitness",
   "coverage",
   "dist",
   "node_modules",

@@ -118,7 +118,7 @@ function completedScan(
           routePath: "/dashboard",
           scenarioSource: "./dashboard.mjs",
           screenshotPath: passed
-            ? ".statecraft/artifacts/dashboard/success/desktop-light.png"
+            ? ".uiwitness/artifacts/dashboard/success/desktop-light.png"
             : null,
           stateId: "success",
           status,
@@ -146,8 +146,8 @@ function completedScan(
         states: 1,
       },
     }),
-    htmlReportPath: ".statecraft/report/index.html",
-    reportPath: ".statecraft/report/statecraft.json",
+    htmlReportPath: ".uiwitness/report/index.html",
+    reportPath: ".uiwitness/report/uiwitness.json",
   });
 }
 
@@ -182,7 +182,7 @@ function completedCheck(
             routeId: "home-abc",
             routePath: "/",
             scenarioSource: "uiwitness:public-site",
-            screenshotPath: `.statecraft/artifacts/home-abc/public/${viewportId}-${theme}.png`,
+            screenshotPath: `.uiwitness/artifacts/home-abc/public/${viewportId}-${theme}.png`,
             stateId: "public",
             status: "passed" as const,
             theme,
@@ -213,7 +213,7 @@ function completedCheck(
           routeId: "pricing-def",
           routePath: "/pricing",
           scenarioSource: "uiwitness:public-site",
-          screenshotPath: ".statecraft/artifacts/pricing-def/public/mobile-light.png",
+          screenshotPath: ".uiwitness/artifacts/pricing-def/public/mobile-light.png",
           stateId: "public",
           status,
           theme: "light",
@@ -256,8 +256,8 @@ function completedCheck(
         states: 2,
       },
     }),
-    htmlReportPath: ".statecraft/report/index.html",
-    reportPath: ".statecraft/report/statecraft.json",
+    htmlReportPath: ".uiwitness/report/index.html",
+    reportPath: ".uiwitness/report/uiwitness.json",
     ...(setup
       ? {
           setup: Object.freeze({
@@ -336,8 +336,8 @@ describe("runCli", () => {
     const stderr = outputCapture();
     openReportMock.mockResolvedValue({
       projectRoot: "/project",
-      reportPath: "/project/.statecraft/report/index.html",
-      reportRelativePath: ".statecraft/report/index.html",
+      reportPath: "/project/.uiwitness/report/index.html",
+      reportRelativePath: ".uiwitness/report/index.html",
     });
 
     await expect(
@@ -350,7 +350,7 @@ describe("runCli", () => {
     ).resolves.toBe(0);
     expect(openReportMock).toHaveBeenCalledWith({ cwd: "/project" });
     expect(stdout.messages.join("")).toBe(
-      "Opened .statecraft/report/index.html.\n",
+      "Opened .uiwitness/report/index.html.\n",
     );
     expect(stderr.messages).toEqual([]);
   });
@@ -362,7 +362,7 @@ describe("runCli", () => {
       new OpenReportError(
         "OPEN_REPORT_NOT_FOUND",
         "No report\nfound.",
-        "/project/.statecraft/report/index.html",
+        "/project/.uiwitness/report/index.html",
       ),
     );
 
@@ -513,7 +513,7 @@ Targets:
       "Pages: 2 discovered · 2 scanned · 1 skipped",
     );
     expect(stdout.messages.join("")).toContain(
-      "Report: .statecraft/report/index.html",
+      "Report: .uiwitness/report/index.html",
     );
     expect(stdout.messages.join("")).toContain("All 5 checks passed.");
     expect(stdout.messages.join("")).toContain(
@@ -664,7 +664,7 @@ Dashboard
   ✓ success · desktop · light
 
 Coverage: 100%
-Report: .statecraft/report/index.html
+Report: .uiwitness/report/index.html
 All 1 execution passed.
 `);
     expect(stderr.messages).toEqual([]);
