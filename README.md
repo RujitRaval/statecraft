@@ -153,7 +153,7 @@ Reports can contain screenshots, URLs, and application data. Treat artifacts fro
 | [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution and local persistence |
 | [`uiwitness-report`](https://www.npmjs.com/package/uiwitness-report) | Deterministic offline report transformation and rendering |
 
-After the external cutover, all four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. The one-time bootstrap token is revoked before the registry-verification gate, and normal releases keep no long-lived npm token configured.
+After the external cutover, all four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. Bootstrap publication uses a separate cleanup-gated verifier only after every temporary token has been revoked and removed; normal OIDC releases keep no long-lived npm token configured and run registry verification automatically.
 
 ## Local-first architecture
 
@@ -188,7 +188,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the completed [public URL Quick Check](docs/designs/public-url-quick-check.md) with overwrite-safe promotion and a registry-only check → promotion → configured-scan release gate. Potential follow-ups include launch feedback, Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the completed [public URL Quick Check](docs/designs/public-url-quick-check.md) with overwrite-safe promotion and a registry-only check → promotion → configured scan → open release gate. Potential follow-ups include launch feedback, Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 
