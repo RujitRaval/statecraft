@@ -54,7 +54,7 @@ const checkRootCode: CheckErrorCode = "CHECK_ROOT_INVALID";
 const checkError: Error = new CheckError(checkCode, "Discovery failed.");
 
 const options: ConfigDiscoveryOptions = {
-  configPath: "./config/statecraft.config.mjs",
+  configPath: "./config/uiwitness.config.mjs",
   cwd: "/tmp/example",
 };
 const configPath: Promise<string> = discoverConfig(options);
@@ -69,7 +69,7 @@ const discoveryError: Error = new ConfigDiscoveryError(
 const loadError: Error = new ConfigLoadError(
   loadCode,
   "Config failed.",
-  "/tmp/example/statecraft.config.mjs",
+  "/tmp/example/uiwitness.config.mjs",
 );
 const initOptions: InitOptions = { cwd: "/tmp/example" };
 const initResult: Promise<InitResult> = initProject(initOptions);
@@ -89,7 +89,7 @@ const cliOptions: RunCliOptions = {
 };
 const cliResult: Promise<CliExitCode> = runCli(cliOptions);
 const scanOptions: ScanOptions = {
-  configPath: "./config/statecraft.config.mjs",
+  configPath: "./config/uiwitness.config.mjs",
   cwd: "/tmp/example",
   headed: false,
   routeId: "home",

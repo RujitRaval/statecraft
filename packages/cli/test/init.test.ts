@@ -16,10 +16,11 @@ import { afterEach, describe, expect, it } from "vitest";
 import { InitError, initProject } from "../src/init.js";
 
 const temporaryProjects: string[] = [];
+const legacyDefaultConfigFilename = ["state", "craft.config.mts"].join("");
 
 async function temporaryProject(): Promise<string> {
   const project = await realpath(
-    await mkdtemp(join(tmpdir(), "statecraft-cli-init-")),
+    await mkdtemp(join(tmpdir(), "uiwitness-cli-init-")),
   );
   temporaryProjects.push(project);
   return project;
@@ -41,15 +42,15 @@ describe("initProject", () => {
     const result = await initProject({ cwd: project });
 
     expect(result).toEqual({
-      configPath: join(project, "statecraft.config.mts"),
+      configPath: join(project, "uiwitness.config.mts"),
       files: [
-        join(project, "statecraft.config.mts"),
-        join(project, "statecraft", "scenarios", "home", "success.mts"),
+        join(project, "uiwitness.config.mts"),
+        join(project, "uiwitness", "scenarios", "home", "success.mts"),
       ],
       projectRoot: project,
       scenarioPath: join(
         project,
-        "statecraft",
+        "uiwitness",
         "scenarios",
         "home",
         "success.mts",
@@ -59,7 +60,7 @@ describe("initProject", () => {
       'import { defineConfig } from "uiwitness";',
     );
     await expect(readFile(result.configPath, "utf8")).resolves.toContain(
-      'setup: "./statecraft/scenarios/home/success.mts"',
+      'setup: "./uiwitness/scenarios/home/success.mts"',
     );
     await expect(readFile(result.scenarioPath, "utf8")).resolves.toContain(
       "const scenario = {",
@@ -70,8 +71,8 @@ describe("initProject", () => {
 
   it("preserves existing directories and unrelated files", async () => {
     const project = await temporaryProject();
-    const scenarios = join(project, "statecraft", "scenarios");
-    const unrelated = join(project, "statecraft", "notes.txt");
+    const scenarios = join(project, "uiwitness", "scenarios");
+    const unrelated = join(project, "uiwitness", "notes.txt");
     await mkdir(scenarios, { recursive: true });
     await writeFile(unrelated, "keep me", "utf8");
 
@@ -85,10 +86,10 @@ describe("initProject", () => {
 
   it("does not create a scenario when the config already exists", async () => {
     const project = await temporaryProject();
-    const configPath = join(project, "statecraft.config.mts");
+    const configPath = join(project, "uiwitness.config.mts");
     const scenarioPath = join(
       project,
-      "statecraft",
+      "uiwitness",
       "scenarios",
       "home",
       "success.mts",
@@ -107,11 +108,11 @@ describe("initProject", () => {
 
   it("does not create files when another supported config already exists", async () => {
     const project = await temporaryProject();
-    const existingConfig = join(project, "statecraft.config.mjs");
-    const generatedConfig = join(project, "statecraft.config.mts");
+    const existingConfig = join(project, "uiwitness.config.mjs");
+    const generatedConfig = join(project, "uiwitness.config.mts");
     const scenarioPath = join(
       project,
-      "statecraft",
+      "uiwitness",
       "scenarios",
       "home",
       "success.mts",
@@ -131,17 +132,33 @@ describe("initProject", () => {
     await expect(lstat(scenarioPath)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  it("preserves a legacy config while creating the UIWitness starter", async () => {
+    const project = await temporaryProject();
+    const legacyConfigPath = join(project, legacyDefaultConfigFilename);
+    await writeFile(legacyConfigPath, "legacy config", "utf8");
+
+    const result = await initProject({ cwd: project });
+
+    await expect(readFile(legacyConfigPath, "utf8")).resolves.toBe(
+      "legacy config",
+    );
+    await expect(readFile(result.configPath, "utf8")).resolves.toContain(
+      'import { defineConfig } from "uiwitness";',
+    );
+    expect(result.configPath).toBe(join(project, "uiwitness.config.mts"));
+  });
+
   it("does not create a config when the scenario already exists", async () => {
     const project = await temporaryProject();
-    const configPath = join(project, "statecraft.config.mts");
+    const configPath = join(project, "uiwitness.config.mts");
     const scenarioPath = join(
       project,
-      "statecraft",
+      "uiwitness",
       "scenarios",
       "home",
       "success.mts",
     );
-    await mkdir(join(project, "statecraft", "scenarios", "home"), {
+    await mkdir(join(project, "uiwitness", "scenarios", "home"), {
       recursive: true,
     });
     await writeFile(scenarioPath, "existing scenario", "utf8");
@@ -178,11 +195,11 @@ describe("initProject", () => {
     async () => {
       const project = await temporaryProject();
       const outside = await temporaryProject();
-      await symlink(outside, join(project, "statecraft"));
+      await symlink(outside, join(project, "uiwitness"));
 
       await expect(initProject({ cwd: project })).rejects.toMatchObject({
         code: "INIT_CONFLICT",
-        paths: [join(project, "statecraft")],
+        paths: [join(project, "uiwitness")],
       });
       await expect(lstat(join(outside, "scenarios"))).rejects.toMatchObject({
         code: "ENOENT",
@@ -201,16 +218,16 @@ describe("initProject", () => {
       const result = await initProject({ cwd: projectLink });
 
       expect(result.projectRoot).toBe(project);
-      expect(result.configPath).toBe(join(project, "statecraft.config.mts"));
+      expect(result.configPath).toBe(join(project, "uiwitness.config.mts"));
       expect(result.scenarioPath).toBe(
-        join(project, "statecraft", "scenarios", "home", "success.mts"),
+        join(project, "uiwitness", "scenarios", "home", "success.mts"),
       );
     },
   );
 
   it("refuses a non-directory starter boundary", async () => {
     const project = await temporaryProject();
-    const boundary = join(project, "statecraft");
+    const boundary = join(project, "uiwitness");
     await writeFile(boundary, "keep", "utf8");
 
     await expect(initProject({ cwd: project })).rejects.toMatchObject({
@@ -219,7 +236,7 @@ describe("initProject", () => {
     });
     await expect(readFile(boundary, "utf8")).resolves.toBe("keep");
     await expect(
-      lstat(join(project, "statecraft.config.mts")),
+      lstat(join(project, "uiwitness.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -240,11 +257,11 @@ describe("initProject", () => {
       status: "rejected",
     });
     await expect(
-      readFile(join(project, "statecraft.config.mts"), "utf8"),
+      readFile(join(project, "uiwitness.config.mts"), "utf8"),
     ).resolves.toContain("defineConfig");
     await expect(
       readFile(
-        join(project, "statecraft", "scenarios", "home", "success.mts"),
+        join(project, "uiwitness", "scenarios", "home", "success.mts"),
         "utf8",
       ),
     ).resolves.toContain("export default scenario;");
@@ -277,7 +294,7 @@ describe("initProject", () => {
         await chmod(project, 0o700);
       }
       await expect(
-        lstat(join(project, "statecraft.config.mts")),
+        lstat(join(project, "uiwitness.config.mts")),
       ).rejects.toMatchObject({ code: "ENOENT" });
     },
   );

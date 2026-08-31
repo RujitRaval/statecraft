@@ -15,14 +15,14 @@ import { InitError, initProject } from "./init.js";
 import { OpenReportError, openReport } from "./open.js";
 import { ScanError, scanProject, type ScanResult } from "./scan.js";
 
-const HELP = `Statecraft
+const HELP = `UIWitness
 
 Usage:
-  statecraft init
-  statecraft check <url> [--max-pages <1-20>] [--headed] [--write-config]
-  statecraft scan [--config <path>] [--route <id>] [--headed]
-  statecraft open
-  statecraft --help
+  uiwitness init
+  uiwitness check <url> [--max-pages <1-20>] [--headed] [--write-config]
+  uiwitness scan [--config <path>] [--route <id>] [--headed]
+  uiwitness open
+  uiwitness --help
 
 Commands:
   init  Create a starter config and scenario without overwriting files
@@ -204,7 +204,7 @@ function routeTitle(routeId: string): string {
 
 /** Formats one completed scan without reading filenames for metadata. */
 export function formatScanSummary(result: ScanResult): string {
-  const lines = ["Statecraft", ""];
+  const lines = ["UIWitness", ""];
   let previousRouteId: string | undefined;
 
   for (const execution of result.report.executions) {
@@ -255,7 +255,7 @@ export function formatCheckSummary(result: CheckResult): string {
     0,
   );
   const lines = [
-    "Statecraft Quick Check",
+    "UIWitness Quick Check",
     "",
     `Site: ${terminalText(result.discovery.baseURL)}`,
     `Pages: ${result.discovery.routes.length} discovered · ${routePaths.length} scanned · ${result.discovery.skippedPages} skipped`,
@@ -303,7 +303,7 @@ export function formatCheckSummary(result: CheckResult): string {
   if (result.setup === undefined) {
     lines.push(
       "",
-      `Next: Open the report, then save this surface with \`npx statecraft check ${terminalText(result.discovery.baseURL)} --write-config\`.`,
+      `Next: Open the report, then save this surface with \`npx uiwitness check ${terminalText(result.discovery.baseURL)} --write-config\`.`,
     );
   } else {
     lines.push(
@@ -313,7 +313,7 @@ export function formatCheckSummary(result: CheckResult): string {
       `  ${displayPath(result.setup.projectRoot, result.setup.configPath)}`,
       `  ${displayPath(result.setup.projectRoot, result.setup.scenarioPath)}`,
       "",
-      "Next: add real product states, then run `npx statecraft scan`.",
+      "Next: add real product states, then run `npx uiwitness scan`.",
     );
   }
   return `${lines.join("\n")}\n`;
@@ -339,7 +339,7 @@ function expectedScanError(error: unknown): string | undefined {
   return undefined;
 }
 
-/** Parses and executes the currently supported Statecraft command. */
+/** Parses and executes the currently supported UIWitness command. */
 export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> {
   const args = [...(options.args ?? [])];
   const stdout =
@@ -390,7 +390,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
             : "";
         stderr(`${terminalText(error.message)}${targets}\n`);
       } else {
-        stderr("Statecraft check failed unexpectedly.\n");
+        stderr("UIWitness check failed unexpectedly.\n");
       }
       return 2;
     }
@@ -407,7 +407,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
       stdout(formatScanSummary(result));
       return result.report.summary.failed === 0 ? 0 : 1;
     } catch (error: unknown) {
-      stderr(`${expectedScanError(error) ?? "Statecraft scan failed unexpectedly."}\n`);
+      stderr(`${expectedScanError(error) ?? "UIWitness scan failed unexpectedly."}\n`);
       return 2;
     }
   }
@@ -431,7 +431,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
         `${
           error instanceof OpenReportError
             ? terminalText(error.message)
-            : "Statecraft could not open the latest report unexpectedly."
+            : "UIWitness could not open the latest report unexpectedly."
         }\n`,
       );
       return 2;
@@ -452,7 +452,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
     const result = await initProject({ cwd: options.cwd });
     const configPath = displayPath(result.projectRoot, result.configPath);
     const scenarioPath = displayPath(result.projectRoot, result.scenarioPath);
-    stdout(`Statecraft initialized.\n\nCreated:\n  ${configPath}\n  ${scenarioPath}\n\nNext:\n  1. Update ${configPath} for your app.\n  2. Add scenario hooks in ${scenarioPath}.\n  3. Commit both starter files to version control.\n`);
+    stdout(`UIWitness initialized.\n\nCreated:\n  ${configPath}\n  ${scenarioPath}\n\nNext:\n  1. Update ${configPath} for your app.\n  2. Add scenario hooks in ${scenarioPath}.\n  3. Commit both starter files to version control.\n`);
     return 0;
   } catch (error: unknown) {
     if (error instanceof InitError) {
@@ -464,7 +464,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
           : "";
       stderr(`${terminalText(error.message)}${targets}\n`);
     } else {
-      stderr("Statecraft initialization failed unexpectedly.\n");
+      stderr("UIWitness initialization failed unexpectedly.\n");
     }
     return 2;
   }

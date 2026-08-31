@@ -15,6 +15,10 @@ describe("renderReportHtml", () => {
     const html = renderReportHtml(reportFixture());
 
     expect(html).toMatch(/^<!doctype html>/);
+    expect(html).toContain("<title>UIWitness · UI State Coverage Report</title>");
+    expect(html).toContain('aria-hidden="true">UI/W</span>UIWitness');
+    expect(html).toContain("<footer class=\"footer\"><strong>UIWitness</strong>");
+    expect(html).not.toContain(["State", "craft"].join(""));
     expect(html).toContain("UI State Coverage Report");
     expect(html).toContain('data-brand-system="kinetic-evidence-v1"');
     expect(html).toContain("Evidence<br>over instinct.");

@@ -257,16 +257,16 @@ export async function runReleasePackageSmoke({
       cwd: consumerRoot,
     });
     assertCommand(help, "Running the packed CLI");
-    assert.match(help.stdout, /statecraft scan/u);
+    assert.match(help.stdout, /uiwitness scan/u);
 
     const init = await runCommand("npm", ["exec", "--offline", "--", "uiwitness", "init"], {
       cwd: consumerRoot,
     });
     assertCommand(init, "Initializing with the packed CLI");
-    const generatedConfigPath = path.join(consumerRoot, "statecraft.config.mts");
+    const generatedConfigPath = path.join(consumerRoot, "uiwitness.config.mts");
     assert.match(await readFile(generatedConfigPath, "utf8"), /from "uiwitness"/u);
     assert.match(
-      await readFile(path.join(consumerRoot, "statecraft", "scenarios", "home", "success.mts"), "utf8"),
+      await readFile(path.join(consumerRoot, "uiwitness", "scenarios", "home", "success.mts"), "utf8"),
       /export default scenario/u,
     );
 

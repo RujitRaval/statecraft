@@ -303,164 +303,15 @@
       }
     },
     {
-      "path": "packages/cli/package.json",
-      "contentCounts": {
-        "lower": 10,
-        "title": 1
-      }
-    },
-    {
       "path": "packages/cli/README.md",
       "contentCounts": {
-        "lower": 15,
-        "title": 3
-      }
-    },
-    {
-      "path": "packages/cli/src/check.ts",
-      "contentCounts": {
-        "title": 6,
-        "lower": 6
-      }
-    },
-    {
-      "path": "packages/cli/src/command.ts",
-      "contentCounts": {
-        "lower": 8,
-        "title": 9
-      }
-    },
-    {
-      "path": "packages/cli/src/config.ts",
-      "contentCounts": {
-        "title": 9,
-        "lower": 7
-      }
-    },
-    {
-      "path": "packages/cli/src/index.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/cli/src/init.ts",
-      "contentCounts": {
-        "lower": 3,
-        "title": 5
-      }
-    },
-    {
-      "path": "packages/cli/src/open.ts",
-      "contentCounts": {
-        "lower": 3,
-        "title": 5
-      }
-    },
-    {
-      "path": "packages/cli/src/project-files.ts",
-      "contentCounts": {
-        "lower": 1,
-        "title": 3
-      }
-    },
-    {
-      "path": "packages/cli/src/public-site-scenario.ts",
-      "contentCounts": {
-        "lower": 2,
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/cli/src/public-site-setup.ts",
-      "contentCounts": {
-        "title": 4,
-        "lower": 6
-      }
-    },
-    {
-      "path": "packages/cli/src/scan.ts",
-      "contentCounts": {
-        "title": 2,
-        "lower": 6
-      }
-    },
-    {
-      "path": "packages/cli/test-d/public-api.test-d.ts",
-      "contentCounts": {
-        "lower": 6
-      }
-    },
-    {
-      "path": "packages/cli/test-d/public-site-scenario.test-d.ts",
-      "contentCounts": {
-        "lower": 1
-      }
-    },
-    {
-      "path": "packages/cli/test/check-options.test.ts",
-      "contentCounts": {
-        "lower": 38,
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/cli/test/check.test.ts",
-      "contentCounts": {
-        "lower": 12,
-        "title": 1
-      }
-    },
-    {
-      "path": "packages/cli/test/command.test.ts",
-      "contentCounts": {
-        "lower": 43,
-        "title": 9
-      }
-    },
-    {
-      "path": "packages/cli/test/config.test.ts",
-      "contentCounts": {
-        "lower": 12
-      }
-    },
-    {
-      "path": "packages/cli/test/init-config-race.test.ts",
-      "contentCounts": {
-        "lower": 6
-      }
-    },
-    {
-      "path": "packages/cli/test/init.test.ts",
-      "contentCounts": {
-        "lower": 26
+        "lower": 2
       }
     },
     {
       "path": "packages/cli/test/open.test.ts",
       "contentCounts": {
-        "lower": 18,
-        "title": 3
-      }
-    },
-    {
-      "path": "packages/cli/test/package-boundary.test.ts",
-      "contentCounts": {
-        "lower": 16,
-        "title": 3
-      }
-    },
-    {
-      "path": "packages/cli/test/scan-options.test.ts",
-      "contentCounts": {
-        "lower": 15
-      }
-    },
-    {
-      "path": "packages/cli/test/scan.test.ts",
-      "contentCounts": {
-        "lower": 6,
-        "title": 2
+        "lower": 2
       }
     },
     {
@@ -580,70 +431,21 @@
       }
     },
     {
-      "path": "packages/report/package.json",
-      "contentCounts": {
-        "lower": 6,
-        "title": 1
-      }
-    },
-    {
       "path": "packages/report/README.md",
-      "contentCounts": {
-        "lower": 5,
-        "title": 2
-      }
-    },
-    {
-      "path": "packages/report/src/index.ts",
       "contentCounts": {
         "lower": 1
       }
     },
     {
-      "path": "packages/report/src/render.ts",
-      "contentCounts": {
-        "lower": 1,
-        "title": 3
-      }
-    },
-    {
       "path": "packages/report/src/transform.ts",
-      "contentCounts": {
-        "title": 2,
-        "lower": 3
-      }
-    },
-    {
-      "path": "packages/report/test-d/public-api.test-d.ts",
-      "contentCounts": {
-        "title": 2,
-        "lower": 3
-      }
-    },
-    {
-      "path": "packages/report/test/fixture.ts",
-      "contentCounts": {
-        "title": 4,
-        "lower": 5
-      }
-    },
-    {
-      "path": "packages/report/test/package-boundary.test.ts",
       "contentCounts": {
         "lower": 2
       }
     },
     {
-      "path": "packages/report/test/render.test.ts",
-      "contentCounts": {
-        "lower": 3
-      }
-    },
-    {
       "path": "packages/report/test/transform.test.ts",
       "contentCounts": {
-        "lower": 2,
-        "title": 1
+        "lower": 2
       }
     },
     {
@@ -872,26 +674,26 @@
     {
       "path": "scripts/public-url-registry-smoke.mjs",
       "contentCounts": {
-        "lower": 19,
+        "lower": 1,
         "title": 2
       }
     },
     {
       "path": "scripts/public-url-registry-smoke.test.mjs",
       "contentCounts": {
-        "lower": 51
+        "lower": 19
       }
     },
     {
       "path": "scripts/release-package-smoke.mjs",
       "contentCounts": {
-        "lower": 21
+        "lower": 3
       }
     },
     {
       "path": "scripts/release-package-smoke.test.mjs",
       "contentCounts": {
-        "lower": 20
+        "lower": 6
       }
     },
     {

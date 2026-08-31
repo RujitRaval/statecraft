@@ -125,14 +125,14 @@ function setupError(error: ProjectFileError): CheckError {
   if (error.code === "PROJECT_FILE_ROOT_INVALID") {
     return new CheckError(
       "CHECK_ROOT_INVALID",
-      "The Statecraft check project directory is invalid.",
+      "The UIWitness check project directory is invalid.",
       { paths: error.paths },
     );
   }
   if (error.code === "PROJECT_FILE_CONFLICT") {
     return new CheckError(
       "CHECK_SETUP_CONFLICT",
-      `Statecraft setup conflicts with existing paths:\n${error.paths
+      `UIWitness setup conflicts with existing paths:\n${error.paths
         .map((path) => `  ${path}`)
         .join("\n")}\nNo existing file was overwritten.`,
       { paths: error.paths },
@@ -140,7 +140,7 @@ function setupError(error: ProjectFileError): CheckError {
   }
   return new CheckError(
     "CHECK_SETUP_WRITE_FAILED",
-    "Statecraft could not save the discovered public surface. Existing paths were preserved; inspect the reported targets before retrying.",
+    "UIWitness could not save the discovered public surface. Existing paths were preserved; inspect the reported targets before retrying.",
     { paths: error.paths },
   );
 }
@@ -162,7 +162,7 @@ export async function checkPublicSite(
   } catch {
     throw new CheckError(
       "CHECK_ROOT_INVALID",
-      "The Statecraft check project directory is invalid.",
+      "The UIWitness check project directory is invalid.",
     );
   }
   let setupPlan: Awaited<ReturnType<typeof planPublicSiteSetup>> | undefined;

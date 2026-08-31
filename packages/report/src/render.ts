@@ -463,7 +463,7 @@ body.detail-open{overflow:hidden}.shell{width:100%;max-width:none;margin:0;paddi
 .empty-report{padding:64px clamp(20px,3.4vw,64px);border:0;border-bottom:2px solid var(--line);border-radius:0;background:var(--bg);box-shadow:none}.footer{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;min-height:45vh;margin:0;padding:clamp(40px,5vw,80px) clamp(20px,3.4vw,64px);background:var(--line);color:var(--bg);text-align:left}.footer strong{font-family:Georgia,"Times New Roman",serif;font-size:clamp(4rem,12vw,12rem);font-weight:400;line-height:.7;letter-spacing:-.08em}.footer span{max-width:24rem;font:650 .75rem/1.4 ui-monospace,"SFMono-Regular",Menlo,monospace;letter-spacing:.06em;text-transform:uppercase}
 @media(max-width:1000px){.hero{min-height:auto}.hero-verdict{grid-template-columns:1fr}.score{max-width:none}.run-tape{grid-template-columns:repeat(3,1fr)}.metric:nth-child(3){border-right:0}.metric:nth-child(-n+3){border-bottom:1px solid var(--line)}.detail-layout{grid-template-columns:1fr}.evidence{border-right:0;border-bottom:1px solid #55584f}.metadata{padding:24px 0}.footer{align-items:flex-start;flex-direction:column}}
 @media(max-width:700px){body{background-image:none}.shell{width:100%;padding:0}.hero{padding:14px 14px 50px}.masthead>span{max-width:11rem;text-align:right}.hero-verdict{margin-top:58px}.hero h1{font-size:clamp(4rem,20vw,7rem);line-height:.78}.score strong{font-size:clamp(5rem,28vw,9rem)}.lede{margin-top:44px}.run-meta{display:grid;padding:12px 14px}.run-tape{grid-template-columns:repeat(2,1fr)}.metric{padding:16px 14px;border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}.metric:nth-child(even){border-right:0!important}.metric:nth-last-child(-n+2){border-bottom:0!important}.filter-rail{position:relative;padding:20px 14px}.filters-heading{gap:8px}}
-@media(max-width:700px){.matrix-panel{padding:72px 0 0}.section-heading{padding:0 14px 24px}.section-heading h2{font-size:clamp(3.5rem,19vw,6.5rem)}.matrix-scroll{overflow:visible;border-left:0;border-right:0}.matrix-scroll tr{gap:12px;padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}.matrix-scroll tbody+tbody{margin-top:0}.matrix-scroll .state-heading{padding:0 14px 8px}.matrix-scroll td{padding:0 6px}.matrix-cell,.filtered-cell{min-height:170px;border-radius:0}.thumbnail{height:136px}.matrix-cell--failed{transform:translate(3px,-3px);box-shadow:-4px 4px 0 var(--fail)}.detail{padding:18px 14px}.detail-utility{margin:-18px -14px 38px;padding:0 14px}.detail-heading{align-items:flex-start}.detail-heading h2{font-size:clamp(3.2rem,18vw,6rem)}.footer{min-height:50vh;padding:48px 14px}.footer strong{font-size:clamp(4rem,25vw,8rem)}}
+@media(max-width:700px){.matrix-panel{padding:72px 0 0}.section-heading{padding:0 14px 24px}.section-heading h2{font-size:clamp(3.5rem,19vw,6.5rem)}.matrix-scroll{overflow:visible;border-left:0;border-right:0}.matrix-scroll tr{gap:12px;padding:18px 0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent}.matrix-scroll tbody+tbody{margin-top:0}.matrix-scroll .state-heading{padding:0 14px 8px}.matrix-scroll td{padding:0 6px}.matrix-cell,.filtered-cell{min-height:170px;border-radius:0}.thumbnail{height:136px}.matrix-cell--failed{transform:translate(3px,-3px);box-shadow:-4px 4px 0 var(--fail)}.detail{padding:18px 14px}.detail-utility{margin:-18px -14px 38px;padding:0 14px}.detail-heading{align-items:flex-start}.detail-heading h2{font-size:clamp(3.2rem,18vw,6rem)}.footer{min-height:50vh;padding:48px 14px}.footer strong{font-size:clamp(4rem,22vw,8rem)}}
 @media(prefers-color-scheme:dark){:root{--bg:#11140f;--panel:#11140f;--panel-2:#171a16;--line:#eef0e8;--text:#f4f0e6;--muted:#a6aa9f}.metric--failed span,.metric--failed strong{color:#0b0c0a}.run-meta,.footer{background:var(--line);color:var(--bg)}.cell-status,thead th{background:var(--line);color:var(--bg)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.matrix-cell,.thumbnail{transition:none}.matrix-cell:hover,.matrix-cell--failed,.matrix-cell--failed:hover{transform:none}.js .detail.is-active{animation:none}}
 .eyebrow,.masthead,.run-meta,.metric span,thead th,.detail-utility{font-size:.75rem}
@@ -483,14 +483,14 @@ export function renderReportHtml(input: unknown): string {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'sha256-${interactionHash}'; base-uri 'none'; form-action 'none'">
   <meta name="color-scheme" content="light dark">
-  <title>Statecraft · UI State Coverage Report</title>
+  <title>UIWitness · UI State Coverage Report</title>
   <style>${styles}</style>
 </head>
 <body data-brand-system="kinetic-evidence-v1">
   <a class="skip-link" href="#matrix-title">Skip to coverage matrix</a>
   <main class="shell">
     <header class="hero">
-      <div class="masthead"><div class="brand"><span class="brand-mark" aria-hidden="true">S/C</span>Statecraft</div><span>Local evidence / schema v${view.schemaVersion}</span></div>
+      <div class="masthead"><div class="brand"><span class="brand-mark" aria-hidden="true">UI/W</span>UIWitness</div><span>Local evidence / schema v${view.schemaVersion}</span></div>
       <div class="hero-verdict">
         <div><p class="eyebrow">UI state coverage report</p><h1>Evidence<br>over instinct.</h1></div>
         <div class="score" aria-label="${summary.passed} of ${summary.executions} executions passed">
@@ -512,7 +512,7 @@ export function renderReportHtml(input: unknown): string {
     ${filters(view)}
     <div id="matrix">${matrix(view)}</div>
     <section aria-label="Execution details">${view.executions.map(detail).join("")}</section>
-    <footer class="footer"><strong>Statecraft</strong><span>Generated locally. No network or server required. Just evidence.</span></footer>
+    <footer class="footer"><strong>UIWitness</strong><span>Generated locally. No network or server required. Just evidence.</span></footer>
   </main>
   <script>${interactions}</script>
 </body>

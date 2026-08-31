@@ -27,7 +27,7 @@ const projects: string[] = [];
 
 async function temporaryProject(): Promise<string> {
   const project = await realpath(
-    await mkdtemp(join(tmpdir(), "statecraft-cli-open-")),
+    await mkdtemp(join(tmpdir(), "uiwitness-cli-open-")),
   );
   projects.push(project);
   return project;
@@ -41,7 +41,7 @@ async function reportFixture(): Promise<{
   const reportDirectory = join(project, ".uiwitness", "report");
   await mkdir(reportDirectory, { recursive: true });
   const reportPath = join(reportDirectory, "index.html");
-  await writeFile(reportPath, "<!doctype html><title>Statecraft</title>", "utf8");
+  await writeFile(reportPath, "<!doctype html><title>UIWitness</title>", "utf8");
   return { project, reportPath };
 }
 
@@ -56,7 +56,7 @@ afterEach(async () => {
 describe("openReport", () => {
   it("opens the canonical latest report without generating or changing it", async () => {
     const fixture = await reportFixture();
-    const before = "<!doctype html><title>Statecraft</title>";
+    const before = "<!doctype html><title>UIWitness</title>";
     const launcher = vi.fn(async () => undefined);
 
     await expect(
@@ -85,7 +85,7 @@ describe("openReport", () => {
       reportPath: join(project, ".uiwitness", "report", "index.html"),
     });
     expect((error as Error).message).toContain(
-      "No Statecraft HTML report found at .uiwitness/report/index.html.",
+      "No UIWitness HTML report found at .uiwitness/report/index.html.",
     );
     expect(launcher).not.toHaveBeenCalled();
   });
@@ -114,13 +114,13 @@ describe("openReport", () => {
     });
   });
 
-  it.each(["statecraft", "report", "file"] as const)(
+  it.each(["uiwitness", "report", "file"] as const)(
     "rejects a symbolic-link %s boundary",
     async (boundary) => {
     const project = await temporaryProject();
     const external = await temporaryProject();
       const reportDirectory = join(project, ".uiwitness", "report");
-      if (boundary === "statecraft") {
+      if (boundary === "uiwitness") {
         await mkdir(join(external, "report"));
         await writeFile(
           join(external, "report", "index.html"),

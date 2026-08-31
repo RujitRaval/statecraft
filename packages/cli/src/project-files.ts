@@ -11,7 +11,7 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 import { DEFAULT_CONFIG_FILENAMES } from "./config.js";
 
-export const GENERATED_CONFIG_FILENAME = "statecraft.config.mts";
+export const GENERATED_CONFIG_FILENAME = "uiwitness.config.mts";
 
 export type ProjectFileErrorCode =
   | "PROJECT_FILE_CONFLICT"
@@ -201,7 +201,7 @@ export async function planConfigPublication(
   if (conflicts.length > 0) {
     throw new ProjectFileError(
       "PROJECT_FILE_CONFLICT",
-      "Generated Statecraft files conflict with existing paths.",
+      "Generated UIWitness files conflict with existing paths.",
       conflicts,
     );
   }
@@ -247,7 +247,7 @@ export async function publishConfigLast(
   if (conflicts.length > 0) {
     throw new ProjectFileError(
       "PROJECT_FILE_CONFLICT",
-      "Generated Statecraft files changed after preflight.",
+      "Generated UIWitness files changed after preflight.",
       conflicts,
     );
   }
@@ -276,7 +276,7 @@ export async function publishConfigLast(
     }
     throw new ProjectFileError(
       "PROJECT_FILE_WRITE_FAILED",
-      "Statecraft could not create every generated project file.",
+      "UIWitness could not create every generated project file.",
       [plan.configPath, plan.scenarioPath],
       { cause },
     );

@@ -39,8 +39,8 @@ vi.mock("../src/init.js", async (importOriginal) => {
       if (options.cwd === "write-failure") {
         throw new original.InitError(
           "INIT_WRITE_FAILED",
-          "Statecraft could not create every starter file.",
-          { paths: ["/project/statecraft.config.mts", "/project/statecraft"] },
+          "UIWitness could not create every starter file.",
+          { paths: ["/project/uiwitness.config.mts", "/project/uiwitness"] },
         );
       }
       return original.initProject(options);
@@ -69,7 +69,7 @@ const temporaryProjects: string[] = [];
 
 async function temporaryProject(): Promise<string> {
   const project = await realpath(
-    await mkdtemp(join(tmpdir(), "statecraft-cli-command-")),
+    await mkdtemp(join(tmpdir(), "uiwitness-cli-command-")),
   );
   temporaryProjects.push(project);
   return project;
@@ -100,7 +100,7 @@ function completedScan(
   const passed = status === "passed";
   const covered = passed ? 1 : 0;
   return Object.freeze({
-    configPath: "/project/statecraft.config.ts",
+    configPath: "/project/uiwitness.config.ts",
     report: parseReport({
       executions: [
         {
@@ -261,14 +261,14 @@ function completedCheck(
     ...(setup
       ? {
           setup: Object.freeze({
-            configPath: "/project/statecraft.config.mts",
+            configPath: "/project/uiwitness.config.mts",
             files: Object.freeze([
-              "/project/statecraft.config.mts",
-              "/project/statecraft/scenarios/public/default.mts",
+              "/project/uiwitness.config.mts",
+              "/project/uiwitness/scenarios/public/default.mts",
             ]),
             projectRoot: "/project",
             scenarioPath:
-              "/project/statecraft/scenarios/public/default.mts",
+              "/project/uiwitness/scenarios/public/default.mts",
           }),
         }
       : {}),
@@ -304,18 +304,18 @@ describe("runCli", () => {
         stdout: stdout.write,
       }),
     ).resolves.toBe(0);
-    expect(stdout.messages.join("")).toContain("statecraft init");
-    expect(stdout.messages.join("")).toContain("statecraft check <url>");
+    expect(stdout.messages.join("")).toContain("uiwitness init");
+    expect(stdout.messages.join("")).toContain("uiwitness check <url>");
     expect(stdout.messages.join("")).toContain(
       "Check only websites you own or are authorized to test.",
     );
-    expect(stdout.messages.join("")).toContain("statecraft open");
+    expect(stdout.messages.join("")).toContain("uiwitness open");
     expect(stdout.messages.join("")).toContain(
       "persist screenshots, JSON, and HTML",
     );
     expect(stderr.messages).toEqual([]);
     await expect(
-      lstat(join(project, "statecraft.config.mts")),
+      lstat(join(project, "uiwitness.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
     },
   );
@@ -392,7 +392,7 @@ describe("runCli", () => {
       runCli({ args: ["open"], stderr: stderr.write }),
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toBe(
-      "Statecraft could not open the latest report unexpectedly.\n",
+      "UIWitness could not open the latest report unexpectedly.\n",
     );
   });
 
@@ -411,7 +411,7 @@ describe("runCli", () => {
       "The init command does not accept arguments: --force",
     );
     await expect(
-      lstat(join(project, "statecraft.config.mts")),
+      lstat(join(project, "uiwitness.config.mts")),
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -428,15 +428,15 @@ describe("runCli", () => {
         stdout: stdout.write,
       }),
     ).resolves.toBe(0);
-    expect(stdout.messages.join("")).toBe(`Statecraft initialized.
+    expect(stdout.messages.join("")).toBe(`UIWitness initialized.
 
 Created:
-  statecraft.config.mts
-  statecraft/scenarios/home/success.mts
+  uiwitness.config.mts
+  uiwitness/scenarios/home/success.mts
 
 Next:
-  1. Update statecraft.config.mts for your app.
-  2. Add scenario hooks in statecraft/scenarios/home/success.mts.
+  1. Update uiwitness.config.mts for your app.
+  2. Add scenario hooks in uiwitness/scenarios/home/success.mts.
   3. Commit both starter files to version control.
 `);
     expect(stderr.messages).toEqual([]);
@@ -444,7 +444,7 @@ Next:
 
   it("reports conflicts without replacing existing content", async () => {
     const project = await temporaryProject();
-    const configPath = join(project, "statecraft.config.ts");
+    const configPath = join(project, "uiwitness.config.ts");
     const stderr = outputCapture();
     await writeFile(configPath, "keep", "utf8");
 
@@ -456,7 +456,7 @@ Next:
       }),
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toContain(
-      "Statecraft initialization conflicts with existing paths:",
+      "UIWitness initialization conflicts with existing paths:",
     );
     await expect(readFile(configPath, "utf8")).resolves.toBe("keep");
   });
@@ -471,11 +471,11 @@ Next:
         stderr: stderr.write,
       }),
     ).resolves.toBe(2);
-    expect(stderr.messages.join("")).toBe(`Statecraft could not create every starter file.
+    expect(stderr.messages.join("")).toBe(`UIWitness could not create every starter file.
 
 Targets:
-  /project/statecraft.config.mts
-  /project/statecraft
+  /project/uiwitness.config.mts
+  /project/uiwitness
 `);
   });
 
@@ -505,7 +505,7 @@ Targets:
       url: "https://example.test/start?private=value#fragment",
       writeConfig: false,
     });
-    expect(stdout.messages.join("")).toContain("Statecraft Quick Check");
+    expect(stdout.messages.join("")).toContain("UIWitness Quick Check");
     expect(stdout.messages.join("")).toContain(
       "Site: https://example.test/",
     );
@@ -517,7 +517,7 @@ Targets:
     );
     expect(stdout.messages.join("")).toContain("All 5 checks passed.");
     expect(stdout.messages.join("")).toContain(
-      "npx statecraft check https://example.test/ --write-config",
+      "npx uiwitness check https://example.test/ --write-config",
     );
     expect(stderr.messages).toEqual([]);
   });
@@ -545,15 +545,15 @@ Targets:
     expect(stdout.messages.join("")).toContain(
       "Saved the discovered public surface.",
     );
-    expect(stdout.messages.join("")).toContain("statecraft.config.mts");
+    expect(stdout.messages.join("")).toContain("uiwitness.config.mts");
     expect(stdout.messages.join("")).toContain(
-      "statecraft/scenarios/public/default.mts",
+      "uiwitness/scenarios/public/default.mts",
     );
     expect(stdout.messages.join("")).toContain(
-      "Next: add real product states, then run `npx statecraft scan`.",
+      "Next: add real product states, then run `npx uiwitness scan`.",
     );
     expect(stdout.messages.join("")).not.toContain(
-      "npx statecraft check https://example.test/ --write-config",
+      "npx uiwitness check https://example.test/ --write-config",
     );
     expect(stderr.messages).toEqual([]);
   });
@@ -608,7 +608,7 @@ Targets:
       }),
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toBe(
-      "Statecraft check failed unexpectedly.\n",
+      "UIWitness check failed unexpectedly.\n",
     );
   });
 
@@ -658,7 +658,7 @@ Targets:
       headed: true,
       routeId: "dashboard",
     });
-    expect(stdout.messages.join("")).toBe(`Statecraft
+    expect(stdout.messages.join("")).toBe(`UIWitness
 
 Dashboard
   ✓ success · desktop · light
@@ -727,7 +727,7 @@ All 1 execution passed.
       runCli({ args: ["scan"], stderr: stderr.write }),
     ).resolves.toBe(2);
     expect(stderr.messages.join("")).toBe(
-      "Statecraft scan failed unexpectedly.\n",
+      "UIWitness scan failed unexpectedly.\n",
     );
   });
 
