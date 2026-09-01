@@ -98,7 +98,7 @@ test("accepts only the known-failure CLI exit contract", () => {
 test("validates the complete release report and every screenshot", async () => {
   const visited = [];
   await validateExpectedReleaseReport(makeReport(), {
-    projectRoot: "/tmp/statecraft-release-smoke",
+    projectRoot: "/tmp/uiwitness-release-smoke",
     statFile: async (screenshotPath) => {
       visited.push(screenshotPath);
       return { isFile: () => true, size: 128 };
@@ -112,7 +112,7 @@ test("rejects drift in known failures and screenshot containment", async () => {
   drifted.executions[56].theme = "light";
   await assert.rejects(
     validateExpectedReleaseReport(drifted, {
-      projectRoot: "/tmp/statecraft-release-smoke",
+      projectRoot: "/tmp/uiwitness-release-smoke",
       statFile: async () => ({ isFile: () => true, size: 128 }),
     }),
   );
@@ -121,7 +121,7 @@ test("rejects drift in known failures and screenshot containment", async () => {
   escaped.executions[0].screenshotPath = "../outside.png";
   await assert.rejects(
     validateExpectedReleaseReport(escaped, {
-      projectRoot: "/tmp/statecraft-release-smoke",
+      projectRoot: "/tmp/uiwitness-release-smoke",
       statFile: async () => ({ isFile: () => true, size: 128 }),
     }),
     /Screenshot escaped the smoke project/u,
@@ -149,7 +149,7 @@ test("rejects missing, non-file, and empty screenshot evidence", async () => {
   for (const { expected, statFile } of cases) {
     await assert.rejects(
       validateExpectedReleaseReport(makeReport(), {
-        projectRoot: "/tmp/statecraft-release-smoke",
+        projectRoot: "/tmp/uiwitness-release-smoke",
         statFile,
       }),
       expected,
@@ -283,7 +283,7 @@ class FakeServer extends EventEmitter {
 }
 
 test("orchestrates the built bin target and always cleans local output", async () => {
-  const projectRoot = "/tmp/statecraft-release-smoke-owned";
+  const projectRoot = "/tmp/uiwitness-release-smoke-owned";
   const removed = [];
   const recorded = [];
   const commands = [];
@@ -337,12 +337,12 @@ test("cleans an owned project when setup fails before server spawn", async () =>
       allocatePort: async () => {
         throw new Error("no port");
       },
-      createProject: async () => "/tmp/statecraft-release-smoke-owned",
+      createProject: async () => "/tmp/uiwitness-release-smoke-owned",
       keepOutput: false,
       recordOutput: async () => {},
       removeProject: async (projectRoot) => removed.push(projectRoot),
     }),
     /no port/u,
   );
-  assert.deepEqual(removed, ["/tmp/statecraft-release-smoke-owned"]);
+  assert.deepEqual(removed, ["/tmp/uiwitness-release-smoke-owned"]);
 });

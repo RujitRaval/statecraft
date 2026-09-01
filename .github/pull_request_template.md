@@ -15,7 +15,7 @@
 - [ ] Repository checks pass: `node scripts/run-ci.mjs`
 - [ ] Tests cover new behavior and regression paths
 - [ ] GStack `review` completed and findings resolved
-- [ ] No secrets or `.statecraft/` report artifacts are included
+- [ ] No secrets, `.uiwitness/` reports, or legacy `.statecraft/` evidence are included
 - [ ] Public API, schema, security, and privacy impacts are documented
 
 ## Dependencies

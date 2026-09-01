@@ -27,7 +27,7 @@ const cells = expandMatrix(
 );
 const missingBrowserExecutable = path.join(
   process.cwd(),
-  "statecraft-missing-browser-executable",
+  "uiwitness-missing-browser-executable",
 );
 
 describe("runExecutionCells", () => {
@@ -49,7 +49,7 @@ describe("runExecutionCells", () => {
       );
       await context.addCookies([
         {
-          name: "statecraft-cell",
+          name: "uiwitness-cell",
           url: "https://uiwitness.invalid",
           value: cell.viewportId,
         },

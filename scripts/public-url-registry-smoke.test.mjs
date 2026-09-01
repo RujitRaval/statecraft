@@ -42,7 +42,7 @@ test("retries thrown npm timeouts but not permanent execution errors", async () 
   const delays = [];
   let installs = 0;
   await installRegistryConsumer({
-    consumerRoot: "/tmp/statecraft-timeout-consumer",
+    consumerRoot: "/tmp/uiwitness-timeout-consumer",
     execute: async (_command, args) => {
       if (args[0] === "install") {
         installs += 1;
@@ -58,7 +58,7 @@ test("retries thrown npm timeouts but not permanent execution errors", async () 
 
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-spawn-consumer",
+      consumerRoot: "/tmp/uiwitness-spawn-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") throw new Error("spawn npm ENOENT");
         return { code: 0, signal: null, stderr: "", stdout: "" };
@@ -86,7 +86,7 @@ test("installs exact registry packages with bounded propagation retries", async 
   };
 
   await installRegistryConsumer({
-    consumerRoot: "/tmp/statecraft-empty-consumer",
+    consumerRoot: "/tmp/uiwitness-empty-consumer",
     execute,
     sleep: async (duration) => delays.push(duration),
     version: "0.24.9",
@@ -107,7 +107,7 @@ test("installs exact registry packages with bounded propagation retries", async 
   assert.deepEqual(
     installCommands.map(({ args }) => args[args.indexOf("--cache") + 1]),
     [1, 2, 3].map((attempt) =>
-      path.join("/tmp/statecraft-empty-consumer", ".npm-cache", `install-${attempt}`),
+      path.join("/tmp/uiwitness-empty-consumer", ".npm-cache", `install-${attempt}`),
     ),
   );
   assert.equal(commands[1].options.timeout, 30_000);
@@ -119,7 +119,7 @@ test("does not reuse a registry cache after a missing-version response", async (
   const cachePaths = new Set();
   let installAttempts = 0;
   await installRegistryConsumer({
-    consumerRoot: "/tmp/statecraft-cache-revalidation-consumer",
+    consumerRoot: "/tmp/uiwitness-cache-revalidation-consumer",
     execute: async (_command, args) => {
       if (args[0] !== "install") {
         return { code: 0, signal: null, stderr: "", stdout: "" };
@@ -147,7 +147,7 @@ test("retries registry propagation for the complete elapsed-time window", async 
   const delays = [];
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-propagation-consumer",
+      consumerRoot: "/tmp/uiwitness-propagation-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           installAttempts += 1;
@@ -184,7 +184,7 @@ test("counts command timeouts against the registry retry window", async () => {
   const delays = [];
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-time-bounded-consumer",
+      consumerRoot: "/tmp/uiwitness-time-bounded-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           installAttempts += 1;
@@ -212,7 +212,7 @@ test("caps retryable thrown errors even when the clock does not advance", async 
   const delays = [];
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-thrown-cap-consumer",
+      consumerRoot: "/tmp/uiwitness-thrown-cap-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           installAttempts += 1;
@@ -236,7 +236,7 @@ test("uses the remaining partial window before rejecting a thrown timeout", asyn
   const delays = [];
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-partial-window-consumer",
+      consumerRoot: "/tmp/uiwitness-partial-window-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           installAttempts += 1;
@@ -264,7 +264,7 @@ test("uses the partial window before a slow failed result exhausts the deadline"
   const delays = [];
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-result-deadline-consumer",
+      consumerRoot: "/tmp/uiwitness-result-deadline-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           installAttempts += 1;
@@ -289,7 +289,7 @@ test("uses the partial window before a slow failed result exhausts the deadline"
 test("provisions browser system dependencies only when requested", async () => {
   const commands = [];
   await installRegistryConsumer({
-    consumerRoot: "/tmp/statecraft-with-deps-consumer",
+    consumerRoot: "/tmp/uiwitness-with-deps-consumer",
     execute: async (command, args, options) => {
       commands.push({ args, command, options });
       return { code: 0, signal: null, stderr: "", stdout: "" };
@@ -306,7 +306,7 @@ test("does not retry permanent npm installation failures", async () => {
   let attempts = 0;
   await assert.rejects(
     installRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-empty-consumer",
+      consumerRoot: "/tmp/uiwitness-empty-consumer",
       execute: async (_command, args) => {
         if (args[0] === "install") {
           attempts += 1;
@@ -323,7 +323,7 @@ test("does not retry permanent npm installation failures", async () => {
 });
 
 test("verifies every installed public package and both CommonJS npm project shapes", async (context) => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-install-test-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-install-test-"));
   context.after(() => rm(root, { force: true, recursive: true }));
   for (const name of [
     "uiwitness-core",
@@ -420,7 +420,7 @@ async function writeEvidence(root) {
 }
 
 test("rejects screenshot evidence that resolves outside the artifact boundary", async (context) => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-boundary-test-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-boundary-test-"));
   context.after(() => rm(root, { force: true, recursive: true }));
   await writeEvidence(root);
   const reportPath = path.join(root, ".uiwitness", "report", "uiwitness.json");
@@ -434,8 +434,8 @@ test("rejects screenshot evidence that resolves outside the artifact boundary", 
 });
 
 test("rejects an artifact root that resolves outside the temporary consumer", async (context) => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-root-boundary-test-"));
-  const outside = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-outside-test-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-root-boundary-test-"));
+  const outside = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-outside-test-"));
   context.after(async () => {
     await rm(root, { force: true, recursive: true });
     await rm(outside, { force: true, recursive: true });
@@ -455,14 +455,14 @@ test("removes the temporary consumer even when fixture shutdown fails", async ()
   const removals = [];
   await assert.rejects(
     cleanRegistryConsumer({
-      consumerRoot: "/tmp/statecraft-registry-cleanup-test",
+      consumerRoot: "/tmp/uiwitness-registry-cleanup-test",
       fixture: { close: async () => { throw new Error("fixture close failed"); } },
       remove: async (...arguments_) => removals.push(arguments_),
     }),
     /fixture close failed/u,
   );
   assert.deepEqual(removals, [[
-    "/tmp/statecraft-registry-cleanup-test",
+    "/tmp/uiwitness-registry-cleanup-test",
     { force: true, recursive: true },
   ]]);
 });
@@ -483,8 +483,8 @@ test("serves only the deterministic two-page authorized fixture", async () => {
   }
 });
 
-test("runs check, explicit promotion, and untouched scan in order", async (context) => {
-  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-registry-journey-test-"));
+test("runs check, explicit promotion, untouched scan, and open in order", async (context) => {
+  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-journey-test-"));
   context.after(() => rm(consumerRoot, { force: true, recursive: true }));
   const commands = [];
   const fixtureUrl = "http://127.0.0.1:4321/";
@@ -499,6 +499,9 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
     }
     if (args.at(-1) === "scan") {
       return { code: 0, signal: null, stderr: "", stdout: "All 8 executions passed.\n" };
+    }
+    if (args.at(-1) === "open") {
+      return { code: 0, signal: null, stderr: "", stdout: "Opened .uiwitness/report/index.html.\n" };
     }
     return { code: 0, signal: null, stderr: "", stdout: `All 8 checks passed.\nNext: npx uiwitness check ${fixtureUrl} --write-config\n` };
   };
@@ -515,9 +518,42 @@ test("runs check, explicit promotion, and untouched scan in order", async (conte
     ["check", fixtureUrl, "--max-pages", "2"],
     ["check", fixtureUrl, "--write-config"],
     ["scan"],
+    ["open"],
   ]);
   assert.equal(commands.every(({ command }) => command === process.execPath), true);
   assert.equal(commands.every(({ options }) => options.cwd === consumerRoot), true);
   assert.equal(commands.every(({ options }) => options.timeout === 120_000), true);
   assert.match(await readFile(path.join(consumerRoot, "uiwitness.config.mts"), "utf8"), /defineConfig/u);
+});
+
+test("stops the registry journey when opening the installed report fails", async (context) => {
+  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-registry-open-failure-"));
+  context.after(() => rm(consumerRoot, { force: true, recursive: true }));
+  const fixtureUrl = "http://127.0.0.1:4321/";
+  const execute = async (_command, args) => {
+    await writeEvidence(consumerRoot);
+    if (args.includes("--write-config")) {
+      await mkdir(path.join(consumerRoot, "uiwitness", "scenarios", "public"), { recursive: true });
+      await writeFile(path.join(consumerRoot, "uiwitness.config.mts"), 'import { defineConfig } from "uiwitness";\nexport default defineConfig({});\n');
+      await writeFile(path.join(consumerRoot, "uiwitness", "scenarios", "public", "default.mts"), 'import { publicSiteScenario } from "uiwitness/public-site-scenario";\nexport default publicSiteScenario;\n');
+      return { code: 0, signal: null, stderr: "", stdout: "Saved the discovered public surface.\nNext: add real product states, then run `npx uiwitness scan`.\n" };
+    }
+    if (args.at(-1) === "scan") {
+      return { code: 0, signal: null, stderr: "", stdout: "All 8 executions passed.\n" };
+    }
+    if (args.at(-1) === "open") {
+      return { code: 1, signal: null, stderr: "report opener failed", stdout: "" };
+    }
+    return { code: 0, signal: null, stderr: "", stdout: `All 8 checks passed.\nNext: npx uiwitness check ${fixtureUrl} --write-config\n` };
+  };
+
+  await assert.rejects(
+    runRegistryJourney({
+      cliBinPath: "/registry/node_modules/uiwitness/dist/bin.js",
+      consumerRoot,
+      execute,
+      fixtureUrl,
+    }),
+    /Opening the registry-only offline report exited 1/u,
+  );
 });

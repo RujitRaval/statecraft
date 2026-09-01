@@ -244,7 +244,7 @@ describe("runPublicSiteChecks", () => {
     async () => {
       const fixture = await fixtureServer();
       const projectDirectory = await mkdtemp(
-        join(tmpdir(), "statecraft-public-site-"),
+        join(tmpdir(), "uiwitness-public-site-"),
       );
       try {
         const run = await runPublicSiteChecks(

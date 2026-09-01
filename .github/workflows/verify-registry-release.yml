@@ -1,0 +1,63 @@
+name: Verify Registry Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Immutable non-prerelease release tag, for example v0.25.3
+        required: true
+        type: string
+      cleanup_evidence:
+        description: Compact schema-v1 JSON proving trusted-publisher setup and cleanup for every bootstrap attempt
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-registry-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  verify-registry-release:
+    name: Verify cleanup and registry journey
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm-publish
+    env:
+      CLEANUP_EVIDENCE: ${{ inputs.cleanup_evidence }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+    steps:
+      - name: Check out the immutable release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: ${{ inputs.release_tag }}
+      - name: Resolve and validate release identity
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RELEASE_SHA="$(git rev-parse HEAD)"
+          test "$(git rev-parse --verify "refs/tags/${RELEASE_TAG}^{commit}")" = "$RELEASE_SHA"
+          git merge-base --is-ancestor "$RELEASE_SHA" origin/main
+          node scripts/check-release-packages.mjs --tag "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --json tagName --jq .tagName)" = "$RELEASE_TAG"
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = "false"
+          test "$(gh release view "$RELEASE_TAG" --json isPrerelease --jq .isPrerelease)" = "false"
+          echo "release-sha=$RELEASE_SHA" >> "$GITHUB_OUTPUT"
+      - name: Validate bootstrap cleanup evidence
+        run: >-
+          node scripts/verify-bootstrap-cleanup.mjs
+          --tag "$RELEASE_TAG"
+          --sha "${{ steps.release.outputs.release-sha }}"
+          --evidence "$CLEANUP_EVIDENCE"
+      - name: Set up the registry-consumer runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.19.0
+          package-manager-cache: false
+      - name: Run the tag-bound registry-only consumer gate
+        run: node scripts/public-url-registry-smoke.mjs --tag "$RELEASE_TAG" --with-deps

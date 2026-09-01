@@ -74,4 +74,4 @@ Phase 4 through Phase 6 are complete.
 - [x] Kinetic evidence report presentation
 - [x] `uiwitness check <url>` orchestration, summaries, and exit codes
 - [x] Overwrite-safe promotion into permanent `.mts` config and scenario files
-- [x] Public launch guidance and registry-only check → promotion → scan gate
+- [x] Public launch guidance and registry-only check → promotion → scan → open gate

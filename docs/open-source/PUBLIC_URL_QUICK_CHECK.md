@@ -56,10 +56,10 @@ Run Quick Check only against websites you own or have permission to test. The br
 After the distribution and external-cutover steps are complete, every UIWitness release finishes with the same consumer journey from an empty `npm init -y` project. The gate accepts both npm's implicit CommonJS manifest and npm 11's explicit `"type": "commonjs"` form, installs the exact release and pinned Playwright version from `https://registry.npmjs.org/`, starts a deterministic two-page authorized fixture, and runs:
 
 ```text
-check → check --write-config → scan
+check → check --write-config → scan → open
 ```
 
-It requires eight passing cells at each stage, non-empty screenshots, schema-v1 JSON, the kinetic offline HTML report, exact generated package imports, and byte-unchanged config/scenario files after `scan`. No workspace package, local tarball, or repository build output can satisfy the gate.
+It requires eight passing cells at each stage, non-empty screenshots, schema-v1 JSON, the kinetic offline HTML report, exact generated package imports, byte-unchanged config/scenario files after `scan`, and a successful report open through the installed CLI. No workspace package, local tarball, or repository build output can satisfy the gate.
 
 Maintainers can repeat the post-publication proof with:
 

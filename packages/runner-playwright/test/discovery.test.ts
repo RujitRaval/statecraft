@@ -53,7 +53,7 @@ describe("discoverPublicRoutes", () => {
   it("rejects invalid input and bounds before Chromium launches", async () => {
     const missingExecutable = path.join(
       process.cwd(),
-      "statecraft-missing-discovery-browser",
+      "uiwitness-missing-discovery-browser",
     );
     const launchOptions = { executablePath: missingExecutable };
 
@@ -98,11 +98,11 @@ describe("discoverPublicRoutes", () => {
       requested.push(request.url ?? "");
       const pathname = new URL(request.url ?? "/", "http://fixture").pathname;
       if (pathname === "/start") {
-        response.setHeader("set-cookie", "statecraft-secret=present; Path=/");
+        response.setHeader("set-cookie", "uiwitness-secret=present; Path=/");
         html(
           response,
           `
-            <script>localStorage.setItem("statecraft-secret", "present")</script>
+            <script>localStorage.setItem("uiwitness-secret", "present")</script>
             <a href="/a?token=secret#panel">A</a>
             <a href="/b">B</a>
             <a href="/a?duplicate=yes">A duplicate</a>
@@ -118,7 +118,7 @@ describe("discoverPublicRoutes", () => {
         html(
           response,
           `<script>
-            if (localStorage.getItem("statecraft-secret")) {
+            if (localStorage.getItem("uiwitness-secret")) {
               fetch("/storage-leaked");
             }
           </script><a href="/c">C</a>`,

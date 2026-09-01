@@ -19,7 +19,7 @@ const scenarioBaseDirectory = fileURLToPath(
 );
 const missingBrowserExecutable = path.join(
   process.cwd(),
-  "statecraft-missing-scenario-browser-executable",
+  "uiwitness-missing-scenario-browser-executable",
 );
 
 function scenarioCells(
@@ -200,7 +200,7 @@ describe("runScenarioLifecycle", () => {
 
 describe("runScenarioCells", () => {
   it("loads hooks per cell and runs them around the executor", async () => {
-    const eventKey = Symbol.for("statecraft.test.scenario-events");
+    const eventKey = Symbol.for("uiwitness.test.scenario-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
     const cwdRelativeScenario = path.relative(
@@ -251,7 +251,7 @@ describe("runScenarioCells", () => {
   });
 
   it("settles load and hook failures while later cells continue", async () => {
-    const eventKey = Symbol.for("statecraft.test.scenario-events");
+    const eventKey = Symbol.for("uiwitness.test.scenario-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
     const cells = scenarioCells([

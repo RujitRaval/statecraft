@@ -24,7 +24,7 @@ const cells = expandMatrix(
         states: [
           {
             id: "success",
-            setup: "./statecraft/scenarios/dashboard/success.ts",
+            setup: "./uiwitness/scenarios/dashboard/success.ts",
           },
         ],
       },
@@ -509,7 +509,7 @@ describe("parseReport", () => {
     const viewport = { height: 900, width: 1440 };
     const conflicting: ExecutionResult = {
       ...base,
-      scenarioSource: "./statecraft/scenarios/dashboard/error.ts",
+      scenarioSource: "./uiwitness/scenarios/dashboard/error.ts",
       screenshotPath: screenshotArtifactPath({
         route: {
           id: "dashboard",
@@ -517,13 +517,13 @@ describe("parseReport", () => {
           states: [
             {
               id: "error",
-              setup: "./statecraft/scenarios/dashboard/error.ts",
+              setup: "./uiwitness/scenarios/dashboard/error.ts",
             },
           ],
         },
         state: {
           id: "error",
-          setup: "./statecraft/scenarios/dashboard/error.ts",
+          setup: "./uiwitness/scenarios/dashboard/error.ts",
         },
         theme: "light",
         viewport,

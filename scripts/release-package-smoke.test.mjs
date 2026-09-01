@@ -10,6 +10,7 @@ import {
   publishReleasePackages,
 } from "./publish-release-packages.mjs";
 import {
+  assertPackedBrandContract,
   assertPublishSummaryIdentity,
   releaseTarballName,
   runCommand,
@@ -20,7 +21,7 @@ const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const checkedInRelease = await validateReleaseWorkspace({ root: repositoryRoot });
 
 async function createTarballFixture(context) {
-  const input = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-test-"));
+  const input = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-test-"));
   context.after(() => rm(input, { force: true, recursive: true }));
   const integrities = new Map();
   for (const contract of RELEASE_PACKAGES) {
@@ -100,6 +101,54 @@ test("runs bounded shell-free release commands", async () => {
   await assert.rejects(
     runCommand(process.execPath, ["--eval", "setTimeout(() => {}, 1_000)"], { timeout: 10 }),
     /exceeded 10ms/u,
+  );
+});
+
+test("packed brand inspection permits only the legacy evidence read contract", async (context) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "uiwitness-packed-brand-"));
+  context.after(() => rm(root, { force: true, recursive: true }));
+  for (const { name } of RELEASE_PACKAGES) {
+    await mkdir(path.join(root, name, "dist"), { recursive: true });
+    await writeFile(path.join(root, name, "package.json"), JSON.stringify({ name }), "utf8");
+  }
+  await writeFile(
+    path.join(root, "uiwitness-core", "dist", "results.js"),
+    'const legacyReadRoot = ".statecraft/artifacts/";\n',
+    "utf8",
+  );
+  await assertPackedBrandContract(root);
+
+  await writeFile(
+    path.join(root, "uiwitness", "dist", "index.js"),
+    'const product = "Statecraft";\n',
+    "utf8",
+  );
+  await assert.rejects(
+    assertPackedBrandContract(root),
+    /packed a non-allowlisted legacy identity/u,
+  );
+  await unlink(path.join(root, "uiwitness", "dist", "index.js"));
+
+  await writeFile(
+    path.join(root, "uiwitness-core", "dist", "results.js"),
+    'const product = "Statecraft";\n',
+    "utf8",
+  );
+  await assert.rejects(
+    assertPackedBrandContract(root),
+    /packed legacy product text outside the evidence-path compatibility contract/u,
+  );
+  await writeFile(
+    path.join(root, "uiwitness-core", "dist", "results.js"),
+    'const legacyReadRoot = ".statecraft/artifacts/";\n',
+    "utf8",
+  );
+
+  const linkedFile = path.join(root, "uiwitness-core", "dist", "linked.js");
+  await symlink(path.join(root, "uiwitness-core", "package.json"), linkedFile, "file");
+  await assert.rejects(
+    assertPackedBrandContract(root),
+    /must not be a symbolic link/u,
   );
 });
 
@@ -251,7 +300,7 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
   const tag = `v${checkedInRelease.packageVersion}`;
   await assert.rejects(publishReleasePackages({ root: repositoryRoot, tag }), /--input is required/u);
 
-  const nonDirectoryRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-file-"));
+  const nonDirectoryRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-file-"));
   context.after(() => rm(nonDirectoryRoot, { force: true, recursive: true }));
   const nonDirectory = path.join(nonDirectoryRoot, "packages");
   await writeFile(nonDirectory, "not a directory", "utf8");
@@ -260,8 +309,8 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
     /must be a directory/u,
   );
 
-  const symlinkTarget = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-link-target-"));
-  const symlinkRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-link-"));
+  const symlinkTarget = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-link-target-"));
+  const symlinkRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-link-"));
   context.after(() => rm(symlinkTarget, { force: true, recursive: true }));
   context.after(() => rm(symlinkRoot, { force: true, recursive: true }));
   const linkedInput = path.join(symlinkRoot, "packages");
@@ -271,7 +320,7 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
     /must not be a symbolic link/u,
   );
 
-  const incomplete = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-incomplete-"));
+  const incomplete = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-incomplete-"));
   context.after(() => rm(incomplete, { force: true, recursive: true }));
   await assert.rejects(
     publishReleasePackages({ input: incomplete, root: repositoryRoot, tag }),
@@ -288,7 +337,7 @@ test("rejects unsafe and incomplete publisher input paths", async (context) => {
     symlinkTarballs.input,
     releaseTarballName("uiwitness-core", checkedInRelease.packageVersion),
   );
-  const externalTarballRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-publish-external-"));
+  const externalTarballRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-publish-external-"));
   context.after(() => rm(externalTarballRoot, { force: true, recursive: true }));
   const externalTarball = path.join(externalTarballRoot, "core.tgz");
   await writeFile(externalTarball, "external", "utf8");

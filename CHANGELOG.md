@@ -4,6 +4,18 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.4.0] - 2026-08-31
+
+### Added
+
+- Release operators can verify a first UIWitness npm publication from an immutable release tag only after every bootstrap attempt records fresh-token use, trusted-publisher setup, and cleanup within 30 minutes.
+
+### Changed
+
+- Normal OIDC releases now run the tag- and SHA-bound registry journey automatically, while bootstrap releases require the separate cleanup-gated verifier.
+- Registry proof now exercises the complete public `check` → promotion → `scan` → `open` journey from exact npm artifacts.
+- Packed-package smoke tests now reject legacy product identity outside the narrow `.statecraft/` evidence-read compatibility contract.
+
 ## [0.25.3.0] - 2026-08-31
 
 ### Added

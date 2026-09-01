@@ -153,19 +153,72 @@ async function assertInstalledPackage(packageRoot, contract, packageVersion) {
   );
 }
 
+const packedLegacyEvidenceFiles = new Set([
+  "uiwitness/README.md",
+  "uiwitness-core/README.md",
+  "uiwitness-core/dist/results.js",
+  "uiwitness-core/dist/results.js.map",
+  "uiwitness-report/README.md",
+  "uiwitness-report/dist/transform.js",
+  "uiwitness-report/dist/transform.js.map",
+  "uiwitness-runner-playwright/README.md",
+]);
+
+function decodeText(buffer) {
+  if (buffer.includes(0)) return undefined;
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function assertPackedBrandContract(nodeModulesRoot) {
+  for (const contract of RELEASE_PACKAGES) {
+    const packageRoot = path.join(nodeModulesRoot, contract.name);
+    for (const entry of await readdir(packageRoot, { recursive: true })) {
+      const filePath = path.join(packageRoot, entry);
+      const metadata = await lstat(filePath);
+      assert.equal(
+        metadata.isSymbolicLink(),
+        false,
+        `${contract.name}/${entry} must not be a symbolic link.`,
+      );
+      if (!metadata.isFile()) continue;
+      const contents = decodeText(await readFile(filePath));
+      if (contents === undefined || !/statecraft/iu.test(contents)) continue;
+      const packagePath = `${contract.name}/${entry.split(path.sep).join("/")}`;
+      assert.equal(
+        packedLegacyEvidenceFiles.has(packagePath),
+        true,
+        `${packagePath} packed a non-allowlisted legacy identity.`,
+      );
+      for (const line of contents.split("\n")) {
+        if (/statecraft/iu.test(line)) {
+          assert.match(
+            line,
+            /\.statecraft\//u,
+            `${packagePath} packed legacy product text outside the evidence-path compatibility contract.`,
+          );
+        }
+      }
+    }
+  }
+}
+
 export async function runReleasePackageSmoke({
   output,
   root = repositoryRoot,
 } = {}) {
   const { packageVersion } = await validateReleaseWorkspace({ root });
   const localRoot = output === undefined
-    ? await mkdtemp(path.join(os.tmpdir(), "statecraft-package-smoke-"))
+    ? await mkdtemp(path.join(os.tmpdir(), "uiwitness-package-smoke-"))
     : undefined;
   const packageOutput = output === undefined
     ? path.join(localRoot, "packages")
     : await createOutputDirectory(output);
   if (output === undefined) await mkdir(packageOutput, { mode: 0o700 });
-  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "statecraft-package-consumer-"));
+  const consumerRoot = await mkdtemp(path.join(os.tmpdir(), "uiwitness-package-consumer-"));
   let fixtureServer;
 
   try {
@@ -226,6 +279,7 @@ export async function runReleasePackageSmoke({
         packageVersion,
       );
     }
+    await assertPackedBrandContract(path.join(consumerRoot, "node_modules"));
 
     const importProbe = path.join(consumerRoot, "import-probe.mjs");
     await writeFile(

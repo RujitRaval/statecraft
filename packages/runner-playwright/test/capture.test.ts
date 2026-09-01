@@ -59,7 +59,7 @@ function captureCells(states: readonly string[]): readonly MatrixCell[] {
       routes: [
         {
           id: "capture",
-          path: "/capture?source=statecraft#panel",
+          path: "/capture?source=uiwitness#panel",
           states: states.map((id) => ({ id, setup: "./capture.mjs" })),
         },
       ],
@@ -92,7 +92,7 @@ function captureReason(
 
 describe("runCapturedScenarioCells", () => {
   it("captures viewport PNG bytes after readiness and then runs assertions", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     const events: string[] = [];
     Reflect.set(globalThis, eventKey, events);
 
@@ -123,9 +123,9 @@ describe("runCapturedScenarioCells", () => {
         },
         navigation: {
           requestedUrl:
-            "https://uiwitness.invalid/capture?source=statecraft#panel",
+            "https://uiwitness.invalid/capture?source=uiwitness#panel",
           status: 206,
-          url: "https://uiwitness.invalid/capture?source=statecraft#panel",
+          url: "https://uiwitness.invalid/capture?source=uiwitness#panel",
         },
       });
       expect(capture.durationMs).toBeGreaterThanOrEqual(0);
@@ -137,7 +137,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("sanitizes console and request diagnostics without failing them by default", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -169,7 +169,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("applies page-error and assertion failures while preserving evidence and continuing", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -231,7 +231,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("supports explicit diagnostic failure-policy overrides", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -262,7 +262,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("retains sanitized request evidence when navigation fails", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -336,7 +336,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("retains response metadata when a post-navigation hook fails", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -354,9 +354,9 @@ describe("runCapturedScenarioCells", () => {
       ]);
       expect(reason.evidence.navigation).toEqual({
         requestedUrl:
-          "https://uiwitness.invalid/capture?source=statecraft#panel",
+          "https://uiwitness.invalid/capture?source=uiwitness#panel",
         status: 206,
-        url: "https://uiwitness.invalid/capture?source=statecraft#panel",
+        url: "https://uiwitness.invalid/capture?source=uiwitness#panel",
       });
       expect(reason.evidence.diagnostics.navigationStatus).toBe(206);
       expect((reason.cause as Error).message).not.toContain("visible");
@@ -366,9 +366,9 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("retains redirect status without exposing a cross-origin URL", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     const redirectOriginKey = Symbol.for(
-      "statecraft.test.capture-redirect-origin",
+      "uiwitness.test.capture-redirect-origin",
     );
     const redirectServer = await localOrigin();
     Reflect.set(globalThis, eventKey, []);
@@ -395,7 +395,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("wraps route and scenario setup failures and continues", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
     const configured = captureCells(["clean-after"]);
     const invalidRoute = {
@@ -435,7 +435,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("caps noisy diagnostic categories and reports dropped entries", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -467,7 +467,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("caps failed requests before sanitizing later entries", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -485,7 +485,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("wraps unprintable assertion values without escaping the error contract", async () => {
-    const eventKey = Symbol.for("statecraft.test.capture-events");
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
     Reflect.set(globalThis, eventKey, []);
 
     try {
@@ -510,7 +510,7 @@ describe("runCapturedScenarioCells", () => {
   });
 
   it("reports an absent scenario assertion without inventing a failure", async () => {
-    const eventKey = Symbol.for("statecraft.test.navigation-events");
+    const eventKey = Symbol.for("uiwitness.test.navigation-events");
     Reflect.set(globalThis, eventKey, []);
     const cells = expandMatrix(
       parseConfig({

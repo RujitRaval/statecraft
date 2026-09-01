@@ -16,7 +16,7 @@ export interface CoverageMetric {
   readonly total: number;
 }
 
-/** Configured-execution coverage across Statecraft's four MVP dimensions. */
+/** Configured-execution coverage across UIWitness's four MVP dimensions. */
 export interface CoverageSummary {
   readonly execution: CoverageMetric;
   readonly responsive: CoverageMetric;

@@ -187,3 +187,29 @@ test("generated contracts use exact path templates and exact rename-record lines
   assert.deepEqual(contract.renameRecords[1].allowedLines, ["Migrate `<legacy-lower>` explicitly."]);
   validateBrandContract(contract);
 });
+
+test("release-ready generation promotes every reviewed exact-file rule out of the migration baseline", async (t) => {
+  const root = await makeFixture();
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await write(root, "README.md", `${oldTitle}\n`);
+  await write(root, "docs/designs/uiwitness-renaming.md", `Rename ${oldTitle} to UIWitness.\n`);
+  await write(root, "docs/engineering/UIWITNESS_RENAME_PLAN.md", `Migrate \`${oldLower}\` explicitly.\n`);
+
+  const contract = await createBrandContract({
+    releaseReady: true,
+    root,
+    trackedPaths: [
+      "README.md",
+      "docs/designs/uiwitness-renaming.md",
+      "docs/engineering/UIWITNESS_RENAME_PLAN.md",
+    ],
+  });
+
+  assert.deepEqual(contract.migrationBaseline, []);
+  assert.deepEqual(contract.permanentAllowlist, [
+    { path: "README.md", contentCounts: { title: 1 } },
+  ]);
+  assert.deepEqual(classifyBrandFindings([
+    { file: "README.md", line: 1, location: "content", matchedValue: oldTitle, variant: "title", lineText: oldTitle },
+  ], contract, { strict: true }), []);
+});

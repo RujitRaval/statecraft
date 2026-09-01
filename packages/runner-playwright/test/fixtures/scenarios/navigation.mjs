@@ -1,6 +1,6 @@
-const eventKey = Symbol.for("statecraft.test.navigation-events");
+const eventKey = Symbol.for("uiwitness.test.navigation-events");
 const redirectOriginKey = Symbol.for(
-  "statecraft.test.navigation-redirect-origin",
+  "uiwitness.test.navigation-redirect-origin",
 );
 const transparentPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZKMcAAAAASUVORK5CYII=",
@@ -42,7 +42,7 @@ function pageMarkup(stateId) {
           #animated { animation: pulse 2s infinite; transition: opacity 3s; }
         </style>
         <script>
-          globalThis.statecraftBoot = {
+          globalThis.uiwitnessBoot = {
             dark: matchMedia("(prefers-color-scheme: dark)").matches,
             reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
             theme: document.documentElement.dataset.theme,
@@ -84,7 +84,7 @@ export default {
         await new Promise((resolve) => setTimeout(resolve, 80));
         record(`font-response:${state.id}:${theme}`);
         await route.fulfill({
-          body: Buffer.from("statecraft delayed font fixture"),
+          body: Buffer.from("uiwitness delayed font fixture"),
           contentType: "font/woff2",
           status: 200,
         });
