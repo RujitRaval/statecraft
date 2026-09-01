@@ -4,6 +4,13 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.5.0] - 2026-09-01
+
+### Changed
+
+- Release operators and contributors can now see that the UIWitness external cutover is complete: the canonical repository, four public npm packages, protected trusted publishers, cleanup-gated registry proof, and legacy-package migration notices are all verified.
+- Release guidance now records the completed `v0.25.4` bootstrap and makes clear that normal releases use token-free OIDC publishing rather than repeating the bootstrap path.
+
 ## [0.25.4.0] - 2026-08-31
 
 ### Added
