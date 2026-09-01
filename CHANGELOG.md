@@ -4,6 +4,13 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.25.6.0] - 2026-09-01
+
+### Changed
+
+- Release guidance now records `v0.25.5` as the first normal post-bootstrap release to publish all four packages through token-free OIDC and automatically pass the registry-only eight-cell consumer journey.
+- Launch status now distinguishes the current public `0.25.5` release proof from the preserved historical `v0.25.4` bootstrap record.
+
 ## [0.25.5.0] - 2026-09-01
 
 ### Changed
