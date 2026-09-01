@@ -196,7 +196,7 @@ Before creating the implementation branch:
 
 If clearance or a required identifier fails, stop. Do not begin a partial rename.
 
-Decision recorded 2026-08-30: launch geography is the United States; `UIWitness` is approved; no custom domain or launch-critical social handle is required; the official USPTO wordmark search returned no live or dead exact `UIWitness` result; and the maintainer reports no private/direct users or compatibility promises. Public searches found no qualifying external-use evidence, so the migration path is `deprecation-only`. GitHub and npm are the canonical destinations. The GitHub repository rename remains deferred to the ordered external-cutover step after the implementation PR is green.
+Decision recorded 2026-08-30: launch geography is the United States; `UIWitness` is approved; no custom domain or launch-critical social handle is required; the official USPTO wordmark search returned no live or dead exact `UIWitness` result; and the maintainer reports no private/direct users or compatibility promises. Public searches found no qualifying external-use evidence, so the migration path is `deprecation-only`. GitHub and npm are the canonical destinations. The repository rename was sequenced after the green implementation merge and completed during the ordered external cutover recorded in Step 8.
 
 ### Step 1: Add the brand contract before the rename
 
@@ -573,7 +573,7 @@ No deferred TODO is created. The repository has no `TODOS.md`, and every necessa
   - Surfaced by: Architecture Review D3/D9 and release runbook.
   - Files: external GitHub/npm settings plus final repository metadata verification.
   - Verify: timestamps prove cleanup within 30 minutes even after failure; provenance, no remaining token or secret, exact latest versions, old-package message, external-user completion.
-- [x] **T9 (P1 conditional, NOT REQUIRED)**: Legacy bridge: Gate 0 found no qualifying external use, so create no forwarding wrappers, bridge workflow, bridge tag, or bridge release. Reopen only if qualifying evidence appears before cutover.
+- [x] **T9 (P1 conditional, NOT REQUIRED)**: Legacy bridge: Gate 0 found no qualifying external use, so no forwarding wrappers, bridge workflow, bridge tag, or bridge release were created. The cutover is complete; any future compatibility work requires a new evidence-backed roadmap decision.
   - Surfaced by: Architecture Review D8 and outside review.
   - Files: evidenced `packages/legacy-*` directories, lockfile, bridge checker/tests, `.github/workflows/release-legacy-bridge.yml`, migration guide.
   - Verify: isolated import/CLI smoke, exact `0.25.0` dependency forwarding, one warning, exit-status preservation, separate tag/environment, registry proof, end date exactly 90 days after announcement, and `0.25.1+` forward-fix procedure.

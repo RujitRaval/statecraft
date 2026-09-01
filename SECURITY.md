@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Before the external cutover, security fixes target the latest commit on `main`. After the first UIWitness publication, fixes target the latest published UIWitness release and `main`; older releases may not receive fixes.
+Security fixes target the latest published UIWitness release and `main`; older releases may not receive fixes.
 
 ## Reporting a vulnerability
 

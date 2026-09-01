@@ -53,7 +53,7 @@ Run Quick Check only against websites you own or have permission to test. The br
 
 ## Release proof
 
-After the distribution and external-cutover steps are complete, every UIWitness release finishes with the same consumer journey from an empty `npm init -y` project. The gate accepts both npm's implicit CommonJS manifest and npm 11's explicit `"type": "commonjs"` form, installs the exact release and pinned Playwright version from `https://registry.npmjs.org/`, starts a deterministic two-page authorized fixture, and runs:
+Every normal post-bootstrap UIWitness release finishes with the same consumer journey from an empty `npm init -y` project. The gate accepts both npm's implicit CommonJS manifest and npm 11's explicit `"type": "commonjs"` form, installs the exact release and pinned Playwright version from `https://registry.npmjs.org/`, starts a deterministic two-page authorized fixture, and runs:
 
 ```text
 check → check --write-config → scan → open
