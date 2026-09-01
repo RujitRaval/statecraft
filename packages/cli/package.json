@@ -59,8 +59,8 @@
     "uiwitness-runner-playwright": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "26.4.0",
-    "typescript": "7.0.2",
+    "@types/node": "22.20.1",
+    "typescript": "6.0.3",
     "vitest": "4.1.11"
   }
 }
