@@ -60,15 +60,15 @@ importers:
       playwright:
         specifier: 1.62.1
         version: 1.62.1
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
       uiwitness:
         specifier: workspace:*
         version: link:../../packages/cli
       uiwitness-core:
         specifier: workspace:*
         version: link:../../packages/core
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
       vitest:
         specifier: 4.1.11
         version: 4.1.11(@types/node@22.20.1)(vite@8.2.1(@types/node@22.20.1))
@@ -95,8 +95,8 @@ importers:
   packages/core:
     dependencies:
       zod:
-        specifier: 4.4.3
-        version: 4.4.3
+        specifier: 4.5.3
+        version: 4.5.3
     devDependencies:
       '@types/node':
         specifier: 22.20.1
@@ -1254,8 +1254,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.5.3:
+    resolution: {integrity: sha512-DVADDs2rc+nEbqt+Lsd1ESk6FokySOACfLuon6MNrLnFfE4EBdgb3DcXrnHmngIZBBdPz2PJMPBtgzaMIk59ZA==}
 
 snapshots:
 
@@ -2170,4 +2170,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.4.3: {}
+  zod@4.5.3: {}
