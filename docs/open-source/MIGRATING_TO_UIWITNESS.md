@@ -71,11 +71,11 @@ ls -la .statecraft
 
 ## Deprecation messages
 
-The migration is deprecation-only because no qualifying external users or compatibility promises were found. After the UIWitness registry journey passes, the old npm packages receive these exact messages:
+The migration is deprecation-only because no qualifying external users or compatibility promises were found. The UIWitness registry journey passed on 2026-09-01, and every version of the old npm packages now carries these exact messages:
 
 - `statecraft-ui has moved to uiwitness. Install uiwitness and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`
 - `statecraft-ui-core has moved to uiwitness-core. Install uiwitness-core and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`
 - `statecraft-ui-report has moved to uiwitness-report. Install uiwitness-report and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`
 - `statecraft-ui-runner-playwright has moved to uiwitness-runner-playwright. Install uiwitness-runner-playwright and migrate with https://github.com/RujitRaval/uiwitness/blob/main/docs/open-source/MIGRATING_TO_UIWITNESS.md`
 
-No compatibility bridge or support-end date applies. If verified external use appears before cutover, the approved rename plan requires a separately reviewed bounded bridge with an end date exactly 90 days after announcement.
+No compatibility bridge or support-end date applies. The cutover is complete; any future compatibility work requires a new evidence-backed roadmap decision.

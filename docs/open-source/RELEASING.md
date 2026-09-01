@@ -9,7 +9,7 @@ UIWitness publishes four npm packages from one verified GitHub Release:
 | `uiwitness-runner-playwright` | Playwright execution and local result persistence |
 | `uiwitness` | Public API and the `uiwitness` executable |
 
-These manifests and checks prepare all four names for the ordered external cutover. Until that cutover is complete, do not treat local package smoke or repository metadata as proof that the UIWitness packages are published, that the repository has been renamed, or that trusted publishers are configured.
+All four packages are public, the repository is `RujitRaval/uiwitness`, and npm trusted publishing is configured for the protected release workflow. Local package smoke remains a pre-publication gate; the live registry and protected release runs are the distribution proof.
 
 ## Version contract
 
@@ -46,7 +46,7 @@ corepack pnpm release:registry-public-url-smoke -- --version 0.24.11
 
 This creates another empty `npm init -y` consumer, accepts either an implicit CommonJS manifest or npm 11's explicit `"type": "commonjs"` form, installs exact packages from the explicit npmjs registry, and runs evidence-only `check` → `check --write-config` → untouched `scan` → `open` against a deterministic two-page loopback fixture. It validates eight screenshots, schema-v1 JSON, kinetic HTML, generated-source stability, and the installed report-opening command before removing the temporary project. Use the npm version that was just published; this gate cannot pass before that version exists on the registry. Transient install failures share one bounded ten-minute elapsed-time retry window. Each attempt forces online registry revalidation through its own temporary npm cache, while permanent failures stop immediately.
 
-## First publication bootstrap (pending external cutover)
+## First publication bootstrap (completed 2026-09-01)
 
 npm requires each package to exist before a trusted publisher can be configured. For the first release only:
 
@@ -90,7 +90,7 @@ The cleanup evidence has this shape. Package entries remain in dependency-first 
 }
 ```
 
-This bootstrap has not yet occurred for the UIWitness package identities. Run it only in the approved external-cutover step after the rename implementation and distribution gates are green. The previous package set's trusted-publisher configuration does not transfer to new npm package identities.
+The UIWitness bootstrap completed once at `v0.25.4` from commit `3fb14801174b9266da9ce018f088b04f60b6b152`. Release run `33503369173` published all four packages dependency-first. The protected `NPM_TOKEN` secret was deleted at `2026-09-01T11:50:54Z`; the bootstrap token was revoked and cleanup completed at `2026-09-01T11:58:11Z`, 17 minutes 5 seconds after workflow completion. Registry-only verification run `33505311010` then passed from immutable tag `v0.25.4`. Cleanup evidence remains outside source control. Do not repeat the bootstrap path for normal releases.
 
 The workflow configures token authentication only when that bootstrap secret exists. After bootstrap, GitHub's short-lived OIDC identity supplies publication authority through the workflow's `id-token: write` permission, with no token-style npm configuration present to suppress the OIDC exchange. No npm token should remain configured. The Environment approval remains a deliberate human gate for every registry publication. Normal OIDC releases automatically start the final tag/SHA-bound registry job; only bootstrap mode uses the cleanup-gated manual workflow.
 

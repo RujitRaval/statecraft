@@ -1,6 +1,6 @@
 # GitHub Actions
 
-This workflow template uses the `uiwitness` CLI package after the external cutover publishes it. Repository contributors can already run `corepack pnpm release:smoke` to exercise the complete built-CLI consumer gate against the fictional Northline example.
+This workflow template uses the published `uiwitness` CLI package. Repository contributors can also run `corepack pnpm release:smoke` to exercise the complete built-CLI consumer gate against the fictional Northline example.
 
 Add `uiwitness` and the documented exact Playwright version to the project's development dependencies and lock them in `package-lock.json`. Make sure `npm run build` plus `npm run start` produce and serve the application at `http://127.0.0.1:3000`. Adjust those two commands and the readiness URL for a different stack.
 
