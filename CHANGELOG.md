@@ -4,6 +4,19 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.2.0] - 2026-09-03
+
+### Added
+
+- Developers can now run `uiwitness guard` to execute the complete configured matrix once, compare that fresh evidence with the committed state contract, and receive stable success, contract-failure, or invalid-run exit codes.
+- Guard runs now publish a deterministic owner-private machine verdict with configuration, contract, and semantic-run digests; an optional `--json` path creates a no-clobber copy for CI consumers.
+- Failed executable findings now include an exact-coordinate headed replay command, backed by the new atomic `uiwitness scan --coordinate <route/state/viewport/theme>` selector.
+
+### Security
+
+- Guard config, contract, scenario, and verdict paths now stay beneath one canonical workspace and reject symbolic links, hard links, control characters, non-files, and unsafe output targets before browser launch.
+- Reproduction commands use the installed project binary and shell-safe POSIX or encoded Windows forms, avoiding registry drift and command interpretation from hostile local filenames.
+
 ## [0.26.1.0] - 2026-09-03
 
 ### Added

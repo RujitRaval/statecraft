@@ -6,9 +6,14 @@ import {
 } from "uiwitness-core";
 
 import { loadConfig } from "./config.js";
+import type { LoadedConfig } from "./config.js";
 
 /** Stable categories for expected scan-orchestration failures. */
-export type ScanErrorCode = "SCAN_ROUTE_NOT_FOUND";
+export type ScanErrorCode =
+  | "SCAN_COORDINATE_INVALID"
+  | "SCAN_COORDINATE_NOT_FOUND"
+  | "SCAN_ROUTE_NOT_FOUND"
+  | "SCAN_SELECTION_CONFLICT";
 
 /** An expected scan setup failure that callers can classify without parsing text. */
 export class ScanError extends Error {
@@ -25,6 +30,8 @@ export class ScanError extends Error {
 
 /** Inputs for one complete CLI-owned scan. */
 export interface ScanOptions {
+  /** Execute one exact route/state/viewport/theme coordinate. */
+  readonly coordinate?: string | undefined;
   /** Explicit config file. Relative paths resolve from `cwd`. */
   readonly configPath?: string | undefined;
   /** Project directory that receives `.uiwitness/`. */
@@ -43,6 +50,104 @@ export interface ScanResult {
   readonly reportPath: ".uiwitness/report/uiwitness.json";
 }
 
+interface ScanLoadedProjectOptions {
+  readonly coordinate?: string | undefined;
+  readonly headed?: boolean | undefined;
+  readonly projectDirectory: string;
+  readonly routeId?: string | undefined;
+}
+
+const coordinatePartPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+
+function coordinateFilter(coordinate: string): {
+  readonly routeId: string;
+  readonly stateId: string;
+  readonly theme: string;
+  readonly viewportId: string;
+} {
+  const parts = coordinate.split("/");
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !coordinatePartPattern.test(part))
+  ) {
+    throw new ScanError(
+      "SCAN_COORDINATE_INVALID",
+      "Coordinates must use route/state/viewport/theme with lowercase kebab-case IDs.",
+      coordinate,
+    );
+  }
+  return {
+    routeId: parts[0]!,
+    stateId: parts[1]!,
+    viewportId: parts[2]!,
+    theme: parts[3]!,
+  };
+}
+
+/** @internal Executes one already-loaded config without importing it again. */
+export async function scanLoadedProject(
+  loaded: LoadedConfig,
+  options: ScanLoadedProjectOptions,
+): Promise<ScanResult> {
+  if (options.coordinate !== undefined && options.routeId !== undefined) {
+    throw new ScanError(
+      "SCAN_SELECTION_CONFLICT",
+      "The --coordinate and --route selections cannot be combined.",
+      options.coordinate,
+    );
+  }
+  if (
+    options.routeId !== undefined &&
+    !loaded.config.routes.some((route) => route.id === options.routeId)
+  ) {
+    throw new ScanError(
+      "SCAN_ROUTE_NOT_FOUND",
+      `Configured route not found: ${options.routeId}`,
+      options.routeId,
+    );
+  }
+
+  const exact = options.coordinate === undefined
+    ? undefined
+    : coordinateFilter(options.coordinate);
+  const cells = expandMatrix(loaded.config, {
+    routeIds: exact === undefined
+      ? options.routeId === undefined ? undefined : [options.routeId]
+      : [exact.routeId],
+    stateIds: exact === undefined ? undefined : [exact.stateId],
+    themes: exact === undefined ? undefined : [exact.theme],
+    viewportIds: exact === undefined ? undefined : [exact.viewportId],
+  });
+  if (exact !== undefined && cells.length !== 1) {
+    throw new ScanError(
+      "SCAN_COORDINATE_NOT_FOUND",
+      `Configured coordinate not found: ${options.coordinate}`,
+      options.coordinate!,
+    );
+  }
+
+  const { runPersistedScenarioCells } = await import(
+    "uiwitness-runner-playwright"
+  );
+  const run = await runPersistedScenarioCells(cells, {
+    baseURL: loaded.config.baseURL,
+    ...(loaded.config.failOn === undefined
+      ? {}
+      : { failOn: loaded.config.failOn }),
+    ...(options.headed === true
+      ? { launchOptions: { headless: false } }
+      : {}),
+    projectDirectory: options.projectDirectory,
+    scenarioBaseDirectory: dirname(loaded.path),
+  });
+  return Object.freeze({
+    configPath: loaded.path,
+    htmlReportPath: run.htmlReportPath,
+    report: run.report,
+    reportPath: run.reportPath,
+  });
+}
+
 /**
  * Loads one trusted config, expands its selected matrix, executes every cell,
  * and persists deterministic screenshots plus schema-v1 JSON and offline HTML.
@@ -55,39 +160,10 @@ export async function scanProject(
     configPath: options.configPath,
     cwd: projectDirectory,
   });
-  if (
-    options.routeId !== undefined &&
-    !loaded.config.routes.some((route) => route.id === options.routeId)
-  ) {
-    throw new ScanError(
-      "SCAN_ROUTE_NOT_FOUND",
-      `Configured route not found: ${options.routeId}`,
-      options.routeId,
-    );
-  }
-
-  const cells = expandMatrix(loaded.config, {
-    routeIds:
-      options.routeId === undefined ? undefined : [options.routeId],
-  });
-  const { runPersistedScenarioCells } = await import(
-    "uiwitness-runner-playwright"
-  );
-  const run = await runPersistedScenarioCells(cells, {
-    baseURL: loaded.config.baseURL,
-    ...(loaded.config.failOn === undefined
-      ? {}
-      : { failOn: loaded.config.failOn }),
-    ...(options.headed === true
-      ? { launchOptions: { headless: false } }
-      : {}),
+  return scanLoadedProject(loaded, {
+    coordinate: options.coordinate,
+    headed: options.headed,
     projectDirectory,
-    scenarioBaseDirectory: dirname(loaded.path),
-  });
-  return Object.freeze({
-    configPath: loaded.path,
-    htmlReportPath: run.htmlReportPath,
-    report: run.report,
-    reportPath: run.reportPath,
+    routeId: options.routeId,
   });
 }

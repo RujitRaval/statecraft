@@ -75,6 +75,14 @@ UIWitness supports Node.js 22.20 or newer within the Node 22 LTS line, or Node.j
 
 `scan` exits `0` when all cells pass, `1` when completed cells expose product-state failures, and `2` for setup or configuration errors. A failing scan still writes its report whenever execution completed.
 
+Once a repository has a committed `uiwitness.contract.json`, guard every promised coordinate against one fresh complete run:
+
+```bash
+npx uiwitness guard
+```
+
+Guard exits `0` when the contract matches, `1` for regressions or unaccepted drift, and `2` when an invalid or incomplete run cannot prove the contract. It writes `.uiwitness/contract-verdict.json` and gives executable findings an exact headed `scan --coordinate route/state/viewport/theme` reproduction command. The [CLI API](docs/engineering/CLI_API.md) and [core API](docs/engineering/CORE_API.md) define the path, fingerprint, contract, digest, and verdict contracts.
+
 ## Configure a small, explicit matrix
 
 ```ts
@@ -129,6 +137,7 @@ Every completed scan writes a versioned report beneath `.uiwitness/`:
 ```text
 .uiwitness/
 ├── artifacts/        # deterministic PNG evidence
+├── contract-verdict.json # deterministic guard verdict
 └── report/
     ├── index.html    # self-contained interactive report
     └── uiwitness.json
@@ -158,7 +167,7 @@ All four packages publish from the protected GitHub Release workflow through npm
 ## Local-first architecture
 
 ```text
-configure → expand matrix → run isolated browser cells → persist evidence → inspect report
+configure → expand matrix → run isolated browser cells → compare contract → persist local evidence/verdict → inspect
 ```
 
 - No telemetry, hosted backend, database, account, cloud dependency, or required LLM.
@@ -188,7 +197,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, and the completed [public URL Quick Check](docs/designs/public-url-quick-check.md) with overwrite-safe promotion and a registry-only check → promotion → configured scan → open release gate. Potential follow-ups include launch feedback, Storybook and MSW helpers, richer assertions, accessibility metadata, PR summaries, and additional framework adapters. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first three slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, and machine verdicts. Proposal acceptance, unified generation persistence, contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

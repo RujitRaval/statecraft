@@ -89,16 +89,17 @@ const cliOptions: RunCliOptions = {
 };
 const cliResult: Promise<CliExitCode> = runCli(cliOptions);
 const scanOptions: ScanOptions = {
+  coordinate: "home/success/desktop/light",
   configPath: "./config/uiwitness.config.mjs",
   cwd: "/tmp/example",
   headed: false,
-  routeId: "home",
 };
 const scanResult: Promise<ScanResult> = scanProject(scanOptions);
 const htmlReportPath: Promise<".uiwitness/report/index.html"> = scanResult.then(
   (result) => result.htmlReportPath,
 );
 const scanCode: ScanErrorCode = "SCAN_ROUTE_NOT_FOUND";
+const coordinateCode: ScanErrorCode = "SCAN_COORDINATE_NOT_FOUND";
 const scanError: Error = new ScanError(scanCode, "Route missing.", "missing");
 const typedConfig = defineConfig({
   baseURL: "http://localhost:3000",
@@ -127,6 +128,7 @@ void cliResult;
 void scanResult;
 void htmlReportPath;
 void scanError;
+void coordinateCode;
 void typedConfig;
 
 discoverConfig({

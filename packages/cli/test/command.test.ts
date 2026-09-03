@@ -9,10 +9,16 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { parseReport } from "uiwitness-core";
+import {
+  parseReport,
+  type ContractComparisonResult,
+  type JsonValue,
+  type Sha256Digest,
+} from "uiwitness-core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { CheckOptions, CheckResult } from "../src/check.js";
+import type { GuardOptions, GuardResult } from "../src/guard.js";
 import type { ScanOptions, ScanResult } from "../src/scan.js";
 import type {
   OpenReportOptions,
@@ -29,6 +35,10 @@ const scanProjectMock = vi.hoisted(() =>
 
 const checkPublicSiteMock = vi.hoisted(() =>
   vi.fn<(options: CheckOptions) => Promise<CheckResult>>(),
+);
+
+const guardProjectMock = vi.hoisted(() =>
+  vi.fn<(options?: GuardOptions) => Promise<GuardResult>>(),
 );
 
 vi.mock("../src/init.js", async (importOriginal) => {
@@ -58,12 +68,17 @@ vi.mock("../src/check.js", async (importOriginal) => {
   return { ...original, checkPublicSite: checkPublicSiteMock };
 });
 
+vi.mock("../src/guard.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/guard.js")>();
+  return { ...original, guardProject: guardProjectMock };
+});
+
 vi.mock("../src/open.js", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/open.js")>();
   return { ...original, openReport: openReportMock };
 });
 
-import { runCli } from "../src/command.js";
+import { formatGuardSummary, runCli } from "../src/command.js";
 
 const temporaryProjects: string[] = [];
 
@@ -84,6 +99,7 @@ function credentialedCheckUrl(): string {
 
 afterEach(async () => {
   checkPublicSiteMock.mockReset();
+  guardProjectMock.mockReset();
   openReportMock.mockReset();
   scanProjectMock.mockReset();
   await Promise.all(
@@ -130,7 +146,7 @@ function completedScan(
       ],
       generatedAt: "2026-08-20T18:00:00.000Z",
       project: { baseURL: "https://example.test" },
-      schemaVersion: 1,
+      schemaVersion: 1 as const,
       summary: {
         coverage: {
           execution: { covered, percentage: covered * 100, total: 1 },
@@ -272,6 +288,56 @@ function completedCheck(
           }),
         }
       : {}),
+  });
+}
+
+const digest = `sha256:${"0".repeat(64)}` as Sha256Digest;
+
+function completedGuard(
+  verdict: ContractComparisonResult["verdict"],
+): GuardResult {
+  const scan = completedScan(verdict === "passed" ? "passed" : "failed");
+  const findings: ContractComparisonResult["findings"] = verdict === "error"
+    ? [{ id: null, kind: "run-error", reasons: ["declared-incomplete"] }]
+    : verdict === "passed"
+      ? [{
+          actual: { status: "passed" },
+          expected: { status: "passed" },
+          id: "dashboard/success/desktop/light",
+          kind: "matched",
+        }]
+      : [{
+          actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+          expected: { status: "passed" },
+          id: "dashboard/success/desktop/light",
+          kind: "regression",
+        }];
+  const comparison: ContractComparisonResult = {
+    complete: verdict !== "error",
+    configDigest: digest,
+    contractDigest: digest,
+    evaluatedOn: "2026-09-03",
+    findings,
+    verdict,
+  };
+  return Object.freeze({
+    comparison,
+    configPath: "/project/custom.mjs",
+    contractPath: "/project/custom.contract.json",
+    explicitVerdictPath: "artifacts/verdict.json",
+    machineVerdict: {
+      ...comparison,
+      findings: findings.map((finding) => finding.kind === "regression"
+        ? {
+            ...finding,
+            reproduce: "./node_modules/.bin/uiwitness scan --coordinate dashboard/success/desktop/light --headed --config custom.mjs",
+          }
+        : finding) as unknown as readonly JsonValue[],
+      runDigest: digest,
+      schemaVersion: 1 as const,
+    },
+    report: scan.report,
+    verdictPath: ".uiwitness/contract-verdict.json",
   });
 }
 
@@ -670,6 +736,126 @@ All 1 execution passed.
     expect(stderr.messages).toEqual([]);
   });
 
+  it("parses an exact scan coordinate", async () => {
+    scanProjectMock.mockResolvedValue(completedScan("passed"));
+
+    await expect(
+      runCli({
+        args: [
+          "scan",
+          "--coordinate",
+          "dashboard/success/desktop/light",
+          "--headed",
+        ],
+        cwd: "/project",
+      }),
+    ).resolves.toBe(0);
+    expect(scanProjectMock).toHaveBeenCalledWith({
+      coordinate: "dashboard/success/desktop/light",
+      configPath: undefined,
+      cwd: "/project",
+      headed: true,
+      routeId: undefined,
+    });
+  });
+
+  it("returns stable guard verdict exit codes and prints reproduction commands", async () => {
+    const stdout = outputCapture();
+    guardProjectMock.mockResolvedValueOnce(completedGuard("passed"));
+
+    await expect(
+      runCli({
+        args: [
+          "guard",
+          "--config",
+          "custom.mjs",
+          "--contract",
+          "custom.contract.json",
+          "--json",
+          "artifacts/verdict.json",
+        ],
+        cwd: "/project",
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(0);
+    expect(guardProjectMock).toHaveBeenLastCalledWith({
+      configPath: "custom.mjs",
+      contractPath: "custom.contract.json",
+      cwd: "/project",
+      jsonPath: "artifacts/verdict.json",
+    });
+    expect(stdout.messages.join("")).toContain("Verdict: PROMISE KEPT");
+    expect(stdout.messages.join("")).toContain(
+      "JSON copy: artifacts/verdict.json",
+    );
+
+    stdout.messages.length = 0;
+    guardProjectMock.mockResolvedValueOnce(completedGuard("failed"));
+    await expect(
+      runCli({ args: ["guard"], stdout: stdout.write }),
+    ).resolves.toBe(1);
+    expect(stdout.messages.join("")).toContain("Verdict: CONTRACT FAILED");
+    expect(stdout.messages.join("")).toContain(
+      "./node_modules/.bin/uiwitness scan --coordinate dashboard/success/desktop/light --headed --config custom.mjs",
+    );
+
+    stdout.messages.length = 0;
+    guardProjectMock.mockResolvedValueOnce(completedGuard("error"));
+    await expect(
+      runCli({ args: ["guard"], stdout: stdout.write }),
+    ).resolves.toBe(2);
+    expect(stdout.messages.join("")).toContain("Verdict: RUN INVALID");
+  });
+
+  it("caps terminal guard findings at 20 and reports the omitted count", () => {
+    const base = completedGuard("passed");
+    const findings = Array.from({ length: 21 }, (_, index) => ({
+      actual: { status: "passed" as const },
+      expected: { status: "passed" as const },
+      id: `route-${index}/success/desktop/light`,
+      kind: "matched" as const,
+    }));
+    const result: GuardResult = {
+      ...base,
+      comparison: { ...base.comparison, findings },
+      machineVerdict: {
+        ...base.machineVerdict,
+        findings: findings as unknown as readonly JsonValue[],
+      },
+    };
+
+    const summary = formatGuardSummary(result);
+    expect(summary.match(/^✓ /gmu)).toHaveLength(20);
+    expect(summary).toContain("… 1 finding omitted; see the machine verdict.");
+  });
+
+  it("prints expected guard failures without exposing unexpected errors", async () => {
+    const stderr = outputCapture();
+    const { GuardError } = await import("../src/guard.js");
+    guardProjectMock.mockRejectedValueOnce(
+      new GuardError(
+        "GUARD_CONTRACT_NOT_FOUND",
+        "Contract\nwas not found.\u001b[2J",
+      ),
+    );
+
+    await expect(
+      runCli({ args: ["guard"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "Contract\\nwas not found.\\u{001b}[2J\n",
+    );
+
+    stderr.messages.length = 0;
+    guardProjectMock.mockRejectedValueOnce(new Error("secret internal detail"));
+    await expect(
+      runCli({ args: ["guard"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "UIWitness guard failed unexpectedly.\n",
+    );
+  });
+
   it("returns exit code 1 and prints failures after a completed scan", async () => {
     const stdout = outputCapture();
     scanProjectMock.mockResolvedValue(completedScan("failed"));
@@ -737,6 +923,9 @@ All 1 execution passed.
     [["scan", "--headed", "--headed"], "The --headed option can be specified only once."],
     [["scan", "--config", "a", "--config", "b"], "The --config option can be specified only once."],
     [["scan", "--route", "a", "--route", "b"], "The --route option can be specified only once."],
+    [["scan", "--coordinate"], "The --coordinate option requires a value."],
+    [["scan", "--coordinate", "a", "--coordinate", "b"], "The --coordinate option can be specified only once."],
+    [["scan", "--route", "a", "--coordinate", "a/b/c/d"], "The --coordinate and --route options cannot be combined."],
     [["scan", "--unknown"], "Unknown scan option: --unknown"],
     [["scan", "positional"], "Unknown scan option: positional"],
   ] as const)("rejects invalid scan arguments %#", async (args, message) => {
@@ -745,5 +934,21 @@ All 1 execution passed.
     await expect(runCli({ args, stderr: stderr.write })).resolves.toBe(2);
     expect(stderr.messages.join("")).toContain(message);
     expect(scanProjectMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [["guard", "--config"], "The --config option requires a value."],
+    [["guard", "--contract", "--json"], "The --contract option requires a value."],
+    [["guard", "--json", "a", "--json", "b"], "The --json option can be specified only once."],
+    [["guard", "--config", "a", "--config", "b"], "The --config option can be specified only once."],
+    [["guard", "--contract", "a", "--contract", "b"], "The --contract option can be specified only once."],
+    [["guard", "--headed"], "Unknown guard option: --headed"],
+    [["guard", "positional"], "Unknown guard option: positional"],
+  ] as const)("rejects invalid guard arguments %#", async (args, message) => {
+    const stderr = outputCapture();
+
+    await expect(runCli({ args, stderr: stderr.write })).resolves.toBe(2);
+    expect(stderr.messages.join("")).toContain(message);
+    expect(guardProjectMock).not.toHaveBeenCalled();
   });
 });
