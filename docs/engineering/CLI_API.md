@@ -1,13 +1,14 @@
 # CLI API
 
-`uiwitness` exposes zero-config public-site checking, deterministic config loading, and executable `init`, `scan`, and `open` workflows. Check composes bounded runner discovery, fixed public-site evidence, and the report-generation contracts. Scan composes the core planner and configured runner. Open launches the generated offline HTML report; report transformation and rendering stay owned by `uiwitness-report`.
+`uiwitness` exposes zero-config public-site checking, deterministic config loading, and executable `init`, `scan`, `guard`, and `open` workflows. Check composes bounded runner discovery, fixed public-site evidence, and the report-generation contracts. Scan composes the core planner and configured runner. Guard compares one complete fresh run with a committed state contract. Open launches the generated offline HTML report; report transformation and rendering stay owned by `uiwitness-report`.
 
 ## Executable
 
 ```bash
 uiwitness init
 uiwitness check <url> [--max-pages <1-20>] [--headed] [--write-config]
-uiwitness scan [--config <path>] [--route <id>] [--headed]
+uiwitness scan [--config <path>] [--route <id> | --coordinate <route/state/viewport/theme>] [--headed]
+uiwitness guard [--config <path>] [--contract <path>] [--json <path>]
 uiwitness open
 uiwitness --help
 ```
@@ -23,7 +24,7 @@ The config imports `defineConfig` from the installed `uiwitness` package and dec
 
 No force flag exists. Before writing, initialization checks every supported default config name, the generated scenario, and every directory boundary. Any existing config, an existing scenario, or a symbolic-link starter directory produces exit code `2`. Files use exclusive creation, the config is published last, and alternate config names are rechecked before success is reported. Failure recovery never deletes a path, because a concurrent process could have replaced a newly created file; write failures list the affected targets for inspection before retrying.
 
-Missing or unsupported commands, malformed check/scan options, extra `init` or `open` arguments, invalid public URLs, discovery/config errors, unknown route IDs, absent/invalid HTML reports, launcher failures, and run-level failures return `2`. Help, successful opens, and all-pass checks/scans return `0`. A completed check or scan containing failed cells returns `1` after persisting its report.
+Missing or unsupported commands, malformed check/scan/guard options, extra `init` or `open` arguments, invalid public URLs, discovery/config/contract errors, unknown route IDs or coordinates, unsafe guard paths, absent/invalid HTML reports, launcher failures, and run-level failures return `2`. Help, successful opens, all-pass checks/scans, and matching complete guards return `0`. A completed check or scan containing failed cells returns `1` after persisting its report; a complete guard with contract failures or unaccepted drift also returns `1`.
 
 ## Programmatic command, check, init, scan, and open API
 
@@ -56,7 +57,11 @@ With `writeConfig: true`, it preflights all supported config names, the public s
 
 Generated scenarios import `publicSiteScenario` from the documented `uiwitness/public-site-scenario` subpath. This narrow helper retains the runner-owned public assertions without adding Playwright types to the main CLI API or eagerly loading the runner when consumers import `uiwitness`.
 
-`scanProject` loads and validates config, verifies an optional exact `routeId`, expands the selected matrix, resolves scenarios relative to the selected config, and persists deterministic output beneath the selected `cwd`. `headed: true` forwards `{ headless: false }` to Playwright. The runner publishes PNG, schema-v1 JSON, and offline HTML as one coordinated output set. `scanProject` returns the canonical config path, validated report, stable `.uiwitness/report/uiwitness.json` machine-readable path, and `.uiwitness/report/index.html` `htmlReportPath`. An unknown route raises `ScanError` with `SCAN_ROUTE_NOT_FOUND` before output creation; unexpected runner or filesystem details remain hidden behind CLI exit code `2`.
+`scanProject` loads and validates config, verifies an optional exact `routeId` or atomic `route/state/viewport/theme` `coordinate`, expands the selected matrix, resolves scenarios relative to the selected config, and persists deterministic output beneath the selected `cwd`. The two selectors are mutually exclusive, and an exact coordinate must expand to one cell. `headed: true` forwards `{ headless: false }` to Playwright. The runner publishes PNG, schema-v1 JSON, and offline HTML as one coordinated output set. `scanProject` returns the canonical config path, validated report, stable `.uiwitness/report/uiwitness.json` machine-readable path, and `.uiwitness/report/index.html` `htmlReportPath`. Unknown or malformed selection raises a stable `ScanError` before browser launch; unexpected runner or filesystem details remain hidden behind CLI exit code `2`.
+
+`guard` remains an executable, process-based orchestration surface rather than a new public TypeScript export. Its workspace is the canonical invocation directory and, unlike ordinary config discovery, it does not search parents or permit paths outside that root. It validates the config, default or explicit contract, all scenario real paths, and default/explicit verdict paths before browser launch. Symbolic-link boundaries and non-files are refused. The default contract path is `uiwitness.contract.json`; the default verdict sidecar is `.uiwitness/contract-verdict.json`. An explicit `--json` copy uses exclusive no-clobber creation.
+
+The v1 coordinate fingerprint hashes only the documented route/state/viewport/theme identity, sanitized route path, canonical workspace-relative scenario path, width, height, and effective diagnostic failure booleans. The run digest hashes the canonical semantic report projection while excluding timestamps, durations, base URL, host paths, evidence bytes, and mtimes. Guard compares only the report returned by the same complete unfiltered run. Its canonical verdict contains schema version, completeness, evaluated UTC date, contract/config/run digests, overall verdict, message-free findings, and shell-safe exact-coordinate reproduction commands for executable findings. The default verdict is safely replaced; unifying it with the runner's report/evidence publication is intentionally reserved for the approved atomic-generation task.
 
 The terminal summary is derived from report metadata, groups cells by route, prints each state/viewport/theme result and failure messages, then prints execution coverage, HTML report path, and aggregate pass/fail totals. It never parses artifact filenames for metadata.
 

@@ -1,6 +1,10 @@
 import { relative } from "node:path";
 
-import { ConfigValidationError } from "uiwitness-core";
+import {
+  ConfigValidationError,
+  ContractValidationError,
+  ResultValidationError,
+} from "uiwitness-core";
 
 import {
   CheckError,
@@ -12,6 +16,11 @@ import {
   ConfigLoadError,
 } from "./config.js";
 import { InitError, initProject } from "./init.js";
+import {
+  GuardError,
+  guardProject,
+  type GuardResult,
+} from "./guard.js";
 import { OpenReportError, openReport } from "./open.js";
 import { ScanError, scanProject, type ScanResult } from "./scan.js";
 
@@ -20,7 +29,8 @@ const HELP = `UIWitness
 Usage:
   uiwitness init
   uiwitness check <url> [--max-pages <1-20>] [--headed] [--write-config]
-  uiwitness scan [--config <path>] [--route <id>] [--headed]
+  uiwitness scan [--config <path>] [--route <id> | --coordinate <route/state/viewport/theme>] [--headed]
+  uiwitness guard [--config <path>] [--contract <path>] [--json <path>]
   uiwitness open
   uiwitness --help
 
@@ -28,11 +38,14 @@ Commands:
   init  Create a starter config and scenario without overwriting files
   check Discover and inspect a public site without configuration
   scan  Execute configured UI states and persist screenshots, JSON, and HTML
+  guard Run the complete matrix and compare it with the committed state contract
   open  Open the latest generated offline HTML report
 
 Safety:
   Check only websites you own or are authorized to test.
 `;
+
+const maximumGuardTerminalFindings = 20;
 
 /** Stable process outcomes exposed by the current command foundation. */
 export type CliExitCode = 0 | 1 | 2;
@@ -51,9 +64,16 @@ function displayPath(projectRoot: string, path: string): string {
 }
 
 interface ParsedScanArguments {
+  readonly coordinate?: string | undefined;
   readonly configPath?: string | undefined;
   readonly headed: boolean;
   readonly routeId?: string | undefined;
+}
+
+interface ParsedGuardArguments {
+  readonly configPath?: string | undefined;
+  readonly contractPath?: string | undefined;
+  readonly jsonPath?: string | undefined;
 }
 
 interface ParsedCheckArguments {
@@ -91,6 +111,7 @@ function parseScanArguments(
   args: readonly string[],
 ): ParsedScanArguments | string {
   let configPath: string | undefined;
+  let coordinate: string | undefined;
   let headed = false;
   let routeId: string | undefined;
 
@@ -103,7 +124,11 @@ function parseScanArguments(
       headed = true;
       continue;
     }
-    if (argument === "--config" || argument === "--route") {
+    if (
+      argument === "--config" ||
+      argument === "--coordinate" ||
+      argument === "--route"
+    ) {
       const value = args[index + 1];
       if (value === undefined || value.startsWith("--")) {
         return `The ${argument} option requires a value.`;
@@ -113,6 +138,11 @@ function parseScanArguments(
           return "The --config option can be specified only once.";
         }
         configPath = value;
+      } else if (argument === "--coordinate") {
+        if (coordinate !== undefined) {
+          return "The --coordinate option can be specified only once.";
+        }
+        coordinate = value;
       } else {
         if (routeId !== undefined) {
           return "The --route option can be specified only once.";
@@ -125,7 +155,52 @@ function parseScanArguments(
     return `Unknown scan option: ${argument}`;
   }
 
-  return Object.freeze({ configPath, headed, routeId });
+  if (coordinate !== undefined && routeId !== undefined) {
+    return "The --coordinate and --route options cannot be combined.";
+  }
+
+  return Object.freeze({ configPath, coordinate, headed, routeId });
+}
+
+function parseGuardArguments(
+  args: readonly string[],
+): ParsedGuardArguments | string {
+  let configPath: string | undefined;
+  let contractPath: string | undefined;
+  let jsonPath: string | undefined;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]!;
+    if (
+      argument !== "--config" &&
+      argument !== "--contract" &&
+      argument !== "--json"
+    ) {
+      return `Unknown guard option: ${argument}`;
+    }
+    const value = args[index + 1];
+    if (value === undefined || value.startsWith("--")) {
+      return `The ${argument} option requires a value.`;
+    }
+    if (argument === "--config") {
+      if (configPath !== undefined) {
+        return "The --config option can be specified only once.";
+      }
+      configPath = value;
+    } else if (argument === "--contract") {
+      if (contractPath !== undefined) {
+        return "The --contract option can be specified only once.";
+      }
+      contractPath = value;
+    } else {
+      if (jsonPath !== undefined) {
+        return "The --json option can be specified only once.";
+      }
+      jsonPath = value;
+    }
+    index += 1;
+  }
+  return Object.freeze({ configPath, contractPath, jsonPath });
 }
 
 function parseCheckArguments(
@@ -319,6 +394,67 @@ export function formatCheckSummary(result: CheckResult): string {
   return `${lines.join("\n")}\n`;
 }
 
+/** Formats one contract comparison without exposing captured diagnostics. */
+export function formatGuardSummary(result: GuardResult): string {
+  const labels = {
+    error: "RUN INVALID",
+    failed: "CONTRACT FAILED",
+    passed: "PROMISE KEPT",
+  } as const;
+  const lines = [
+    "UIWitness Contract Guard",
+    "",
+    `Verdict: ${labels[result.comparison.verdict]}`,
+    `Evaluated: ${result.comparison.evaluatedOn} UTC`,
+  ];
+  const visibleFindings = result.comparison.findings.slice(
+    0,
+    maximumGuardTerminalFindings,
+  );
+  for (const [index, finding] of visibleFindings.entries()) {
+    const marker = finding.kind === "matched" ||
+      finding.kind === "matched-known-failure"
+      ? "✓"
+      : finding.kind === "run-error" ? "!" : "✗";
+    lines.push(
+      `${marker} ${terminalText(finding.id ?? "run")} · ${finding.kind.toUpperCase()}`,
+    );
+    const machineFinding = result.machineVerdict.findings[index];
+    const reproduce = machineFinding !== null &&
+        typeof machineFinding === "object" &&
+        !Array.isArray(machineFinding)
+      ? (machineFinding as Readonly<Record<string, unknown>>)["reproduce"]
+      : undefined;
+    if (
+      typeof reproduce === "string"
+    ) {
+      lines.push(`    Reproduce: ${terminalText(reproduce)}`);
+    }
+  }
+  if (result.comparison.findings.length > visibleFindings.length) {
+    const omitted = result.comparison.findings.length - visibleFindings.length;
+    lines.push(
+      `… ${quantity(omitted, "finding")} omitted; see the machine verdict.`,
+    );
+  }
+  lines.push(
+    "",
+    `Findings: ${result.comparison.findings.length}`,
+    `Verdict JSON: ${result.verdictPath}`,
+  );
+  if (result.explicitVerdictPath !== undefined) {
+    lines.push(`JSON copy: ${terminalText(result.explicitVerdictPath)}`);
+  }
+  lines.push(
+    result.comparison.verdict === "passed"
+      ? "The complete configured state contract matched."
+      : result.comparison.verdict === "failed"
+        ? "The complete run found contract failures or unaccepted drift."
+        : "The run was incomplete and cannot prove the contract.",
+  );
+  return `${lines.join("\n")}\n`;
+}
+
 function expectedScanError(error: unknown): string | undefined {
   if (
     error instanceof ConfigDiscoveryError ||
@@ -327,16 +463,36 @@ function expectedScanError(error: unknown): string | undefined {
   ) {
     return terminalText(error.message);
   }
-  if (error instanceof ConfigValidationError) {
-    return [
-      error.message,
-      ...error.issues.map(
-        (issue) =>
-          `  ${terminalText(issue.path)}: ${terminalText(issue.message)} (${issue.code})`,
-      ),
-    ].join("\n");
+  return validationError(error);
+}
+
+function validationError(error: unknown): string | undefined {
+  if (
+    !(error instanceof ConfigValidationError) &&
+    !(error instanceof ContractValidationError) &&
+    !(error instanceof ResultValidationError)
+  ) {
+    return undefined;
   }
-  return undefined;
+  return [
+    error.message,
+    ...error.issues.map(
+      (issue) =>
+        `  ${terminalText(issue.path)}: ${terminalText(issue.message)} (${issue.code})`,
+    ),
+  ].join("\n");
+}
+
+function expectedGuardError(error: unknown): string | undefined {
+  if (
+    error instanceof GuardError ||
+    error instanceof ConfigDiscoveryError ||
+    error instanceof ConfigLoadError ||
+    error instanceof ScanError
+  ) {
+    return terminalText(error.message);
+  }
+  return validationError(error);
 }
 
 /** Parses and executes the currently supported UIWitness command. */
@@ -363,6 +519,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
   if (
     args[0] !== "init" &&
     args[0] !== "check" &&
+    args[0] !== "guard" &&
     args[0] !== "scan" &&
     args[0] !== "open"
   ) {
@@ -392,6 +549,24 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
       } else {
         stderr("UIWitness check failed unexpectedly.\n");
       }
+      return 2;
+    }
+  }
+
+  if (args[0] === "guard") {
+    const parsed = parseGuardArguments(args.slice(1));
+    if (typeof parsed === "string") {
+      stderr(`${terminalText(parsed)}\n\n${HELP}`);
+      return 2;
+    }
+    try {
+      const result = await guardProject({ cwd: options.cwd, ...parsed });
+      stdout(formatGuardSummary(result));
+      return result.comparison.verdict === "passed"
+        ? 0
+        : result.comparison.verdict === "failed" ? 1 : 2;
+    } catch (error: unknown) {
+      stderr(`${expectedGuardError(error) ?? "UIWitness guard failed unexpectedly."}\n`);
       return 2;
     }
   }

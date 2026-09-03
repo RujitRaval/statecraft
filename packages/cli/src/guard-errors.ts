@@ -1,0 +1,28 @@
+/** Stable categories for expected State Contract Guard failures. */
+export type GuardErrorCode =
+  | "GUARD_CONFIG_PATH_INVALID"
+  | "GUARD_CONTRACT_NOT_FOUND"
+  | "GUARD_CONTRACT_PATH_INVALID"
+  | "GUARD_JSON_EXISTS"
+  | "GUARD_JSON_PATH_INVALID"
+  | "GUARD_JSON_WRITE_FAILED"
+  | "GUARD_SCENARIO_PATH_INVALID"
+  | "GUARD_WORKSPACE_INVALID";
+
+/** An expected guard setup or safe-publication failure. */
+export class GuardError extends Error {
+  readonly code: GuardErrorCode;
+  readonly path: string | undefined;
+
+  constructor(
+    code: GuardErrorCode,
+    message: string,
+    path?: string,
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = "GuardError";
+    this.code = code;
+    this.path = path;
+  }
+}

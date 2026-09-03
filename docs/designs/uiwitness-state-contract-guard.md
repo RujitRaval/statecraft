@@ -965,7 +965,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: Sections 2 and 4 — every contract/config/execution combination needs exact precedence, eligible code sets, recovery, and 30-day expiry.
   - Files: `packages/core/src/contract-comparison.ts`, `packages/core/src/contract-verdict.ts`, focused fixtures/tests.
   - Verify: truth-table/precedence suite and injected UTC boundary cases.
-- [ ] **T3 (P1, human: ~2 days / Codex: ~3h)** — CLI — Add `guard`, exact-coordinate reproduction, and machine verdicts
+- [x] **T3 (P1, human: ~2 days / Codex: ~3h)** — CLI — Add `guard`, exact-coordinate reproduction, and machine verdicts
   - Surfaced by: D9–D10 and Section 4 — same-run full comparison, stable `0/1/2`, exact commands, and complete local JSON are the primary product loop.
   - Files: `packages/cli/src/command.ts`, new guard modules, CLI tests, public API docs.
   - Verify: pass/regression/drift/incomplete fixtures and shell-safe commands on supported platforms.

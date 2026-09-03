@@ -15,6 +15,12 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
+import {
+  canonicalJsonDigest,
+  contractConfigDigest,
+  type ContractConfigurationCoordinate,
+  type UIWitnessContract,
+} from "uiwitness-core";
 import { describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
@@ -233,7 +239,14 @@ describe("uiwitness package boundary", () => {
       await expect(
         execFileAsync(
           process.execPath,
-          [binPath, "scan", "--config", "scan.config.mjs", "--route", "home"],
+          [
+            binPath,
+            "scan",
+            "--config",
+            "scan.config.mjs",
+            "--coordinate",
+            "home/success/compact/light",
+          ],
           { cwd: project },
         ),
       ).resolves.toMatchObject({
@@ -246,6 +259,56 @@ describe("uiwitness package boundary", () => {
       await expect(
         readFile(join(project, ".uiwitness", "report", "index.html"), "utf8"),
       ).resolves.toContain("UI State Coverage Report");
+
+      const coordinate: ContractConfigurationCoordinate = {
+        configFingerprint: canonicalJsonDigest({
+          consoleError: false,
+          failedRequest: false,
+          height: 240,
+          pageError: true,
+          routeId: "home",
+          routePath: "/",
+          scenarioSource: "./scan-scenario.mjs",
+          stateId: "success",
+          theme: "light",
+          viewportId: "compact",
+          width: 320,
+        }),
+        id: "home/success/compact/light",
+        routeId: "home",
+        routePath: "/",
+        scenarioSource: "./scan-scenario.mjs",
+        stateId: "success",
+        theme: "light",
+        viewport: { height: 240, width: 320 },
+        viewportId: "compact",
+      };
+      const contract: UIWitnessContract = {
+        configDigest: contractConfigDigest([coordinate]),
+        coordinates: [{ ...coordinate, expected: { status: "passed" } }],
+        schemaVersion: 1,
+      };
+      await writeFile(
+        join(project, "uiwitness.contract.json"),
+        `${JSON.stringify(contract, null, 2)}\n`,
+        "utf8",
+      );
+      await expect(
+        execFileAsync(
+          process.execPath,
+          [binPath, "guard", "--config", "scan.config.mjs"],
+          { cwd: project },
+        ),
+      ).resolves.toMatchObject({
+        stderr: "",
+        stdout: expect.stringContaining("Verdict: PROMISE KEPT"),
+      });
+      await expect(
+        readFile(
+          join(project, ".uiwitness", "contract-verdict.json"),
+          "utf8",
+        ),
+      ).resolves.toContain('"verdict":"passed"');
 
       await expect(
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),

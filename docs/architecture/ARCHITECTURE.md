@@ -1,7 +1,7 @@
 # Architecture
 
 ## Flow
-`CLI -> core validation/matrix -> Playwright runner -> report renderer -> coordinated PNG + JSON + HTML publication`
+`CLI -> config/contract validation -> core matrix/comparison -> Playwright runner -> report renderer -> coordinated evidence + machine-verdict publication`
 
 ## Monorepo
 ```text
@@ -55,6 +55,8 @@ Phase 5 scan integration returns the runner's coordinated output directly. `Scan
 The public URL orchestration slice adds `uiwitness check <url>` and `checkPublicSite`. It snapshots the invocation root, composes bounded same-origin discovery with the runner-owned fixed public-site matrix, and returns discovery metadata beside the existing validated report contract. Headed mode is forwarded to both browser stages; the page budget belongs only to discovery. The terminal layer validates one credential-free HTTP(S) URL and options before browser launch, groups report executions by route pathname, omits diagnostic payloads, and reuses exit codes `0`/`1`/`2` for all-pass/completed-failure/run-error outcomes.
 
 The promotion slice adds explicit `--write-config`/`writeConfig`. It extracts the initializer's exclusive config-last publisher, preflights every supported config name plus the generated scenario and real directory boundaries before the runner is imported, and publishes only after the coordinated evidence run completes. The generated config preserves discovery order and runner route identities, serializes fixed matrix and failure-policy fields from a lightweight runner-owned contract, and uses a shared `.mts` scenario importing the narrow `uiwitness/public-site-scenario` subpath. Any conflict fails before browser work, while a late race preserves generated files for inspection and never deletes or overwrites an existing path.
+
+The State Contract Guard orchestration slice adds process-based `guard` and exact-coordinate `scan`. Guard anchors all config, contract, scenario, and verdict paths to the canonical invocation workspace, rejects symbolic links, prevalidates inputs before browser launch, executes the complete unfiltered matrix, and compares only that run's in-memory schema-v1 report through `uiwitness-core`. The adapter owns the exhaustive v1 config fingerprint and semantic run digest projections. A deterministic private machine verdict carries stable `0`/`1`/`2` process meaning and shell-safe reproduction commands without diagnostic messages. The existing runner transaction still owns PNG/JSON/HTML publication; the approved later generation-transaction slice will atomically include the verdict and proposal family.
 
 ### apps/example-nextjs
 The Phase 6 example is a real Next.js App Router application and a deterministic product-state fixture. It owns a self-hosted visual system, fixed commerce-operations data, a narrow `/api/dashboard` response contract, and a client-rendered `/dashboard` state boundary. The page begins in a deliberate loading state, validates the API payload before rendering, classifies a valid no-data payload as empty, and turns transport, HTTP, or contract failures into a recoverable error state. UIWitness scenarios can intercept the API without adding test-only behavior to production components. Theme styling follows the runner-owned `data-theme` attribute before application scripts execute.
