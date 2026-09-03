@@ -4,6 +4,19 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.3.0] - 2026-09-03
+
+### Added
+
+- Developers can now inspect a failed guard run as an immutable, content-addressed contract proposal, add bounded exception metadata, and accept only explicitly named changes with `uiwitness contract inspect`, `annotate`, and `accept`.
+- `uiwitness contract init` now creates a new contract only from a complete passing run, while failures produce reviewable proposal artifacts without overwriting an existing contract.
+- The public core API now exposes deterministic proposal creation, parsing, hashing, annotation, and selected-change application primitives with stable `add`, `remove`, `config`, `expectation`, and `exception` operation IDs.
+
+### Security
+
+- Contract acceptance revalidates the immutable source generation, proposal filename and content, current contract, and complete current configuration before applying changes; stale or concurrent writers fail closed.
+- Successful acceptance consumes the proposal and metadata overlay, records discarded unselected changes, and never renews exception dates implicitly.
+
 ## [0.26.2.0] - 2026-09-03
 
 ### Added
