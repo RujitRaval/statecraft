@@ -17,7 +17,7 @@ Do not create empty future packages.
 
 ## Boundaries
 ### uiwitness-core
-Public types, Zod config validation, `defineConfig`, matrix expansion, result contracts, coverage calculations, shared errors. Avoid browser-specific details.
+Public types, configuration validation, strict state-contract parsing, RFC 8785 canonical digests, `defineConfig`, matrix expansion, result contracts, coverage calculations, and shared errors. Avoid browser-specific details.
 
 ### uiwitness-runner-playwright
 Browser/context lifecycle, scenario loading/hooks, viewport/theme, navigation/readiness, screenshots, diagnostics, assertions, isolation.

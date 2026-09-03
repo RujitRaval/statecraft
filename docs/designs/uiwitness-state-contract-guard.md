@@ -532,7 +532,7 @@ Impossible transitions are prevented by schema validation, digest binding, one-w
 |---|---|---|---|---|---|
 | Workspace/config/contract discovery | missing, ambiguous, external, symlink, unreadable | `GuardInputError` | Yes | stop before browser and writes | exact path-safe setup error; exit `2` |
 | Contract/config parsing | malformed type, duplicate, unknown schema/key | `ContractValidationError` / existing config issue | Yes | aggregate bounded exact paths | invalid-input summary and JSON issues; exit `2` |
-| Canonicalization/digest | invalid Unicode/path/number or digest mismatch | `CanonicalizationError` | Yes | reject artifact; never compare | stable invalid-artifact error; exit `2` |
+| Canonicalization/digest | invalid Unicode/path/number or digest mismatch | `CanonicalJsonError` | Yes | reject artifact; never compare | stable invalid-artifact error; exit `2` |
 | Matrix expansion | zero cells, duplicate identity, invalid exact selector | existing matrix/config error | Yes | stop before browser | exact invalid/empty selection; exit `2` |
 | Auth module loading/hook | bad export, thrown/rejected setup | `AUTH_SETUP_INVALID` / `AUTH_SETUP_FAILED` | Yes | close setup context; drop owned state | opaque code plus non-secret module path; exit `2` |
 | Auth state validation | origin/cookie/path/partition/public-suffix violation | `AUTH_ORIGIN_NOT_ALLOWED` / `AUTH_COOKIE_NOT_ALLOWED` | Yes | reject whole run before cell creation | opaque scope code; exit `2` |
@@ -1091,7 +1091,7 @@ No issues found. Public APIs are additive, typed, and narrow. UIWitness wraps th
 
 ```text
 CODE PATHS                                             USER/CONSUMER FLOWS
-parseContractJson(source)                              import uiwitness-core
+parseContract(source)                                  import uiwitness-core
   |- valid minimal pass contract                         |- type/API boundary
   |- valid exact known failure                           |- parse committed contract
   |- syntax/empty/comment/trailing failure                |- stable issue paths/codes

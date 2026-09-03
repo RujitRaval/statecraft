@@ -3,6 +3,8 @@
 ## Unit
 Config validation; duplicate/invalid IDs; matrix expansion/filtering; coverage math; deterministic paths; serialization/schema; error classification; CLI parsing.
 
+State-contract core tests cover strict JSON syntax and duplicate decoded keys before object conversion; schema, identity, route, scenario-path, known-failure, date, nesting, issue-count, text-length, and 10,000-coordinate limits; RFC 8785 primitive, UTF-16 key-ordering, Unicode-preservation, and SHA-256 vectors; and fail-closed rejection of mutable or non-JSON programmatic values. Pull-request CI runs the release-build 10,000-coordinate benchmark on Node.js 22 and 24, while the protected release workflow repeats it on Node.js 24 before publication; each run requires parsing plus digesting to stay below one second and 256 MiB of additional RSS.
+
 ## Integration
 Scenario loading; Playwright lifecycle; route interception; viewport/theme; readiness; screenshots; diagnostics; assertions; continuation after a failed cell.
 
