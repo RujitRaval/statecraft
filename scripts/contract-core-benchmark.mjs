@@ -9,7 +9,12 @@ function maximumResidentBytes() {
 }
 
 async function runFixture() {
-  const { contractDigest, parseContract } = await import(
+  const {
+    compareContract,
+    contractConfigDigest,
+    contractDigest,
+    parseContract,
+  } = await import(
     "../packages/core/dist/index.js"
   );
   const digest = `sha256:${"a".repeat(64)}`;
@@ -28,16 +33,43 @@ async function runFixture() {
       viewportId: "desktop",
     };
   });
+  const configuration = coordinates.map((coordinate) => ({
+    configFingerprint: coordinate.configFingerprint,
+    id: coordinate.id,
+    routeId: coordinate.routeId,
+    routePath: coordinate.routePath,
+    scenarioSource: coordinate.scenarioSource,
+    stateId: coordinate.stateId,
+    theme: coordinate.theme,
+    viewport: coordinate.viewport,
+    viewportId: coordinate.viewportId,
+  }));
+  const configDigest = contractConfigDigest(configuration);
   const source = JSON.stringify({
-    configDigest: digest,
+    configDigest,
     coordinates,
     schemaVersion: 1,
   });
+  const executions = configuration.map((coordinate) => ({
+    failures: [],
+    routeId: coordinate.routeId,
+    stateId: coordinate.stateId,
+    status: "passed",
+    theme: coordinate.theme,
+    viewportId: coordinate.viewportId,
+  }));
 
   const baselineRss = maximumResidentBytes();
   const started = performance.now();
   const contract = parseContract(source);
   const contractHash = contractDigest(contract);
+  const comparison = compareContract({
+    complete: true,
+    configuration,
+    contract,
+    executions,
+    now: () => new Date("2026-09-03T00:00:00.000Z"),
+  });
   const elapsedMs = performance.now() - started;
 
   return {
@@ -45,6 +77,7 @@ async function runFixture() {
     contractHash,
     coordinates: contract.coordinates.length,
     elapsedMs,
+    verdict: comparison.verdict,
     additionalRssBytes: Math.max(0, maximumResidentBytes() - baselineRss),
   };
 }
@@ -67,6 +100,9 @@ if (!isMainThread) {
   }
   if (!/^sha256:[a-f0-9]{64}$/u.test(result.contractHash)) {
     throw new Error("Contract benchmark produced an invalid digest.");
+  }
+  if (result.verdict !== "passed") {
+    throw new Error(`Contract benchmark comparison returned ${result.verdict}.`);
   }
   if (result.elapsedMs >= durationLimitMs) {
     throw new Error(

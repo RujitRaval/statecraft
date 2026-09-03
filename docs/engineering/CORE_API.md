@@ -1,6 +1,6 @@
 # `uiwitness-core` API
 
-`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, state-contract, canonical-digest, matrix, coverage, artifact-path, and report boundaries.
+`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, state-contract, canonical-digest, comparison/verdict, matrix, coverage, artifact-path, and report boundaries.
 
 ## Configuration
 
@@ -70,6 +70,44 @@ const digest = contractDigest(contract);
 For lower-level integrations, `canonicalizeJson(value)` and `canonicalJsonDigest(value)` accept only strict `JsonValue` data. They reject cyclic, sparse, accessor-backed, prototype-altered, `toJSON`-bearing, non-finite, negative-zero, and lone-surrogate values rather than accepting JavaScript behavior that can silently change hashed data. `CANONICAL_JSON_ALGORITHM` identifies the RFC 8785 implementation.
 
 Invalid contract text throws `ContractValidationError` with code `CONTRACT_INVALID`; invalid programmatic canonical JSON throws `CanonicalJsonError` with code `CANONICAL_JSON_INVALID`. Both expose immutable UIWitness-owned issues without leaking parser or canonicalizer internals. Workspace containment and file safety remain CLI responsibilities; these core functions perform no filesystem, browser, clock, environment, or network access.
+
+## State-contract comparison and verdicts
+
+`compareContract(options)` compares one validated committed contract with the current configuration inventory and one fresh execution observation for every configured coordinate. The API is pure and browser-independent:
+
+```ts
+import { compareContract } from "uiwitness-core";
+
+const result = compareContract({
+  complete: true,
+  configuration,
+  contract,
+  executions,
+  now: () => new Date("2026-09-03T12:00:00.000Z"),
+});
+
+if (result.verdict !== "passed") {
+  console.error(result.findings);
+}
+```
+
+`configuration` contains the current `ContractConfigurationCoordinate` inventory, including each coordinate's stable ID and config fingerprint. `executions` contains message-free `ContractExecutionObservation` records: exact route/state/viewport/theme identity, `passed` or `failed` status, and stable failure codes only. `complete` must be `true` only when the caller has a trustworthy fresh observation for every configured coordinate. The optional `now` clock is called exactly once and fixes one UTC `evaluatedOn` date for deterministic expiry checks and coordinated runs.
+
+Malformed contracts, configuration coordinates, execution observations, completeness values, clocks, or future-dated exceptions throw the corresponding `ContractValidationError`, `ConfigValidationError`, `ResultValidationError`, or `RangeError`. A declared-incomplete run, duplicate execution coordinate, missing execution, or unexpected execution is valid comparison output instead: the result has `complete: false`, an `error` verdict, and only `run-error` findings, so partial evidence is never compared as fresh truth.
+
+For a complete aligned run, the engine emits canonically ordered findings by coordinate ID and then `CONTRACT_FINDING_PRECEDENCE`:
+
+- `unaccepted-addition` and `missing-coordinate` report inventory changes;
+- `unaccepted-config-drift` reports a changed coordinate fingerprint and takes precedence over its semantic outcome;
+- `expired-exception` reports known-failure metadata whose UTC expiry date is before `evaluatedOn`;
+- `regression`, `changed-known-failure`, and `recovered-known-failure` are failing verdict outcomes;
+- `matched` and `matched-known-failure` are the only passing finding kinds.
+
+Known failures match only when the observed unique sorted stable failure-code set exactly equals the committed set. They remain active through `expiresOn`; expiry begins on the following UTC date. Failure messages never participate in identity. Results and nested findings are detached from caller-owned data and recursively frozen.
+
+`contractConfigDigest(configuration)` returns the RFC 8785 SHA-256 digest of the canonical ordered coordinate-ID/config-fingerprint inventory. `CONTRACT_CONFIG_DIGEST_ALGORITHM` identifies that projection. `contractVerdictStatus(findings)` applies the same stable overall rule independently: any `run-error` produces `error`, only all-matched findings produce `passed`, and every other set produces `failed`. `CONTRACT_FINDING_KINDS` publishes the complete finding vocabulary.
+
+T2 stops at this library seam. Adapting project config and schema-v1 reports into these inputs, persisting a machine verdict, and exposing CLI process semantics belong to the later guard-orchestration slice.
 
 ## Matrix planning
 
@@ -180,6 +218,9 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 
 - `UIWitnessConfig`
 - `UIWitnessContract`, `ContractCoordinate`, `ContractExpectation`, `ContractException`, and `ContractFailureCode`
+- `CompareContractOptions`, `ContractConfigurationCoordinate`, and `ContractExecutionObservation`
+- `ContractComparisonResult`, `ContractVerdictStatus`, `ContractFinding`, `ContractFindingKind`, `ContractActualOutcome`, and `ContractRunErrorReason`
+- `RunErrorContractFinding`, `UnacceptedAdditionContractFinding`, `MissingCoordinateContractFinding`, `UnacceptedConfigDriftContractFinding`, `ExpiredExceptionContractFinding`, `RegressionContractFinding`, `ChangedKnownFailureContractFinding`, `RecoveredKnownFailureContractFinding`, `KnownFailureContractFinding`, and `MatchedContractFinding`
 - `JsonValue` and `Sha256Digest`
 - `ViewportDefinition`
 - `RouteDefinition`
@@ -193,4 +234,4 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 - `UIWitnessErrorCode`
 - `CanonicalJsonIssue`, `ContractValidationIssue`, `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, `ContractValidationIssueCode`, and `ConfigValidationIssueCode`
 
-Exported functions are `defineConfig`, `parseConfig`, `parseContract`, `canonicalizeContract`, `contractDigest`, `canonicalizeJson`, `canonicalJsonDigest`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. Exported constants are `CANONICAL_JSON_ALGORITHM`, `CONTRACT_DIGEST_ALGORITHM`, `CONTRACT_FAILURE_CODES`, `CONTRACT_SCHEMA_VERSION`, and `REPORT_SCHEMA_VERSION`.
+Exported functions are `defineConfig`, `parseConfig`, `parseContract`, `canonicalizeContract`, `contractDigest`, `canonicalizeJson`, `canonicalJsonDigest`, `compareContract`, `contractConfigDigest`, `contractVerdictStatus`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. Exported constants are `CANONICAL_JSON_ALGORITHM`, `CONTRACT_CONFIG_DIGEST_ALGORITHM`, `CONTRACT_DIGEST_ALGORITHM`, `CONTRACT_FAILURE_CODES`, `CONTRACT_FINDING_KINDS`, `CONTRACT_FINDING_PRECEDENCE`, `CONTRACT_SCHEMA_VERSION`, and `REPORT_SCHEMA_VERSION`.

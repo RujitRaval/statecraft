@@ -4,6 +4,23 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.1.0] - 2026-09-03
+
+### Added
+
+- Library consumers can now compare a committed state contract with the current configuration and one complete fresh execution set, receiving deterministic coordinate findings and an overall passed, failed, or error verdict.
+- Known failures now match only exact stable failure-code sets, remain active through their UTC expiry date, and surface changed, recovered, expired, added, missing, and configuration-drift outcomes without browser or filesystem dependencies.
+
+### Changed
+
+- Contract comparison now publishes stable finding kinds, precedence, run-error reasons, configuration digests, immutable result types, and package-boundary declarations from `uiwitness-core`.
+- The release benchmark now exercises parsing, digesting, and comparison across 10,000 coordinates under the existing one-second and 256 MiB limits on Node.js 22 and 24.
+
+### Security
+
+- Comparison fails closed on incomplete or misaligned runs, malformed and oversized inputs, future-dated exceptions, mutable caller data, hostile completeness accessors, and invalid execution status/failure combinations.
+- Returned findings are recursively frozen and detached from caller-owned contract data so post-comparison mutation cannot desynchronize evidence from its digests or verdict.
+
 ## [0.26.0.0] - 2026-09-03
 
 ### Added

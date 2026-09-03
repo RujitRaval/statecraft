@@ -594,6 +594,11 @@ function parseContractValue(input: unknown): UIWitnessContract {
   return result.data;
 }
 
+/** @internal Produces one owned, validated contract snapshot for core composition. */
+export function validatedContractSnapshot(input: unknown): UIWitnessContract {
+  return parseContractValue(input);
+}
+
 function normalizedContract(contract: UIWitnessContract): JsonValue {
   return {
     configDigest: contract.configDigest,
@@ -650,5 +655,10 @@ export function canonicalizeContract(contract: UIWitnessContract): string {
 /** Produces a stable SHA-256 digest over normalized RFC 8785 contract bytes. */
 export function contractDigest(contract: UIWitnessContract): Sha256Digest {
   const validated = parseContractValue(contract);
-  return canonicalJsonDigest(normalizedContract(validated));
+  return digestValidatedContract(validated);
+}
+
+/** @internal Hashes a snapshot already returned by validatedContractSnapshot. */
+export function digestValidatedContract(contract: UIWitnessContract): Sha256Digest {
+  return canonicalJsonDigest(normalizedContract(contract));
 }

@@ -38,5 +38,10 @@ Bounded same-origin discovery, a fixed public-site evidence matrix, kinetic repo
 **Gate:** a developer can point one command at an authorized live site, receive actionable local evidence, and promote the useful surface without hand-authoring boilerplate.
 **Status:** complete; CLI `check <url>` composes discovery, four-cell-per-page evidence capture, page-level summaries, stable exit codes, the offline report, and overwrite-safe `--write-config` promotion. The public launch guide and post-publication registry-only check → promotion → scan → open consumer gate prove the documented journey from an empty npm project.
 
+## Approved roadmap - State Contract Guard
+Versioned state contracts, deterministic fresh-run comparison, exact regression reproduction, expiring known failures, a contract-first offline report, a thin GitHub Action, memory-only authentication, evidence privacy controls, and deterministic sharding.
+**Gate:** every pull request can prove the complete promised UI state matrix without a hosted backend, required LLM, implicit acceptance, or automatic evidence upload.
+**Status:** in progress; strict contract parsing, RFC 8785 canonical digests, configuration-inventory digests, exhaustive comparison outcomes, fail-closed completeness, exact known-failure matching, UTC expiry, and stable verdict precedence are implemented in `uiwitness-core`. CLI, proposal, persistence, report, Action, auth/privacy, sharding, documentation, and release slices remain in the approved task sequence.
+
 ## Rules
 Keep main buildable; no speculative abstractions/backend/telemetry/LLM; tests accompany capabilities; record important decisions as ADRs; justify major dependencies.

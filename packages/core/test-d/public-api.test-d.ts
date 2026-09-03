@@ -1,7 +1,10 @@
 import {
   CANONICAL_JSON_ALGORITHM,
+  CONTRACT_CONFIG_DIGEST_ALGORITHM,
   CONTRACT_DIGEST_ALGORITHM,
   CONTRACT_FAILURE_CODES,
+  CONTRACT_FINDING_KINDS,
+  CONTRACT_FINDING_PRECEDENCE,
   CONTRACT_SCHEMA_VERSION,
   CanonicalJsonError,
   ConfigValidationError,
@@ -14,7 +17,10 @@ import {
   canonicalizeContract,
   canonicalizeJson,
   canonicalJsonDigest,
+  compareContract,
+  contractConfigDigest,
   contractDigest,
+  contractVerdictStatus,
   defineConfig,
   expandMatrix,
   parseConfig,
@@ -27,6 +33,9 @@ import {
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
   type ContractCoordinate,
+  type ContractComparisonResult,
+  type ContractConfigurationCoordinate,
+  type ContractExecutionObservation,
   type ContractException,
   type ContractExpectation,
   type ContractFailureCode,
@@ -111,6 +120,7 @@ const contractIssue: ContractValidationIssue = {
 };
 const knownFailureCode: ContractFailureCode = CONTRACT_FAILURE_CODES[0];
 void CANONICAL_JSON_ALGORITHM;
+void CONTRACT_CONFIG_DIGEST_ALGORITHM;
 void CONTRACT_DIGEST_ALGORITHM;
 void stateContract;
 void canonicalText;
@@ -122,6 +132,45 @@ void contractError;
 void canonicalIssue;
 void contractIssue;
 void knownFailureCode;
+
+const comparisonConfiguration: ContractConfigurationCoordinate = {
+  configFingerprint: configDigest,
+  id: contractCoordinate.id,
+  routeId: contractCoordinate.routeId,
+  routePath: contractCoordinate.routePath,
+  scenarioSource: contractCoordinate.scenarioSource,
+  stateId: contractCoordinate.stateId,
+  theme: contractCoordinate.theme,
+  viewport: contractCoordinate.viewport,
+  viewportId: contractCoordinate.viewportId,
+};
+const comparisonExecution: ContractExecutionObservation = {
+  failures: [{ code: "ASSERTION_FAILED" }],
+  routeId: contractCoordinate.routeId,
+  stateId: contractCoordinate.stateId,
+  status: "failed",
+  theme: contractCoordinate.theme,
+  viewportId: contractCoordinate.viewportId,
+};
+const comparisonConfigDigest: Sha256Digest = contractConfigDigest([
+  comparisonConfiguration,
+]);
+const comparisonContract: UIWitnessContract = {
+  ...stateContract,
+  configDigest: comparisonConfigDigest,
+};
+const comparison: ContractComparisonResult = compareContract({
+  complete: true,
+  configuration: [comparisonConfiguration],
+  contract: comparisonContract,
+  executions: [comparisonExecution],
+  now: () => new Date("2026-09-03T00:00:00.000Z"),
+});
+const comparisonStatus = contractVerdictStatus(comparison.findings);
+void CONTRACT_FINDING_KINDS;
+void CONTRACT_FINDING_PRECEDENCE;
+void comparison;
+void comparisonStatus;
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",

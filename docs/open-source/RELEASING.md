@@ -4,7 +4,7 @@ UIWitness publishes four npm packages from one verified GitHub Release:
 
 | Package | Purpose |
 | --- | --- |
-| `uiwitness-core` | Browser-independent configuration, state-contract, canonical-digest, matrix, coverage, and report contracts |
+| `uiwitness-core` | Browser-independent configuration, state-contract, canonical-digest, comparison/verdict, matrix, coverage, and report contracts |
 | `uiwitness-report` | Deterministic offline report transformation and rendering |
 | `uiwitness-runner-playwright` | Playwright execution and local result persistence |
 | `uiwitness` | Public API and the `uiwitness` executable |
