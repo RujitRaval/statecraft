@@ -1,6 +1,8 @@
 /** Stable machine-readable categories for errors produced by UIWitness core. */
 export type UIWitnessErrorCode =
+  | "CANONICAL_JSON_INVALID"
   | "CONFIG_INVALID"
+  | "CONTRACT_INVALID"
   | "REPORT_INVALID"
   | "RESULT_INVALID";
 
@@ -24,6 +26,51 @@ export type ResultValidationIssue = ConfigValidationIssue;
 /** A single report problem with a deterministic path and category. */
 export type ReportValidationIssue = ConfigValidationIssue;
 
+/** Stable canonical-JSON failures that do not expose dependency internals. */
+export interface CanonicalJsonIssue {
+  readonly code: "invalid_type" | "invalid_value";
+  readonly message: string;
+  readonly path: string;
+}
+
+/** Stable contract-validation categories, including source-syntax failures. */
+export type ContractValidationIssueCode =
+  | ConfigValidationIssueCode
+  | "invalid_syntax";
+
+/** A single contract problem with a deterministic path and optional source span. */
+export interface ContractValidationIssue {
+  readonly code: ContractValidationIssueCode;
+  readonly length?: number | undefined;
+  readonly message: string;
+  readonly offset?: number | undefined;
+  readonly path: string;
+}
+
+/** @internal Contract parsers retain 99 exact issues plus one omission marker. */
+export const CONTRACT_VALIDATION_ISSUE_LIMIT = 100;
+
+/** @internal Shared deterministic marker for bounded contract diagnostics. */
+export function contractIssuesOmitted(): ContractValidationIssue {
+  return {
+    code: "invalid_value",
+    message: `Additional contract issues were omitted after the first ${CONTRACT_VALIDATION_ISSUE_LIMIT - 1}.`,
+    path: "$",
+  };
+}
+
+function boundedContractIssues(
+  issues: readonly ContractValidationIssue[],
+): readonly ContractValidationIssue[] {
+  const retained = issues.length <= CONTRACT_VALIDATION_ISSUE_LIMIT
+    ? issues
+    : [
+        ...issues.slice(0, CONTRACT_VALIDATION_ISSUE_LIMIT - 1),
+        contractIssuesOmitted(),
+      ];
+  return Object.freeze(retained.map((issue) => Object.freeze({ ...issue })));
+}
+
 /** Base class for errors callers may classify without inspecting messages. */
 export class UIWitnessError extends Error {
   readonly code: UIWitnessErrorCode;
@@ -32,6 +79,28 @@ export class UIWitnessError extends Error {
     super(message);
     this.name = "UIWitnessError";
     this.code = code;
+  }
+}
+
+/** Thrown when a programmatic value cannot be represented as strict JCS JSON. */
+export class CanonicalJsonError extends UIWitnessError {
+  readonly issues: readonly CanonicalJsonIssue[];
+
+  constructor(issues: readonly CanonicalJsonIssue[]) {
+    super("CANONICAL_JSON_INVALID", "Invalid canonical JSON value.");
+    this.name = "CanonicalJsonError";
+    this.issues = Object.freeze(issues.map((issue) => Object.freeze({ ...issue })));
+  }
+}
+
+/** Thrown when JSON source cannot be parsed as a versioned UIWitness contract. */
+export class ContractValidationError extends UIWitnessError {
+  readonly issues: readonly ContractValidationIssue[];
+
+  constructor(issues: readonly ContractValidationIssue[]) {
+    super("CONTRACT_INVALID", "Invalid UIWitness contract.");
+    this.name = "ContractValidationError";
+    this.issues = boundedContractIssues(issues);
   }
 }
 
