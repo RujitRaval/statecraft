@@ -20,6 +20,39 @@ export type {
   UIWitnessContract,
 } from "./contract.js";
 export {
+  CONTRACT_CONFIG_DIGEST_ALGORITHM,
+  compareContract,
+  contractConfigDigest,
+} from "./contract-comparison.js";
+export type {
+  CompareContractOptions,
+  ContractConfigurationCoordinate,
+  ContractExecutionObservation,
+} from "./contract-comparison.js";
+export {
+  CONTRACT_FINDING_KINDS,
+  CONTRACT_FINDING_PRECEDENCE,
+  contractVerdictStatus,
+} from "./contract-verdict.js";
+export type {
+  ChangedKnownFailureContractFinding,
+  ContractActualOutcome,
+  ContractComparisonResult,
+  ContractFinding,
+  ContractFindingKind,
+  ContractRunErrorReason,
+  ContractVerdictStatus,
+  ExpiredExceptionContractFinding,
+  KnownFailureContractFinding,
+  MatchedContractFinding,
+  MissingCoordinateContractFinding,
+  RecoveredKnownFailureContractFinding,
+  RegressionContractFinding,
+  RunErrorContractFinding,
+  UnacceptedAdditionContractFinding,
+  UnacceptedConfigDriftContractFinding,
+} from "./contract-verdict.js";
+export {
   defineConfig,
   parseConfig,
 } from "./config.js";

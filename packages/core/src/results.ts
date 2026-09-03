@@ -19,7 +19,8 @@ import type { MatrixCell } from "./matrix.js";
 /** The current external JSON report contract version. */
 export const REPORT_SCHEMA_VERSION = 1 as const;
 
-const executionFailureCodes = [
+/** @internal Stable failure codes reused by validated execution projections. */
+export const EXECUTION_FAILURE_CODES = [
   "ASSERTION_FAILED",
   "CONSOLE_ERROR",
   "FAILED_REQUEST",
@@ -30,7 +31,7 @@ const executionFailureCodes = [
 ] as const;
 
 /** Stable failure classifications persisted in execution records. */
-export type ExecutionFailureCode = (typeof executionFailureCodes)[number];
+export type ExecutionFailureCode = (typeof EXECUTION_FAILURE_CODES)[number];
 
 const executionStatuses = ["failed", "passed"] as const;
 
@@ -186,7 +187,7 @@ const viewportSchema = z.strictObject({
   height: z.number().int().positive(),
   width: z.number().int().positive(),
 });
-const failureCodeSchema = z.enum(executionFailureCodes);
+const failureCodeSchema = z.enum(EXECUTION_FAILURE_CODES);
 const failureSchema = z.strictObject({
   code: failureCodeSchema,
   message: nonEmptyStringSchema,

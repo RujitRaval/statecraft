@@ -961,7 +961,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: Sections 3 and 5 — custom Unicode/order rules conflicted with RFC 8785 and duplicate keys must be rejected before object conversion.
   - Files: `packages/core/src/contract.ts`, `packages/core/src/canonical-json.ts`, `packages/core/src/errors.ts`, `packages/core/test/**`, manifests and lockfile.
   - Verify: official RFC vectors/errata, Node 22/24 digest parity, `corepack pnpm --filter uiwitness-core test`.
-- [ ] **T2 (P1, human: ~2 days / Codex: ~3h)** — Core — Implement the exhaustive comparison engine and known-failure rules
+- [x] **T2 (P1, human: ~2 days / Codex: ~3h)** — Core — Implement the exhaustive comparison engine and known-failure rules
   - Surfaced by: Sections 2 and 4 — every contract/config/execution combination needs exact precedence, eligible code sets, recovery, and 30-day expiry.
   - Files: `packages/core/src/contract-comparison.ts`, `packages/core/src/contract-verdict.ts`, focused fixtures/tests.
   - Verify: truth-table/precedence suite and injected UTC boundary cases.
@@ -1179,16 +1179,145 @@ The free in-host challenge found no missed blocker in the T1 slice. The main ris
   - Files: core contract/canonicalization/error/export modules, focused tests, package manifest, lockfile.
   - Verify: core tests and typecheck; official RFC vectors and verified errata; Node 22/24 CI; complete repository and release gates.
 
+## T2 Engineering Review — Exhaustive Comparison and Known-Failure Rules
+
+Reviewed by `/plan-eng-review` on 2026-09-03. Scope is limited to T2; T3–T14 remain unchanged.
+
+### Step 0 — Scope challenge
+
+- **Scope accepted as-is.** T2 adds two browser-independent core modules, public immutable comparison/verdict types, focused tests, and comparison coverage in the existing 10,000-coordinate benchmark. It adds no CLI command, filesystem path, browser work, persistence, report UI, or dependency.
+- **What already exists:** T1 supplies strict contract values, coordinate identity, eligible known-failure codes, canonical SHA-256 primitives, bounded stable errors, and Node 22/24 gates. Schema-v1 reports already supply validated execution status and failure codes. T2 composes those contracts instead of creating a parallel report or validation model.
+- **Complexity:** one cohesive core-package lane with no classes or services. Map-based joins keep the comparison linear; one canonical sort makes output order independent of input order.
+- **Distribution:** the additive exports use the existing `uiwitness-core` build, declaration, package-smoke, OIDC, and registry-consumer path. No new artifact is introduced.
+
+### Architecture review
+
+No issues found. The comparison boundary remains pure and acyclic:
+
+```text
+validated contract + current coordinate inventory + fresh execution set + UTC clock
+                    |
+                    +-> validate unique coordinate identities and completeness
+                    |       `-> incomplete/misaligned run -> run-error only
+                    |
+                    `-> Map join by exact route/state/viewport/theme ID
+                            |- contract only -> missing-coordinate
+                            |- config only   -> unaccepted-addition
+                            `- both
+                                |- fingerprint changed -> unaccepted-config-drift
+                                |- exception expired   -> expired-exception
+                                |- expected pass       -> matched | regression
+                                `- expected failure    -> matched-known-failure
+                                                        | changed-known-failure
+                                                        ` recovered-known-failure
+                                      |
+                                      `-> canonical ID + precedence sort -> overall verdict
+```
+
+The engine records every truth-table coordinate outcome, including ordinary matches. Incomplete execution is fail-closed and suppresses semantic comparison, as required by the approved precedence. T3 will adapt config/report data and add process/command semantics; it will not duplicate these rules.
+
+### Code quality review
+
+No issues found. Public types use exhaustive discriminated unions, exact string literals, readonly data, and a published precedence constant. Observed failure messages remain outside the contract comparison; only unique sorted stable codes participate. The injected clock is called once, producing one `evaluatedOn` for the entire result.
+
+### Test review
+
+```text
+CODE PATHS                                             CONSUMER FLOWS
+compareContract(input)                                 import uiwitness-core
+  |- complete=false -> run-error, no comparison          |- construct validated inventories
+  |- execution/config set mismatch -> run-error           |- compare one fresh complete run
+  |- contract-only ID -> missing-coordinate               |- inspect canonical outcomes/verdict
+  |- config-only ID -> unaccepted-addition                `- no browser/filesystem/network effect
+  |- changed fingerprint -> unaccepted-config-drift
+  |- expected pass + pass/fail -> matched/regression
+  |- active failure + exact/different/pass
+  |    -> matched-known/changed-known/recovered
+  |- expired at UTC boundary -> expired-exception
+  `- multi-coordinate ID/precedence deterministic sort
+
+verdict precedence
+  |- run-error -> error
+  |- drift -> failed
+  |- expiry -> failed
+  |- regression/changed known -> failed
+  |- recovered known -> failed
+  `- matched/matched known only -> passed
+```
+
+Every branch above requires a behavior assertion. Pairwise precedence combinations, added/removed/substituted/ineligible failure codes, duplicate codes as set semantics, invalid clocks, input-order permutations, and 30-day UTC boundaries are unit-tested. The existing release-build benchmark expands to include comparison of 10,000 coordinates on Node 22 and 24. No browser E2E or LLM evaluation applies to this pure core slice.
+
+### Failure modes
+
+| Codepath | Production failure | Test | Error handling | User-visible result |
+|---|---|---|---|---|
+| inventory join | duplicate or mismatched IDs hide a cell | yes | fail closed as incomplete run/input error | stable run error |
+| run completeness | partial results are compared as fresh truth | yes | no semantic comparison | `error` verdict |
+| exact failure set | duplicates/order/messages alter identity | yes | unique sorted stable codes only | exact known/changed classification |
+| expiry | local timezone extends or shortens exception | yes | one injected UTC date | deterministic expired/active result |
+| precedence | later low-priority outcome masks blocking drift | yes | explicit total precedence | stable overall verdict |
+| ordering | input order changes sidecar bytes | yes | ID then precedence sort | deterministic result order |
+| scale | nested coordinate scans become quadratic | yes | indexed joins plus one sort | benchmark blocks release |
+| package boundary | runtime/type exports drift | yes | build and packed consumer gates | release blocked |
+
+Critical gaps: 0.
+
+### Performance review
+
+No issues found. Three maps provide `O(n)` joins and validation; canonical output ordering is `O(n log n)`. Comparison retains bounded per-coordinate projections rather than screenshots or message bodies. The release-build benchmark remains under one second and 256 MiB additional RSS for 10,000 coordinates on supported Node versions.
+
+### NOT in scope for T2
+
+- Config-to-fingerprint and report-to-observation orchestration: T3 owns the CLI adapter and complete fresh-run boundary.
+- Run digest and persisted machine-sidecar serialization: T3 owns the full guard process contract.
+- Proposal/acceptance mutation: T4.
+- Atomic publication, report UI, GitHub Action, authentication, privacy policy, and sharding: later approved tasks.
+- Refactoring schema-v1 execution reports or adding report schema v2: unrelated to pure comparison.
+
+### TODO review
+
+No new TODOs. The approved T3–T14 tasks already own every deferred integration surface; bundling any of them would expand T2.
+
+### Parallelization
+
+Sequential implementation, no parallelization opportunity. Types, comparison, precedence, tests, and benchmark all share `uiwitness-core` semantics and should land atomically.
+
+### Outside voice
+
+Skipped because the installed `/plan-eng-review` package references an auxiliary `sections/review-sections.md` that is not present. The approved roadmap already received a three-round independent review; no new recommendation was imported without approval.
+
+### T2 review completion
+
+- Step 0: scope accepted as-is
+- Architecture Review: 0 issues
+- Code Quality Review: 0 issues
+- Test Review: diagram produced, 0 uncovered branches after required tests
+- Performance Review: 0 issues
+- NOT in scope: written
+- What already exists: written
+- TODOS.md updates: 0
+- Failure modes: 0 critical gaps
+- Outside voice: skipped; installed auxiliary review section missing
+- Parallelization: 1 sequential lane
+- Lake Score: 1/1 complete recommendation selected
+
+### Implementation Tasks
+
+- [x] **T2 (P1, human: ~2 days / Codex: ~3h)** — Core — Implement exhaustive contract comparison and known-failure verdicts
+  - Surfaced by: approved roadmap T2 and this engineering review.
+  - Files: `packages/core/src/contract-comparison.ts`, `packages/core/src/contract-verdict.ts`, public exports, focused tests, and the contract benchmark.
+  - Verify: core tests/typecheck/build; truth-table and pairwise precedence suite; UTC expiry boundaries; 10,000-coordinate Node 22/24 benchmark; complete repository and release gates.
+
 ## GSTACK REVIEW REPORT
 
 | Review | Trigger | Why | Runs | Status | Findings |
 |--------|---------|-----|------|--------|----------|
 | CEO Review | `/plan-ceo-review` | Scope & strategy | 1 | CLEAR | 6 proposals, 6 accepted, 5 deferred |
 | Codex Review | `/codex review` | Independent 2nd opinion | 0 | — | A three-round spec audit improved the draft to 8/10; this was not a formal `/codex review` run |
-| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 2 | CLEAR (PLAN) | T1 reviewed with 0 issues and 0 critical gaps |
-| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | Required before implementing the report experience |
+| Eng Review | `/plan-eng-review` | Architecture & tests (required) | 3 | CLEAR (PLAN) | T2 reviewed with 0 issues and 0 critical gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps | 0 | — | Required before implementing the later report experience |
 | DX Review | `/plan-devex-review` | Developer experience gaps | 0 | — | Recommended after the contract CLI is executable |
 
-**VERDICT:** CEO + ENG CLEARED FOR T1 — design review remains required before the later report UI slice.
+**VERDICT:** CEO + ENG CLEARED FOR T2 — ready to implement the pure core comparison slice.
 
 NO UNRESOLVED DECISIONS

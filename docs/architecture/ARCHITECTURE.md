@@ -17,7 +17,9 @@ Do not create empty future packages.
 
 ## Boundaries
 ### uiwitness-core
-Public types, configuration validation, strict state-contract parsing, RFC 8785 canonical digests, `defineConfig`, matrix expansion, result contracts, coverage calculations, and shared errors. Avoid browser-specific details.
+Public types, configuration validation, strict state-contract parsing, RFC 8785 canonical digests, exhaustive state-contract comparison and verdict precedence, `defineConfig`, matrix expansion, result contracts, coverage calculations, and shared errors. Avoid browser-specific details.
+
+The state-contract comparator accepts one validated committed contract, one current coordinate/fingerprint inventory, one fresh execution observation per configured coordinate, and one injectable UTC clock. It validates complete-run identity before comparison, joins all inputs by the exact route/state/viewport/theme coordinate ID, emits canonically ordered truth-table outcomes, and fails closed for incomplete runs. Known failures match only the exact unique sorted eligible code set and remain active through their expiry date in UTC; drift, expiry, changed failures, and recovery retain explicit precedence. The comparator reads no files and has no browser, CLI, report, persistence, or network dependency.
 
 ### uiwitness-runner-playwright
 Browser/context lifecycle, scenario loading/hooks, viewport/theme, navigation/readiness, screenshots, diagnostics, assertions, isolation.

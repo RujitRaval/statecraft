@@ -51,8 +51,11 @@ describe("uiwitness-core package boundary", () => {
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule).sort()).toEqual([
       "CANONICAL_JSON_ALGORITHM",
+      "CONTRACT_CONFIG_DIGEST_ALGORITHM",
       "CONTRACT_DIGEST_ALGORITHM",
       "CONTRACT_FAILURE_CODES",
+      "CONTRACT_FINDING_KINDS",
+      "CONTRACT_FINDING_PRECEDENCE",
       "CONTRACT_SCHEMA_VERSION",
       "CanonicalJsonError",
       "ConfigValidationError",
@@ -65,7 +68,10 @@ describe("uiwitness-core package boundary", () => {
       "canonicalJsonDigest",
       "canonicalizeContract",
       "canonicalizeJson",
+      "compareContract",
+      "contractConfigDigest",
       "contractDigest",
+      "contractVerdictStatus",
       "defineConfig",
       "expandMatrix",
       "parseConfig",
