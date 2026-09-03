@@ -34,6 +34,35 @@ export {
   CONTRACT_FINDING_PRECEDENCE,
   contractVerdictStatus,
 } from "./contract-verdict.js";
+export {
+  CONTRACT_METADATA_SCHEMA_VERSION,
+  CONTRACT_PROPOSAL_OPERATIONS,
+  CONTRACT_PROPOSAL_SCHEMA_VERSION,
+  CONTRACT_SOURCE_SCHEMA_VERSION,
+  applyContractProposal,
+  contractProposalDigest,
+  contractProposalSourceDigest,
+  createContractProposal,
+  createContractProposalSource,
+  emptyContractProposalMetadata,
+  parseContractProposal,
+  parseContractProposalMetadata,
+  parseContractProposalSource,
+  serializeContractProposal,
+  serializeContractProposalMetadata,
+  serializeContractProposalSource,
+  withContractProposalAnnotation,
+} from "./contract-proposal.js";
+export type {
+  ContractProposal,
+  ContractProposalChange,
+  ContractProposalMetadata,
+  ContractProposalOperation,
+  ContractProposalSource,
+  ContractSourceDigest,
+  ContractSourceExecution,
+  ProposedExpectation,
+} from "./contract-proposal.js";
 export type {
   ChangedKnownFailureContractFinding,
   ContractActualOutcome,
@@ -67,6 +96,7 @@ export {
   CanonicalJsonError,
   ConfigValidationError,
   ContractValidationError,
+  ContractProposalValidationError,
   ReportValidationError,
   ResultValidationError,
   UIWitnessError,

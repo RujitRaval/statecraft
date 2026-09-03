@@ -4,7 +4,16 @@ import { relative, resolve, sep } from "node:path";
 import {
   canonicalizeJson,
   compareContract,
+  contractProposalDigest,
+  contractProposalSourceDigest,
+  createContractProposal,
+  createContractProposalSource,
+  emptyContractProposalMetadata,
   parseContract,
+  parseContractProposalMetadata,
+  serializeContractProposal,
+  serializeContractProposalMetadata,
+  serializeContractProposalSource,
   type ContractComparisonResult,
   type ContractConfigurationCoordinate,
   type JsonValue,
@@ -13,6 +22,7 @@ import {
 
 import {
   compareGuardInputs,
+  contractSourceExecutions,
   guardConfiguration,
   guardMachineVerdict,
   guardRunDigest,
@@ -35,6 +45,10 @@ export type { GuardMachineVerdict } from "./guard-adapter.js";
 export const DEFAULT_CONTRACT_PATH = "uiwitness.contract.json" as const;
 export const DEFAULT_GUARD_VERDICT_PATH =
   ".uiwitness/contract-verdict.json" as const;
+export const DEFAULT_CONTRACT_CANDIDATE_DIRECTORY =
+  ".uiwitness/contract-candidates" as const;
+export const DEFAULT_CONTRACT_SOURCE_DIRECTORY =
+  ".uiwitness/contract-generations" as const;
 
 /** Inputs for one complete, fresh State Contract Guard run. */
 export interface GuardOptions {
@@ -57,6 +71,8 @@ export interface GuardResult {
   readonly contractPath: string;
   readonly explicitVerdictPath?: string | undefined;
   readonly machineVerdict: GuardMachineVerdict;
+  readonly metadataPath?: string | undefined;
+  readonly proposalPath?: string | undefined;
   readonly report: UIWitnessReport;
   readonly verdictPath: typeof DEFAULT_GUARD_VERDICT_PATH;
 }
@@ -120,6 +136,147 @@ function serializeMachineVerdict(verdict: GuardMachineVerdict): string {
   return `${canonicalizeJson(verdict as unknown as JsonValue)}\n`;
 }
 
+async function toolVersion(): Promise<string> {
+  const manifest = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { readonly version?: unknown };
+  if (typeof manifest.version !== "string" || manifest.version.length === 0) {
+    throw new GuardError("GUARD_PROPOSAL_INVALID", "UIWitness package version is unavailable.");
+  }
+  return manifest.version;
+}
+
+async function writeImmutableArtifact(
+  root: string,
+  path: string,
+  contents: string,
+  label: string,
+): Promise<void> {
+  try {
+    await writeGuardJson(root, path, contents, true);
+  } catch (error: unknown) {
+    if (!(error instanceof GuardError) || error.code !== "GUARD_JSON_EXISTS") {
+      throw error;
+    }
+    const safePath = await containedRegularFile(
+      root,
+      path,
+      "GUARD_PROPOSAL_INVALID",
+      label,
+    );
+    if (await readFile(safePath, "utf8") !== contents) {
+      throw new GuardError(
+        "GUARD_PROPOSAL_INVALID",
+        `${label} already exists with different contents.`,
+        safePath,
+      );
+    }
+  }
+}
+
+async function ensureProposalMetadata(
+  root: string,
+  path: string,
+  contents: string,
+  proposalDigest: ReturnType<typeof contractProposalDigest>,
+): Promise<void> {
+  try {
+    await writeGuardJson(root, path, contents, true);
+  } catch (error: unknown) {
+    if (!(error instanceof GuardError) || error.code !== "GUARD_JSON_EXISTS") {
+      throw error;
+    }
+    const safePath = await containedRegularFile(
+      root,
+      path,
+      "GUARD_PROPOSAL_INVALID",
+      "Contract proposal metadata",
+    );
+    let metadata;
+    try {
+      metadata = parseContractProposalMetadata(await readFile(safePath, "utf8"));
+    } catch (cause: unknown) {
+      throw new GuardError(
+        "GUARD_PROPOSAL_INVALID",
+        "Existing contract proposal metadata is invalid or targets another proposal.",
+        safePath,
+        { cause },
+      );
+    }
+    if (metadata.proposalDigest !== proposalDigest) {
+      throw new GuardError(
+        "GUARD_PROPOSAL_INVALID",
+        "Existing contract proposal metadata targets another proposal.",
+        safePath,
+        { cause: error },
+      );
+    }
+  }
+}
+
+export async function publishContractProposal(input: {
+  readonly configuration: readonly ContractConfigurationCoordinate[];
+  readonly contract: ReturnType<typeof parseContract> | null;
+  readonly evaluatedOn: string;
+  readonly report: UIWitnessReport;
+  readonly root: string;
+  readonly runDigest: ReturnType<typeof guardRunDigest>;
+}): Promise<{ readonly metadataPath: string; readonly proposalPath: string }> {
+  const source = createContractProposalSource({
+    configuration: input.configuration,
+    contract: input.contract,
+    evaluatedOn: input.evaluatedOn,
+    executions: contractSourceExecutions(input.report),
+    runDigest: input.runDigest,
+  });
+  const proposal = createContractProposal(source, await toolVersion());
+  if (proposal.changes.length === 0) {
+    throw new GuardError(
+      "GUARD_PROPOSAL_INVALID",
+      "A contract proposal cannot be published without named changes.",
+    );
+  }
+  const sourceDigest = contractProposalSourceDigest(source).slice("sha256:".length);
+  const proposalDigest = contractProposalDigest(proposal).slice("sha256:".length);
+  const sourcePath = resolve(
+    input.root,
+    DEFAULT_CONTRACT_SOURCE_DIRECTORY,
+    `${sourceDigest}.source.json`,
+  );
+  const proposalPath = resolve(
+    input.root,
+    DEFAULT_CONTRACT_CANDIDATE_DIRECTORY,
+    `${proposalDigest}.proposal.json`,
+  );
+  const metadataPath = resolve(
+    input.root,
+    DEFAULT_CONTRACT_CANDIDATE_DIRECTORY,
+    `${proposalDigest}.metadata.json`,
+  );
+  await writeImmutableArtifact(
+    input.root,
+    sourcePath,
+    serializeContractProposalSource(source),
+    "Contract proposal source",
+  );
+  await writeImmutableArtifact(
+    input.root,
+    proposalPath,
+    serializeContractProposal(proposal),
+    "Contract proposal",
+  );
+  await ensureProposalMetadata(
+    input.root,
+    metadataPath,
+    serializeContractProposalMetadata(emptyContractProposalMetadata(proposal)),
+    contractProposalDigest(proposal),
+  );
+  return {
+    metadataPath: relativePath(input.root, metadataPath),
+    proposalPath: relativePath(input.root, proposalPath),
+  };
+}
+
 /**
  * Executes the complete configured matrix once, compares only that fresh
  * in-memory report, and publishes a deterministic machine-verdict sidecar.
@@ -152,12 +309,24 @@ export async function guardProject(
     scan.report,
     evaluatedAt,
   );
+  const runDigest = guardRunDigest(configuration, scan.report);
+  const proposal = comparison.complete && comparison.verdict !== "passed"
+    ? await publishContractProposal({
+        configuration,
+        contract,
+        evaluatedOn: comparison.evaluatedOn,
+        report: scan.report,
+        root,
+        runDigest,
+      })
+    : undefined;
   const machineVerdict = guardMachineVerdict(
     comparison,
-    guardRunDigest(configuration, scan.report),
+    runDigest,
     options.configPath === undefined
       ? undefined
       : relativePath(root, loaded.path),
+    proposal?.proposalPath,
   );
   const serialized = serializeMachineVerdict(machineVerdict);
 
@@ -178,6 +347,7 @@ export async function guardProject(
       ? {}
       : { explicitVerdictPath: relativePath(root, explicitVerdictPath) }),
     machineVerdict,
+    ...(proposal === undefined ? {} : proposal),
     report: scan.report,
     verdictPath: DEFAULT_GUARD_VERDICT_PATH,
   });

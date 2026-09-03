@@ -3,6 +3,7 @@ export type UIWitnessErrorCode =
   | "CANONICAL_JSON_INVALID"
   | "CONFIG_INVALID"
   | "CONTRACT_INVALID"
+  | "CONTRACT_PROPOSAL_INVALID"
   | "REPORT_INVALID"
   | "RESULT_INVALID";
 
@@ -100,6 +101,17 @@ export class ContractValidationError extends UIWitnessError {
   constructor(issues: readonly ContractValidationIssue[]) {
     super("CONTRACT_INVALID", "Invalid UIWitness contract.");
     this.name = "ContractValidationError";
+    this.issues = boundedContractIssues(issues);
+  }
+}
+
+/** Thrown when a proposal, source snapshot, or metadata overlay is invalid. */
+export class ContractProposalValidationError extends UIWitnessError {
+  readonly issues: readonly ContractValidationIssue[];
+
+  constructor(issues: readonly ContractValidationIssue[]) {
+    super("CONTRACT_PROPOSAL_INVALID", "Invalid UIWitness contract proposal.");
+    this.name = "ContractProposalValidationError";
     this.issues = boundedContractIssues(issues);
   }
 }

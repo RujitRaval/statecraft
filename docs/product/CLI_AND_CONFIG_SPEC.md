@@ -56,7 +56,20 @@ Guard treats the invocation directory as its workspace and never searches a pare
 
 After validating every input and output boundary, guard runs the complete unfiltered matrix in normal headless mode. It never compares an earlier report. The deterministic machine verdict is written to `.uiwitness/contract-verdict.json`; `--json` requests an additional contained copy and refuses to replace an existing path. Executable regressions, changed known failures, and recovered known failures include an exact shell-safe headed `scan --coordinate` reproduction command. Structural drift deliberately has no coordinate reproduction command.
 
-A matching complete contract exits `0`, including exact active known failures. A complete run with a regression, recovery, expired exception, or unaccepted matrix/config drift exits `1`. Invalid input, unsafe output, setup failure, incomplete execution, or an internal error exits `2`. The current slice publishes the verdict after the runner's existing report transaction; the approved atomic-generation task will bring report, evidence, and contract outputs under one transaction.
+A matching complete contract exits `0`, including exact active known failures. A complete run with a regression, recovery, expired exception, or unaccepted matrix/config drift exits `1` and publishes an immutable content-addressed proposal with a separate metadata overlay. Invalid input, unsafe output, setup failure, incomplete execution, or an internal error exits `2`. The current slice publishes the verdict and proposal family after the runner's existing report transaction; the approved atomic-generation task will bring report, evidence, and contract outputs under one transaction.
+
+### `uiwitness contract`
+
+```bash
+uiwitness contract init [--config <path>] [--contract <path>]
+uiwitness contract inspect --candidate <path> --change <id>
+uiwitness contract annotate --candidate <path> --change <id> --owner <text> --reason <text> --created-on <date> --expires-on <date>
+uiwitness contract accept --candidate <path> --change <id>... [--config <path>] [--contract <path>]
+```
+
+`contract init` performs one complete run and exclusively creates the first contract only when every coordinate passes. Failures publish a proposal instead. Proposal IDs are stable `<operation>:<route/state/viewport/theme>` values where operation is `add`, `remove`, `config`, `expectation`, or `exception`. `inspect` shows exactly one named change. `annotate` writes only owner, reason, creation date, and a 1–30 day expiry to the proposal's separate metadata overlay; only changes that can create or renew a failed expectation accept metadata.
+
+`accept` takes one or more explicit `--change` selections. Under a contract writer lock it verifies the content-addressed filename, regenerates the proposal from its immutable source, checks current contract and expanded-config digests, revalidates exception dates, and applies only selected changes. Success safely replaces an existing contract or exclusively creates the first one, consumes the proposal and metadata, reports unselected IDs as discarded, and never renews an exception implicitly. Concurrent writers, stale inputs, mutated proposals, unsafe paths, empty selection, and missing metadata fail with exit `2` without changing the contract.
 
 ### `uiwitness open`
 Open latest `.uiwitness/report/index.html`; useful error if absent.

@@ -107,7 +107,43 @@ Known failures match only when the observed unique sorted stable failure-code se
 
 `contractConfigDigest(configuration)` returns the RFC 8785 SHA-256 digest of the canonical ordered coordinate-ID/config-fingerprint inventory. `CONTRACT_CONFIG_DIGEST_ALGORITHM` identifies that projection. `contractVerdictStatus(findings)` applies the same stable overall rule independently: any `run-error` produces `error`, only all-matched findings produce `passed`, and every other set produces `failed`. `CONTRACT_FINDING_KINDS` publishes the complete finding vocabulary.
 
-T3 now adapts project config and the same run's in-memory schema-v1 report into these inputs, persists a deterministic machine verdict, and exposes stable CLI process semantics. Proposal inspection and acceptance remain in the next approved slice; the browser-independent comparison contract stays owned here.
+The CLI adapts project config and the same run's in-memory schema-v1 report into these inputs, persists a deterministic machine verdict, and exposes stable process semantics. The browser-independent comparison contract stays owned here.
+
+## Contract proposals and named acceptance
+
+`createContractProposalSource` snapshots one complete configuration inventory, source contract or `null`, fresh message-free execution outcomes, evaluated UTC date, and run digest. It rejects any source without exactly one execution for every configured coordinate. `createContractProposal` deterministically derives individually named `add`, `remove`, `config`, `expectation`, and `exception` operations. Change IDs are `<operation>:<route/state/viewport/theme>`; the proposal binds the source-generation, source-contract, config, and run digests plus its tool/schema versions.
+
+```ts
+import {
+  applyContractProposal,
+  createContractProposal,
+  createContractProposalSource,
+  emptyContractProposalMetadata,
+} from "uiwitness-core";
+
+const source = createContractProposalSource({
+  configuration,
+  contract,
+  evaluatedOn: "2026-09-03",
+  executions,
+  runDigest,
+});
+const proposal = createContractProposal(source, "0.26.3");
+const metadata = emptyContractProposalMetadata(proposal);
+const updated = applyContractProposal({
+  acceptedOn: "2026-09-03",
+  changeIds: ["expectation:home/success/desktop/light"],
+  metadata,
+  proposal,
+  source,
+});
+```
+
+`serializeContractProposalSource`, `serializeContractProposal`, and `serializeContractProposalMetadata` emit exact JCS bytes with one trailing newline. Their parse counterparts accept only those canonical bytes, validate bounded schema-v1 content, recompute embedded digests, reject duplicate or malformed change IDs, and return recursively frozen values. `contractProposalSourceDigest` and `contractProposalDigest` return the corresponding `sha256:<hex>` content identities.
+
+Exception annotations never mutate proposal bytes. `emptyContractProposalMetadata` creates a proposal-bound overlay; `withContractProposalAnnotation` replaces one named annotation only after checking the proposal binding, that the operation can create or renew a failed expectation, non-empty owner/reason, real UTC dates, current validity, and a 1–30 day lifetime. `applyContractProposal` regenerates the proposal from its immutable source, rejects any difference or unknown metadata/selection, revalidates annotations against explicit `acceptedOn`, and applies only unique selected change IDs. It never derives intent from the fresh outcome and cannot produce an empty contract. Invalid proposal, overlay, or acceptance input throws `ContractProposalValidationError` with code `CONTRACT_PROPOSAL_INVALID` and immutable UIWitness-owned issues.
+
+Filesystem containment, content-addressed filenames, current config/contract revalidation, writer locking, publication, and single-use consumption remain process-based CLI responsibilities.
 
 ## Matrix planning
 
