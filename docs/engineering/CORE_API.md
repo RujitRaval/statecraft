@@ -1,6 +1,6 @@
 # `uiwitness-core` API
 
-`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, state-contract, canonical-digest, comparison/verdict, matrix, coverage, artifact-path, and report boundaries.
+`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, artifact-path, and report boundaries.
 
 ## Configuration
 
@@ -257,6 +257,7 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 - `CompareContractOptions`, `ContractConfigurationCoordinate`, and `ContractExecutionObservation`
 - `ContractComparisonResult`, `ContractVerdictStatus`, `ContractFinding`, `ContractFindingKind`, `ContractActualOutcome`, and `ContractRunErrorReason`
 - `RunErrorContractFinding`, `UnacceptedAdditionContractFinding`, `MissingCoordinateContractFinding`, `UnacceptedConfigDriftContractFinding`, `ExpiredExceptionContractFinding`, `RegressionContractFinding`, `ChangedKnownFailureContractFinding`, `RecoveredKnownFailureContractFinding`, `KnownFailureContractFinding`, and `MatchedContractFinding`
+- `ContractProposal`, `ContractProposalChange`, `ContractProposalMetadata`, `ContractProposalOperation`, `ContractProposalSource`, `ContractSourceDigest`, `ContractSourceExecution`, and `ProposedExpectation`
 - `JsonValue` and `Sha256Digest`
 - `ViewportDefinition`
 - `RouteDefinition`
@@ -270,4 +271,4 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 - `UIWitnessErrorCode`
 - `CanonicalJsonIssue`, `ContractValidationIssue`, `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, `ContractValidationIssueCode`, and `ConfigValidationIssueCode`
 
-Exported functions are `defineConfig`, `parseConfig`, `parseContract`, `canonicalizeContract`, `contractDigest`, `canonicalizeJson`, `canonicalJsonDigest`, `compareContract`, `contractConfigDigest`, `contractVerdictStatus`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. Exported constants are `CANONICAL_JSON_ALGORITHM`, `CONTRACT_CONFIG_DIGEST_ALGORITHM`, `CONTRACT_DIGEST_ALGORITHM`, `CONTRACT_FAILURE_CODES`, `CONTRACT_FINDING_KINDS`, `CONTRACT_FINDING_PRECEDENCE`, `CONTRACT_SCHEMA_VERSION`, and `REPORT_SCHEMA_VERSION`.
+Exported functions are `defineConfig`, `parseConfig`, `parseContract`, `canonicalizeContract`, `contractDigest`, `canonicalizeJson`, `canonicalJsonDigest`, `compareContract`, `contractConfigDigest`, `contractVerdictStatus`, `createContractProposalSource`, `createContractProposal`, `applyContractProposal`, `emptyContractProposalMetadata`, `withContractProposalAnnotation`, `parseContractProposalSource`, `parseContractProposal`, `parseContractProposalMetadata`, `serializeContractProposalSource`, `serializeContractProposal`, `serializeContractProposalMetadata`, `contractProposalSourceDigest`, `contractProposalDigest`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. Exported constants are `CANONICAL_JSON_ALGORITHM`, `CONTRACT_CONFIG_DIGEST_ALGORITHM`, `CONTRACT_DIGEST_ALGORITHM`, `CONTRACT_FAILURE_CODES`, `CONTRACT_FINDING_KINDS`, `CONTRACT_FINDING_PRECEDENCE`, `CONTRACT_METADATA_SCHEMA_VERSION`, `CONTRACT_PROPOSAL_OPERATIONS`, `CONTRACT_PROPOSAL_SCHEMA_VERSION`, `CONTRACT_SCHEMA_VERSION`, `CONTRACT_SOURCE_SCHEMA_VERSION`, and `REPORT_SCHEMA_VERSION`.
