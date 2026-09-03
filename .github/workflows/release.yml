@@ -62,6 +62,8 @@ jobs:
         run: corepack pnpm --filter uiwitness-runner-playwright exec playwright install --with-deps chromium
       - name: Run repository verification
         run: node scripts/run-ci.mjs
+      - name: Enforce contract-core performance budget
+        run: corepack pnpm benchmark:contract
       - name: Run production release smoke
         run: env -u GITHUB_OUTPUT corepack pnpm release:smoke
       - name: Pack and test npm artifacts

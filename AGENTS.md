@@ -14,6 +14,8 @@ Before changing implementation code, read these files in order:
 
 Phase 1 through Phase 7 are complete. The public packages, protected release workflow, launch assets, consumer smoke gates, example evidence, and contributor/release guidance are implemented. The approved Public URL Quick Check roadmap is also complete: bounded discovery, fixed-matrix evidence, kinetic reporting, `uiwitness check <url>` orchestration, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan → open release gate are implemented. Keep future work in an explicitly approved roadmap slice.
 
+The approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md) is active. T1 is complete with strict browser-independent contract parsing and RFC 8785 canonical digests in `uiwitness-core`; T2 through T14 remain separate future slices and must not be pulled forward implicitly.
+
 ## Design system
 
 Always read `DESIGN.md` before making visual or UI decisions. Font choices, colors, spacing, layout, motion, and the industrial-editorial direction are defined there. Do not deviate without explicit user approval. In visual QA, flag code that does not match `DESIGN.md`.

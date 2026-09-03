@@ -1,6 +1,6 @@
 # `uiwitness-core` API
 
-`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, matrix, coverage, artifact-path, and report boundaries.
+`uiwitness-core` provides UIWitness's published, deterministic, browser-independent contracts. Most users install `uiwitness`; direct consumers can build integrations against this package's stable configuration, state-contract, canonical-digest, matrix, coverage, artifact-path, and report boundaries.
 
 ## Configuration
 
@@ -46,6 +46,30 @@ The underlying Zod schema is intentionally private. Callers use `parseConfig` so
 - UIWitness-owned issue codes that do not expose Zod's internal issue types.
 
 Configuration and scenario modules are trusted local code running with the user's privileges. Validation checks their declared shape; it does not execute or inspect scenario modules.
+
+## State contracts and canonical JSON
+
+`parseContract(source)` reads strict JSON text into a schema-v1 `UIWitnessContract`. It rejects comments, trailing commas, duplicate decoded keys, lone UTF-16 surrogates, non-finite numbers, negative zero, unknown fields or versions, malformed coordinate identities, non-canonical sanitized route paths, unsafe scenario paths, invalid known-failure metadata, and out-of-order or duplicate domain arrays. Contracts are bounded to 10,000 coordinates; governed text and path fields are bounded to 1,024 characters; diagnostics retain at most 99 exact issues plus one omission marker.
+
+```ts
+import { readFile } from "node:fs/promises";
+
+import {
+  canonicalizeContract,
+  contractDigest,
+  parseContract,
+} from "uiwitness-core";
+
+const contract = parseContract(await readFile("uiwitness.contract.json", "utf8"));
+const canonical = canonicalizeContract(contract);
+const digest = contractDigest(contract);
+```
+
+`canonicalizeContract(contract)` normalizes coordinates by the `routeId`, `stateId`, `viewportId`, and `theme` tuple and known-failure codes lexicographically before applying RFC 8785 JCS. `contractDigest(contract)` returns `sha256:<64 lowercase hex characters>` over those UTF-8 bytes. The associated constants are `CONTRACT_SCHEMA_VERSION`, `CONTRACT_FAILURE_CODES`, and `CONTRACT_DIGEST_ALGORITHM`.
+
+For lower-level integrations, `canonicalizeJson(value)` and `canonicalJsonDigest(value)` accept only strict `JsonValue` data. They reject cyclic, sparse, accessor-backed, prototype-altered, `toJSON`-bearing, non-finite, negative-zero, and lone-surrogate values rather than accepting JavaScript behavior that can silently change hashed data. `CANONICAL_JSON_ALGORITHM` identifies the RFC 8785 implementation.
+
+Invalid contract text throws `ContractValidationError` with code `CONTRACT_INVALID`; invalid programmatic canonical JSON throws `CanonicalJsonError` with code `CANONICAL_JSON_INVALID`. Both expose immutable UIWitness-owned issues without leaking parser or canonicalizer internals. Workspace containment and file safety remain CLI responsibilities; these core functions perform no filesystem, browser, clock, environment, or network access.
 
 ## Matrix planning
 
@@ -155,6 +179,8 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 ## Exported types
 
 - `UIWitnessConfig`
+- `UIWitnessContract`, `ContractCoordinate`, `ContractExpectation`, `ContractException`, and `ContractFailureCode`
+- `JsonValue` and `Sha256Digest`
 - `ViewportDefinition`
 - `RouteDefinition`
 - `StateDefinition`
@@ -165,6 +191,6 @@ Report validation rejects unsupported versions, malformed RFC 3339 generation ti
 - `ExecutionResult`, `ExecutionStatus`, `ExecutionFailure`, `ExecutionFailureCode`, `ExecutionDiagnostics`, and `FailedRequestDiagnostic`
 - `UIWitnessReport` and `ReportSummary`
 - `UIWitnessErrorCode`
-- `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, and `ConfigValidationIssueCode`
+- `CanonicalJsonIssue`, `ContractValidationIssue`, `ConfigValidationIssue`, `ResultValidationIssue`, `ReportValidationIssue`, `ContractValidationIssueCode`, and `ConfigValidationIssueCode`
 
-Exported functions are `defineConfig`, `parseConfig`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. The `REPORT_SCHEMA_VERSION` constant is also exported.
+Exported functions are `defineConfig`, `parseConfig`, `parseContract`, `canonicalizeContract`, `contractDigest`, `canonicalizeJson`, `canonicalJsonDigest`, `expandMatrix`, `calculateCoverage`, `screenshotArtifactPath`, `parseExecutionResult`, `parseReport`, and `serializeReport`. Exported constants are `CANONICAL_JSON_ALGORITHM`, `CONTRACT_DIGEST_ALGORITHM`, `CONTRACT_FAILURE_CODES`, `CONTRACT_SCHEMA_VERSION`, and `REPORT_SCHEMA_VERSION`.

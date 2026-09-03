@@ -4,6 +4,23 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.0.0] - 2026-09-03
+
+### Added
+
+- Library consumers can now strictly parse versioned UIWitness state contracts and compute deterministic `sha256:` contract identities using RFC 8785 canonical JSON.
+- The public core API now exposes immutable contract types, stable validation issues, eligible known-failure codes, canonicalization helpers, and package-boundary declarations.
+- The approved State Contract Guard roadmap now records the complete product protocol and the independently releasable implementation sequence beginning with these contract primitives.
+
+### Changed
+
+- Pull-request and release CI now verify contract behavior and the 10,000-coordinate performance budget on both supported Node.js release lines.
+- Core API and package guidance now document canonical ordering, strict source rejection, resource limits, and the boundary between browser-neutral contract parsing and later CLI file-safety work.
+
+### Security
+
+- Contract parsing and hashing now fail closed on duplicate keys, permissive JSON syntax, malformed Unicode and numbers, excessive nesting or diagnostics, non-canonical routes, mutable object tricks, and other inputs that could change digest meaning.
+
 ## [0.25.6.0] - 2026-09-01
 
 ### Changed

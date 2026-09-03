@@ -1,19 +1,37 @@
 import {
+  CANONICAL_JSON_ALGORITHM,
+  CONTRACT_DIGEST_ALGORITHM,
+  CONTRACT_FAILURE_CODES,
+  CONTRACT_SCHEMA_VERSION,
+  CanonicalJsonError,
   ConfigValidationError,
+  ContractValidationError,
   REPORT_SCHEMA_VERSION,
   ReportValidationError,
   ResultValidationError,
   UIWitnessError,
   calculateCoverage,
+  canonicalizeContract,
+  canonicalizeJson,
+  canonicalJsonDigest,
+  contractDigest,
   defineConfig,
   expandMatrix,
   parseConfig,
+  parseContract,
   parseExecutionResult,
   parseReport,
   screenshotArtifactPath,
   serializeReport,
+  type CanonicalJsonIssue,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
+  type ContractCoordinate,
+  type ContractException,
+  type ContractExpectation,
+  type ContractFailureCode,
+  type ContractValidationIssue,
+  type ContractValidationIssueCode,
   type CoverageMetric,
   type CoverageObservation,
   type CoverageSummary,
@@ -24,6 +42,7 @@ import {
   type ExecutionResult,
   type ExecutionStatus,
   type FailedRequestDiagnostic,
+  type JsonValue,
   type MatrixCell,
   type MatrixFilter,
   type RouteDefinition,
@@ -33,12 +52,76 @@ import {
   type ReportValidationIssue,
   type ResultValidationIssue,
   type ScreenshotArtifactPath,
+  type Sha256Digest,
   type StateDefinition,
   type UIWitnessConfig,
+  type UIWitnessContract,
   type UIWitnessReport,
   type UIWitnessErrorCode,
   type ViewportDefinition,
 } from "uiwitness-core";
+
+const contractException: ContractException = {
+  createdOn: "2026-09-02",
+  expiresOn: "2026-09-03",
+  owner: "checkout-team",
+  reason: "UIW-1842 tracks the repair",
+};
+const contractExpectation: ContractExpectation = {
+  exception: contractException,
+  failureCodes: ["ASSERTION_FAILED"],
+  status: "failed",
+};
+const configDigest: Sha256Digest = `sha256:${"a".repeat(64)}`;
+const contractCoordinate: ContractCoordinate = {
+  configFingerprint: configDigest,
+  expected: contractExpectation,
+  id: "dashboard/success/desktop/light",
+  routeId: "dashboard",
+  routePath: "/dashboard",
+  scenarioSource: "./scenarios/dashboard/success.mjs",
+  stateId: "success",
+  theme: "light",
+  viewport: { height: 900, width: 1440 },
+  viewportId: "desktop",
+};
+const contractSource = JSON.stringify({
+  configDigest,
+  coordinates: [contractCoordinate],
+  schemaVersion: CONTRACT_SCHEMA_VERSION,
+});
+const stateContract: UIWitnessContract = parseContract(contractSource);
+const canonicalValue: JsonValue = { b: 2, a: 1 };
+const canonicalText: string = canonicalizeJson(canonicalValue);
+const canonicalDigest: Sha256Digest = canonicalJsonDigest(canonicalValue);
+const canonicalContract: string = canonicalizeContract(stateContract);
+const stateContractDigest: Sha256Digest = contractDigest(stateContract);
+const canonicalError: UIWitnessError = new CanonicalJsonError([]);
+const contractError: UIWitnessError = new ContractValidationError([]);
+const canonicalIssue: CanonicalJsonIssue = {
+  code: "invalid_value",
+  message: "Invalid canonical value.",
+  path: "$",
+};
+const contractIssueCode: ContractValidationIssueCode = "invalid_syntax";
+const contractIssue: ContractValidationIssue = {
+  code: contractIssueCode,
+  message: "Invalid contract.",
+  path: "$",
+};
+const knownFailureCode: ContractFailureCode = CONTRACT_FAILURE_CODES[0];
+void CANONICAL_JSON_ALGORITHM;
+void CONTRACT_DIGEST_ALGORITHM;
+void stateContract;
+void canonicalText;
+void canonicalDigest;
+void canonicalContract;
+void stateContractDigest;
+void canonicalError;
+void contractError;
+void canonicalIssue;
+void contractIssue;
+void knownFailureCode;
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",
@@ -161,12 +244,21 @@ void reportIssue;
 
 export type PublicTypeContract = {
   config: UIWitnessConfig;
+  contract: UIWitnessContract;
+  contractCoordinate: ContractCoordinate;
+  contractException: ContractException;
+  contractExpectation: ContractExpectation;
+  contractFailureCode: ContractFailureCode;
+  contractIssue: ContractValidationIssue;
+  contractIssueCode: ContractValidationIssueCode;
   coverage: CoverageSummary;
   errorCode: UIWitnessErrorCode;
   failurePolicy: FailurePolicy;
   issue: ConfigValidationIssue;
   issueCode: ConfigValidationIssueCode;
+  json: JsonValue;
   route: RouteDefinition;
+  sha256: Sha256Digest;
   state: StateDefinition;
   viewport: ViewportDefinition;
 };

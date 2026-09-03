@@ -1,9 +1,16 @@
 # uiwitness-core
 
-Browser-independent UIWitness contracts for configuration validation, deterministic matrix expansion and artifact paths, coverage calculations, and schema-v1 result/report parsing.
+Browser-independent UIWitness contracts for configuration validation, state-contract parsing and canonical digests, deterministic matrix expansion and artifact paths, coverage calculations, and schema-v1 result/report parsing.
 
 ```ts
-import { defineConfig, expandMatrix, parseReport } from "uiwitness-core";
+import {
+  canonicalizeContract,
+  contractDigest,
+  defineConfig,
+  expandMatrix,
+  parseContract,
+  parseReport,
+} from "uiwitness-core";
 ```
 
 New writer paths are restricted to `.uiwitness/artifacts/**`. `parseReport` keeps schema version 1 compatible with both `.uiwitness/artifacts/**` and legacy `.statecraft/artifacts/**` screenshot references. The public `ScreenshotArtifactPath` type is writer-only, while `ReportScreenshotArtifactPath` and `ReportExecutionResult` represent the two-root read contract.
