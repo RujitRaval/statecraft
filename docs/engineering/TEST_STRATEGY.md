@@ -26,7 +26,7 @@ The example-app foundation adds unit coverage for its fixed data payloads, no-da
 The Phase 6 end-to-end gate starts the production example, loads its checked-in config, expands exactly 15 route/state combinations across two viewports and two themes, and runs all 60 cells through the public CLI. It requires exit code `1`, 56 passes, four exact `ASSERTION_FAILED` coordinates, 60 non-empty screenshots, schema-v1 JSON, offline HTML, 93.33% execution coverage, 100% state coverage, and 93.33% responsive/theme coverage. Any added, removed, widened, or accidentally repaired defect breaks the gate.
 
 ## CLI contracts
-Exit 0 all-pass; 1 completed with failures; 2 invalid usage/config/internal setup. Verify `check` and `scan` pass/fail paths plus `open` with/without report.
+Exit `0` means an all-pass check/scan or a matching complete contract; `1` means completed failures or unaccepted contract drift; `2` means invalid usage/config/setup, an incomplete guard run, or an internal error. Verify `check`, `scan`, and `guard` pass/fail/error paths plus `open` with/without a report.
 
 Config foundation tests cover default and explicit path discovery, canonical paths, absent and ambiguous configs, invalid roots and non-file paths, trusted module import failures, missing default exports, delegation to core validation, and the built package/type boundary. Discovery tests use isolated temporary projects and do not walk parent directories or access the network.
 

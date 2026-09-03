@@ -1,7 +1,7 @@
 # Architecture
 
 ## Flow
-`CLI -> config/contract validation -> core matrix/comparison -> Playwright runner -> report renderer -> coordinated evidence + machine-verdict publication`
+`CLI -> config/contract validation -> core matrix -> Playwright runner/report renderer -> evidence publication -> contract comparison -> machine-verdict publication`
 
 ## Monorepo
 ```text
