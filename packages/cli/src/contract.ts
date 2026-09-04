@@ -1,7 +1,5 @@
 import {
   lstat,
-  mkdir,
-  open,
   readFile,
   rm,
 } from "node:fs/promises";
@@ -21,6 +19,9 @@ import {
   parseContractProposal,
   parseContractProposalMetadata,
   parseContractProposalSource,
+  parseCommittedGeneration,
+  parseGenerationManifest,
+  generationManifestDigest,
   serializeContractProposal,
   serializeContractProposalMetadata,
   withContractProposalAnnotation,
@@ -32,6 +33,7 @@ import {
   type JsonValue,
   type UIWitnessContract,
 } from "uiwitness-core";
+import { withGenerationTransactionLock } from "uiwitness-runner-playwright";
 
 import {
   contractSourceExecutions,
@@ -42,12 +44,15 @@ import {
 import { GuardError } from "./guard-errors.js";
 import {
   DEFAULT_CONTRACT_PATH,
-  publishContractProposal,
+  prepareContractProposal,
+  type GuardGenerationFinalization,
+  type PreparedContractProposal,
 } from "./guard.js";
 import {
   canonicalGuardWorkspace,
   containedRegularFile,
   preflightOutputPath,
+  withContractLock,
   writeGuardJson,
 } from "./guard-paths.js";
 import { scanLoadedProject } from "./scan.js";
@@ -231,40 +236,52 @@ async function readMetadata(bundle: ProposalBundle): Promise<ContractProposalMet
   return metadata;
 }
 
-async function withContractLock<T>(root: string, action: () => Promise<T>): Promise<T> {
-  const lockDirectory = resolve(root, ".uiwitness");
-  try {
-    await mkdir(lockDirectory, { mode: 0o700 });
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
-  }
-  const directory = await lstat(lockDirectory);
-  if (!directory.isDirectory() || directory.isSymbolicLink()) {
+async function verifyCommittedGeneration(bundle: ProposalBundle): Promise<void> {
+  const markerPath = await containedRegularFile(
+    bundle.root,
+    resolve(bundle.root, ".uiwitness/generation.json"),
+    "GUARD_PROPOSAL_INVALID",
+    "Committed generation marker",
+  );
+  const marker = parseCommittedGeneration(await readFile(markerPath, "utf8"));
+  if (!marker.sourceGenerationDigests.includes(bundle.proposal.sourceGenerationDigest)) {
     throw new GuardError(
-      "GUARD_CONTRACT_LOCKED",
-      "The contract lock directory is not a safe regular directory.",
-      lockDirectory,
+      "GUARD_PROPOSAL_INVALID",
+      "The contract proposal is not part of the currently committed generation.",
+      bundle.proposalPath,
     );
   }
-  const lockPath = resolve(lockDirectory, "contract.lock");
-  let handle;
-  try {
-    handle = await open(lockPath, "wx", 0o600);
-  } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-      throw new GuardError(
-        "GUARD_CONTRACT_LOCKED",
-        "Another UIWitness contract writer is active.",
-        lockPath,
-      );
-    }
-    throw error;
+  const manifestPath = await containedRegularFile(
+    bundle.root,
+    resolve(bundle.root, marker.manifestPath),
+    "GUARD_PROPOSAL_INVALID",
+    "Committed generation manifest",
+  );
+  const manifest = parseGenerationManifest(await readFile(manifestPath, "utf8"));
+  if (
+    generationManifestDigest(manifest) !== marker.manifestDigest ||
+    JSON.stringify(manifest.sourceGenerationDigests) !==
+      JSON.stringify(marker.sourceGenerationDigests)
+  ) {
+    throw new GuardError(
+      "GUARD_PROPOSAL_INVALID",
+      "The committed generation marker and manifest do not match.",
+      manifestPath,
+    );
   }
-  try {
-    return await action();
-  } finally {
-    await handle.close();
-    await rm(lockPath, { force: true });
+  const sourcePath = relativeDisplay(bundle.root, bundle.sourcePath);
+  const proposalPath = relativeDisplay(bundle.root, bundle.proposalPath);
+  const sourceEntry = manifest.artifacts.find(({ path }) => path === sourcePath);
+  const proposalEntry = manifest.artifacts.find(({ path }) => path === proposalPath);
+  if (
+    sourceEntry?.role !== "contract-source" ||
+    proposalEntry?.role !== "contract-proposal"
+  ) {
+    throw new GuardError(
+      "GUARD_PROPOSAL_INVALID",
+      "The proposal family is not bound to the committed generation manifest.",
+      manifestPath,
+    );
   }
 }
 
@@ -366,8 +383,9 @@ export async function acceptContractChanges(
   options: ContractAcceptOptions,
 ): Promise<ContractAcceptResult> {
   const initial = await proposalBundle(options.cwd, options.candidatePath);
-  return withContractLock(initial.root, async () => {
+  return withContractLock(initial.root, () => withGenerationTransactionLock(initial.root, async () => {
     const bundle = await proposalBundle(initial.root, initial.proposalPath);
+    await verifyCommittedGeneration(bundle);
     const metadata = await readMetadata(bundle);
     const current = await currentContract(
       bundle.root,
@@ -424,7 +442,7 @@ export async function acceptContractChanges(
       contractPath: relativeDisplay(bundle.root, current.path),
       discarded: Object.freeze(discarded),
     });
-  });
+  }));
 }
 
 export async function initContract(
@@ -436,18 +454,47 @@ export async function initContract(
     await preflightOutputPath(root, target, true);
     const loaded = await loadGuardConfig(root, options.configPath);
     const configuration = await guardConfiguration(loaded.config, loaded.path, root);
-    const report = (await scanLoadedProject(loaded, { projectDirectory: root })).report;
     const evaluatedOn = evaluationDate(options.now);
-    const runDigest = guardRunDigest(configuration, report);
-    const source = createContractProposalSource({
-      configuration,
-      contract: null,
-      evaluatedOn,
-      executions: contractSourceExecutions(report),
-      runDigest,
+    let source: ContractProposalSource | undefined;
+    let proposal: ContractProposal | undefined;
+    let prepared: PreparedContractProposal | undefined;
+    const scan = await scanLoadedProject(loaded, {
+      projectDirectory: root,
+      finalizeGeneration: async (report): Promise<GuardGenerationFinalization> => {
+        const runDigest = guardRunDigest(configuration, report);
+        source = createContractProposalSource({
+          configuration,
+          contract: null,
+          evaluatedOn,
+          executions: contractSourceExecutions(report),
+          runDigest,
+        });
+        proposal = createContractProposal(source, await packageVersion());
+        const allPassed = report.executions.every(({ status }) => status === "passed");
+        prepared = allPassed
+          ? undefined
+          : await prepareContractProposal({
+              configuration,
+              contract: null,
+              evaluatedOn,
+              report,
+              root,
+              runDigest,
+            });
+        return {
+          artifacts: prepared?.artifacts ?? [],
+          runDigest,
+          sourceGenerationDigests: prepared === undefined
+            ? []
+            : [prepared.sourceGenerationDigest],
+          toolVersion: await packageVersion(),
+        };
+      },
     });
-    const proposal = createContractProposal(source, await packageVersion());
-    const allPassed = report.executions.every(({ status }) => status === "passed");
+    if (source === undefined || proposal === undefined) {
+      throw new GuardError("GUARD_PROPOSAL_INVALID", "Contract initialization generation did not complete.");
+    }
+    const allPassed = scan.report.executions.every(({ status }) => status === "passed");
     if (allPassed) {
       const contract = applyContractProposal({
         acceptedOn: evaluatedOn,
@@ -462,14 +509,13 @@ export async function initContract(
         status: "created" as const,
       });
     }
-    const published = await publishContractProposal({
-      configuration,
-      contract: null,
-      evaluatedOn,
-      report,
-      root,
-      runDigest,
+    if (prepared === undefined) {
+      throw new GuardError("GUARD_PROPOSAL_INVALID", "Contract proposal generation did not complete.");
+    }
+    return Object.freeze({
+      metadataPath: prepared.metadataPath,
+      proposalPath: prepared.proposalPath,
+      status: "proposal" as const,
     });
-    return Object.freeze({ status: "proposal" as const, ...published });
   });
 }

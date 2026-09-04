@@ -12,7 +12,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import {
@@ -157,6 +157,53 @@ function report(
   });
 }
 
+function mockRunReport(value: UIWitnessReport, once = false): void {
+  const implementation = async (
+    _cells: unknown,
+    options: {
+      readonly finalizeGeneration?: ((report: UIWitnessReport) => unknown) | undefined;
+      readonly projectDirectory: string;
+    },
+  ) => {
+    const finalization = await options.finalizeGeneration?.(value) as {
+      readonly artifacts?: readonly {
+        readonly contents: string | Uint8Array;
+        readonly path: string;
+        readonly publication: "exclusive" | "immutable" | "replace";
+      }[];
+    } | undefined;
+    for (const artifact of finalization?.artifacts ?? []) {
+      const path = join(options.projectDirectory, ...artifact.path.split("/"));
+      await mkdir(dirname(path), { recursive: true });
+      if (artifact.publication === "immutable") {
+        try {
+          const existing = await readFile(path);
+          if (!existing.equals(Buffer.from(artifact.contents))) {
+            throw new Error(`Immutable test artifact changed: ${artifact.path}`);
+          }
+          continue;
+        } catch (error: unknown) {
+          if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        }
+      }
+      await writeFile(path, artifact.contents, {
+        flag: artifact.publication === "replace" ? "w" : "wx",
+        mode: 0o600,
+      });
+    }
+    return {
+      htmlReportPath: ".uiwitness/report/index.html",
+      report: value,
+      reportPath: ".uiwitness/report/uiwitness.json",
+    };
+  };
+  if (once) {
+    runPersistedScenarioCellsMock.mockImplementationOnce(implementation);
+  } else {
+    runPersistedScenarioCellsMock.mockImplementation(implementation);
+  }
+}
+
 async function writeKnownFailureContract(
   value: GuardFixture,
   options: {
@@ -207,11 +254,7 @@ describe("guardProject", () => {
     const passing = await fixture();
     const passingConfiguration = await fixtureConfiguration(passing);
     await rm(passing.contractPath);
-    runPersistedScenarioCellsMock.mockResolvedValueOnce({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(passingConfiguration, "passed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(passingConfiguration, "passed"), true);
 
     await expect(initContract({
       cwd: passing.project,
@@ -226,11 +269,7 @@ describe("guardProject", () => {
     const failing = await fixture();
     const failingConfiguration = await fixtureConfiguration(failing);
     await rm(failing.contractPath);
-    runPersistedScenarioCellsMock.mockResolvedValueOnce({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(failingConfiguration, "failed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(failingConfiguration, "failed"), true);
 
     const result = await initContract({
       cwd: failing.project,
@@ -249,11 +288,7 @@ describe("guardProject", () => {
     const value = await fixture();
     const configuration = await fixtureConfiguration(value);
     const clock = vi.fn(() => new Date("2026-09-03T12:00:00.000Z"));
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "passed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "passed"));
 
     const result = await guardProject({
       cwd: value.project,
@@ -276,6 +311,7 @@ describe("guardProject", () => {
     expect(runPersistedScenarioCellsMock.mock.calls[0]![0]).toHaveLength(1);
     expect(runPersistedScenarioCellsMock.mock.calls[0]![1]).toEqual({
       baseURL: "https://example.test",
+      finalizeGeneration: expect.any(Function),
       projectDirectory: value.project,
       scenarioBaseDirectory: value.project,
     });
@@ -430,11 +466,7 @@ describe("guardProject", () => {
       configFilename: "team's config.mjs",
     });
     const configuration = await fixtureConfiguration(value);
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "failed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "failed"));
 
     const result = await guardProject({
       configPath: "config dir/team's config.mjs",
@@ -530,11 +562,7 @@ describe("guardProject", () => {
   it("preserves an explicit config basename beginning with two dashes", async () => {
     const value = await fixture({ configFilename: "--team.mjs" });
     const configuration = await fixtureConfiguration(value);
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "failed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "failed"));
 
     const result = await guardProject({
       configPath: "./--team.mjs",
@@ -563,11 +591,7 @@ describe("guardProject", () => {
     const value = await fixture();
     const configuration = await fixtureConfiguration(value);
     await writeKnownFailureContract(value);
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, status, failureCode),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, status, failureCode));
 
     const result = await guardProject({
       cwd: value.project,
@@ -591,11 +615,7 @@ describe("guardProject", () => {
     const value = await fixture();
     const configuration = await fixtureConfiguration(value);
     await writeKnownFailureContract(value, { expiresOn: "2026-09-02" });
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "failed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "failed"));
 
     const result = await guardProject({
       cwd: value.project,
@@ -615,9 +635,7 @@ describe("guardProject", () => {
 
   it("fails closed when the fresh report is incomplete", async () => {
     const value = await fixture();
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: parseReport({
+    mockRunReport(parseReport({
         executions: [],
         generatedAt: "2026-09-03T12:00:00.000Z",
         project: { baseURL: "https://example.test" },
@@ -636,9 +654,7 @@ describe("guardProject", () => {
           routes: 0,
           states: 0,
         },
-      }),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+      }));
 
     const result = await guardProject({
       cwd: value.project,
@@ -700,11 +716,7 @@ describe("guardProject", () => {
       `${JSON.stringify(staleContract, null, 2)}\n`,
       "utf8",
     );
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "passed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "passed"));
 
     const result = await guardProject({
       cwd: value.project,
@@ -732,6 +744,7 @@ describe("guardProject", () => {
       guardProject({ contractPath: join(outside, "contract.json"), cwd: value.project }),
       guardProject({ cwd: value.project, jsonPath: "existing.json" }),
       guardProject({ configPath: "bad\nconfig.mjs", cwd: value.project }),
+      guardProject({ cwd: value.project, jsonPath: ".uiwitness/contract.lock" }),
     ];
 
     const errors = await Promise.all(cases.map((promise) =>
@@ -741,7 +754,19 @@ describe("guardProject", () => {
     expect(errors[1]).toMatchObject({ code: "GUARD_CONTRACT_PATH_INVALID" });
     expect(errors[2]).toMatchObject({ code: "GUARD_JSON_EXISTS" });
     expect(errors[3]).toMatchObject({ code: "GUARD_CONFIG_PATH_INVALID" });
+    expect(errors[4]).toMatchObject({ code: "GUARD_JSON_PATH_INVALID" });
     expect(errors.every((error) => error instanceof GuardError)).toBe(true);
+    expect(runPersistedScenarioCellsMock).not.toHaveBeenCalled();
+  });
+
+  it("holds the contract writer lock from contract snapshot through publication", async () => {
+    const value = await fixture();
+    await mkdir(join(value.project, ".uiwitness"));
+    await writeFile(join(value.project, ".uiwitness/contract.lock"), "busy\n");
+
+    await expect(guardProject({ cwd: value.project })).rejects.toMatchObject({
+      code: "GUARD_CONTRACT_LOCKED",
+    });
     expect(runPersistedScenarioCellsMock).not.toHaveBeenCalled();
   });
 
@@ -858,11 +883,7 @@ describe("guardProject", () => {
     const outputDirectory = join(value.project, "machine");
     await mkdir(outputDirectory, { mode: 0o755 });
     await chmod(outputDirectory, 0o755);
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "passed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "passed"));
 
     await guardProject({
       cwd: value.project,
@@ -932,11 +953,7 @@ describe("guardProject", () => {
     expect(alternateConfiguration[0]!.configFingerprint).toBe(
       configuration[0]!.configFingerprint,
     );
-    runPersistedScenarioCellsMock.mockResolvedValue({
-      htmlReportPath: ".uiwitness/report/index.html",
-      report: report(configuration, "passed"),
-      reportPath: ".uiwitness/report/uiwitness.json",
-    });
+    mockRunReport(report(configuration, "passed"));
 
     await guardProject({
       cwd: value.project,

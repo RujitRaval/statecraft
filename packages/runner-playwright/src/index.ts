@@ -25,8 +25,15 @@ export type {
   RunCapturedScenarioCellsOptions,
   ScenarioCaptureEvidence,
 } from "./capture.js";
-export { runPersistedScenarioCells } from "./persistence.js";
+export {
+  runPersistedScenarioCells,
+  withGenerationTransactionLock,
+} from "./persistence.js";
 export type {
+  GenerationArtifactPublication,
+  GenerationFinalization,
+  GenerationFinalizer,
+  GenerationSidecarArtifact,
   PersistedScenarioRun,
   RunPersistedScenarioCellsOptions,
 } from "./persistence.js";

@@ -2,11 +2,31 @@ import { dirname, resolve } from "node:path";
 
 import {
   expandMatrix,
+  type GenerationArtifactRole,
+  type Sha256Digest,
+  type UIWitnessCommittedGeneration,
   type UIWitnessReport,
 } from "uiwitness-core";
 
 import { loadConfig } from "./config.js";
 import type { LoadedConfig } from "./config.js";
+
+interface ScanGenerationFinalization {
+  readonly artifacts?: readonly {
+    readonly contents: string | Uint8Array;
+    readonly mutable?: boolean | undefined;
+    readonly path: string;
+    readonly publication: "exclusive" | "immutable" | "replace";
+    readonly role: Exclude<GenerationArtifactRole, "evidence" | "report-html" | "report-json">;
+  }[] | undefined;
+  readonly runDigest?: Sha256Digest | undefined;
+  readonly sourceGenerationDigests?: readonly Sha256Digest[] | undefined;
+  readonly toolVersion: string;
+}
+
+type ScanGenerationFinalizer = (
+  report: UIWitnessReport,
+) => ScanGenerationFinalization | Promise<ScanGenerationFinalization>;
 
 /** Stable categories for expected scan-orchestration failures. */
 export type ScanErrorCode =
@@ -45,6 +65,7 @@ export interface ScanOptions {
 /** Validated persisted output from one completed scan. */
 export interface ScanResult {
   readonly configPath: string;
+  readonly generation: UIWitnessCommittedGeneration;
   readonly htmlReportPath: ".uiwitness/report/index.html";
   readonly report: UIWitnessReport;
   readonly reportPath: ".uiwitness/report/uiwitness.json";
@@ -55,6 +76,7 @@ interface ScanLoadedProjectOptions {
   readonly headed?: boolean | undefined;
   readonly projectDirectory: string;
   readonly routeId?: string | undefined;
+  readonly finalizeGeneration?: ScanGenerationFinalizer | undefined;
 }
 
 const coordinatePartPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
@@ -139,9 +161,13 @@ export async function scanLoadedProject(
       : {}),
     projectDirectory: options.projectDirectory,
     scenarioBaseDirectory: dirname(loaded.path),
+    ...(options.finalizeGeneration === undefined
+      ? {}
+      : { finalizeGeneration: options.finalizeGeneration }),
   });
   return Object.freeze({
     configPath: loaded.path,
+    generation: run.generation,
     htmlReportPath: run.htmlReportPath,
     report: run.report,
     reportPath: run.reportPath,

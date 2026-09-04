@@ -155,6 +155,12 @@ function completedScan(
   const covered = passed ? 1 : 0;
   return Object.freeze({
     configPath: "/project/uiwitness.config.ts",
+    generation: {
+      manifestDigest: `sha256:${"a".repeat(64)}` as const,
+      manifestPath: `.uiwitness/generations/${"a".repeat(64)}.manifest.json`,
+      schemaVersion: 1 as const,
+      sourceGenerationDigests: [],
+    },
     report: parseReport({
       executions: [
         {

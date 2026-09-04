@@ -53,6 +53,22 @@ export {
   serializeContractProposalSource,
   withContractProposalAnnotation,
 } from "./contract-proposal.js";
+export {
+  COMMITTED_GENERATION_SCHEMA_VERSION,
+  GENERATION_ARTIFACT_ROLES,
+  GENERATION_MANIFEST_SCHEMA_VERSION,
+  generationManifestDigest,
+  parseCommittedGeneration,
+  parseGenerationManifest,
+  serializeCommittedGeneration,
+  serializeGenerationManifest,
+} from "./generation.js";
+export type {
+  GenerationArtifactDescriptor,
+  GenerationArtifactRole,
+  UIWitnessCommittedGeneration,
+  UIWitnessGenerationManifest,
+} from "./generation.js";
 export type {
   ContractProposal,
   ContractProposalChange,
@@ -97,6 +113,7 @@ export {
   ConfigValidationError,
   ContractValidationError,
   ContractProposalValidationError,
+  GenerationValidationError,
   ReportValidationError,
   ResultValidationError,
   UIWitnessError,
@@ -107,6 +124,7 @@ export type {
   ConfigValidationIssueCode,
   ContractValidationIssue,
   ContractValidationIssueCode,
+  GenerationValidationIssue,
   ReportValidationIssue,
   ResultValidationIssue,
   UIWitnessErrorCode,

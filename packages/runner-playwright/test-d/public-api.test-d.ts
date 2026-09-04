@@ -10,6 +10,7 @@ import {
   runPublicSiteChecks,
   runScenarioCells,
   runScenarioLifecycle,
+  withGenerationTransactionLock,
   publicSiteScenario,
   ScenarioLoadError,
   ScenarioCaptureError,
@@ -25,6 +26,10 @@ import {
   type DeterministicReadinessOptions,
   type DroppedDiagnosticCounts,
   type FulfilledCellExecution,
+  type GenerationArtifactPublication,
+  type GenerationFinalization,
+  type GenerationFinalizer,
+  type GenerationSidecarArtifact,
   type LoadScenarioOptions,
   type NavigatedScenarioCellExecutor,
   type NavigatedScenarioContext,
@@ -126,13 +131,29 @@ const captureOptions: RunCapturedScenarioCellsOptions = {
 const captureOutcomes: Promise<
   readonly CellExecutionOutcome<CapturedScenarioCell>[]
 > = runCapturedScenarioCells([execution.cell], captureOptions);
+const generationPublication: GenerationArtifactPublication = "replace";
+const generationSidecar: GenerationSidecarArtifact = {
+  contents: "{}\n",
+  path: ".uiwitness/contract-verdict.json",
+  publication: generationPublication,
+  role: "contract-verdict",
+};
+const generationFinalizer: GenerationFinalizer = async (): Promise<GenerationFinalization> => ({
+  artifacts: [generationSidecar],
+  toolVersion: "1.0.0",
+});
 const persistenceOptions: RunPersistedScenarioCellsOptions = {
   ...captureOptions,
+  finalizeGeneration: generationFinalizer,
   generatedAt: new Date("2026-08-20T15:00:00.000Z"),
   projectDirectory: process.cwd(),
 };
 const persistedRun: Promise<PersistedScenarioRun> =
   runPersistedScenarioCells([execution.cell], persistenceOptions);
+const lockedGenerationMutation: Promise<string> = withGenerationTransactionLock(
+  process.cwd(),
+  async () => "locked",
+);
 const publicSiteOptions: RunPublicSiteChecksOptions = {
   generatedAt: new Date("2026-08-22T18:00:00.000Z"),
   launchOptions: { headless: true },
@@ -153,6 +174,10 @@ const overflowTolerance: 1 = PUBLIC_SITE_OVERFLOW_TOLERANCE_PX;
 const htmlReportPath: Promise<".uiwitness/report/index.html"> = persistedRun.then(
   (run) => run.htmlReportPath,
 );
+const generationManifestPath: Promise<string> = persistedRun.then(
+  (run) => run.generation.manifestPath,
+);
+void lockedGenerationMutation;
 declare const capture: CapturedScenarioCell;
 const evidence: ScenarioCaptureEvidence = capture;
 const assertionStatus: AssertionStatus = capture.assertionStatus;
@@ -227,6 +252,7 @@ void hook;
 void assertionHook;
 void loadErrorCode;
 void htmlReportPath;
+void generationManifestPath;
 void fulfilledValue;
 void droppedDiagnostics;
 void rejectedReason;

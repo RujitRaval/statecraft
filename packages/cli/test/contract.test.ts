@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { access, mkdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,15 +10,20 @@ import {
   createContractProposal,
   createContractProposalSource,
   emptyContractProposalMetadata,
+  generationManifestDigest,
   parseContract,
   parseContractProposalSource,
+  parseGenerationManifest,
+  serializeCommittedGeneration,
   serializeContractProposal,
   serializeContractProposalMetadata,
   serializeContractProposalSource,
+  serializeGenerationManifest,
   type ContractProposal,
   type ContractProposalSource,
   type UIWitnessContract,
 } from "uiwitness-core";
+import { withGenerationTransactionLock } from "uiwitness-runner-playwright";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -90,9 +96,44 @@ async function publish(
   await mkdir(candidates, { recursive: true });
   const candidate = join(candidates, `${proposalDigest}.proposal.json`);
   const metadata = join(candidates, `${proposalDigest}.metadata.json`);
-  await writeFile(join(generations, `${sourceDigest}.source.json`), serializeContractProposalSource(source));
-  await writeFile(candidate, serializeContractProposal(proposal));
-  await writeFile(metadata, serializeContractProposalMetadata(emptyContractProposalMetadata(proposal)));
+  const sourceContents = serializeContractProposalSource(source);
+  const proposalContents = serializeContractProposal(proposal);
+  const metadataContents = serializeContractProposalMetadata(emptyContractProposalMetadata(proposal));
+  const sourcePath = `.uiwitness/contract-generations/${sourceDigest}.source.json`;
+  const proposalPath = `.uiwitness/contract-candidates/${proposalDigest}.proposal.json`;
+  const metadataPath = `.uiwitness/contract-candidates/${proposalDigest}.metadata.json`;
+  const digest = (contents: string): `sha256:${string}` =>
+    `sha256:${createHash("sha256").update(contents).digest("hex")}`;
+  const reportContents = "report\n";
+  const htmlContents = "html\n";
+  const manifest = parseGenerationManifest(serializeGenerationManifest({
+    artifacts: [
+      { bytes: Buffer.byteLength(metadataContents), digest: digest(metadataContents), mutable: true, path: metadataPath, role: "contract-metadata" },
+      { bytes: Buffer.byteLength(proposalContents), digest: digest(proposalContents), mutable: false, path: proposalPath, role: "contract-proposal" },
+      { bytes: Buffer.byteLength(sourceContents), digest: digest(sourceContents), mutable: false, path: sourcePath, role: "contract-source" },
+      { bytes: Buffer.byteLength(htmlContents), digest: digest(htmlContents), mutable: false, path: ".uiwitness/report/index.html", role: "report-html" },
+      { bytes: Buffer.byteLength(reportContents), digest: digest(reportContents), mutable: false, path: ".uiwitness/report/uiwitness.json", role: "report-json" },
+    ],
+    complete: true,
+    reportDigest: digest(reportContents),
+    runDigest,
+    schemaVersion: 1,
+    sourceGenerationDigests: [proposal.sourceGenerationDigest],
+    toolVersion: "0.26.2",
+  }));
+  const manifestDigest = generationManifestDigest(manifest);
+  const manifestPath = `.uiwitness/generations/${manifestDigest.slice(7)}.manifest.json`;
+  await mkdir(join(root, ".uiwitness", "generations"), { recursive: true });
+  await writeFile(join(root, sourcePath), sourceContents);
+  await writeFile(candidate, proposalContents);
+  await writeFile(metadata, metadataContents);
+  await writeFile(join(root, manifestPath), serializeGenerationManifest(manifest));
+  await writeFile(join(root, ".uiwitness", "generation.json"), serializeCommittedGeneration({
+    manifestDigest,
+    manifestPath,
+    schemaVersion: 1,
+    sourceGenerationDigests: [proposal.sourceGenerationDigest],
+  }));
   return { candidate, metadata, proposal };
 }
 
@@ -172,6 +213,24 @@ describe("contract proposal CLI services", () => {
     })).rejects.toMatchObject({ code: "GUARD_CONTRACT_STALE" });
   });
 
+  it("rejects a valid proposal family that is orphaned from the committed generation", async () => {
+    const fixture = await project();
+    const published = await publish(fixture.root, fixture.source);
+    const marker = join(fixture.root, ".uiwitness", "generation.json");
+    const { rm } = await import("node:fs/promises");
+    await rm(marker);
+
+    await expect(acceptContractChanges({
+      candidatePath: published.candidate,
+      changeIds: [published.proposal.changes[0]!.id],
+      cwd: fixture.root,
+    })).rejects.toMatchObject({ code: "GUARD_PROPOSAL_INVALID" });
+    await expect(access(published.candidate)).resolves.toBeUndefined();
+    expect(parseContract(
+      await readFile(join(fixture.root, "uiwitness.contract.json"), "utf8"),
+    )).toEqual(fixture.contract);
+  });
+
   it("consumes a proposal after partial selection and records discarded IDs", async () => {
     const fixture = await project();
     const current = fixture.source.configuration[0]!;
@@ -222,6 +281,32 @@ describe("contract proposal CLI services", () => {
       changeIds: [published.proposal.changes[0]!.id],
       cwd: fixture.root,
     })).rejects.toMatchObject({ code: "GUARD_CONTRACT_LOCKED" });
+  });
+
+  it("does not accept while another generation transaction owns the runner lock", async () => {
+    const fixture = await project();
+    const published = await publish(fixture.root, fixture.source);
+    let releaseOwner!: () => void;
+    let ownerStarted!: () => void;
+    const started = new Promise<void>((resolve) => {
+      ownerStarted = resolve;
+    });
+    const ownerDone = new Promise<void>((resolve) => {
+      releaseOwner = resolve;
+    });
+    const owner = withGenerationTransactionLock(fixture.root, async () => {
+      ownerStarted();
+      await ownerDone;
+    });
+    await started;
+    await expect(acceptContractChanges({
+      candidatePath: published.candidate,
+      changeIds: [published.proposal.changes[0]!.id],
+      cwd: fixture.root,
+    })).rejects.toThrow("Another result-persistence run is active");
+    releaseOwner();
+    await owner;
+    await expect(access(published.candidate)).resolves.toBeUndefined();
   });
 
   it("refuses contract initialization without clobbering an existing target", async () => {
