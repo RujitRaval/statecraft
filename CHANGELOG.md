@@ -4,6 +4,22 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.4.0] - 2026-09-03
+
+### Added
+
+- Every guard or initialization run now commits its screenshots, report, HTML, verdict, proposal family, metadata, optional JSON copy, and digest-bound manifest as one generation, exposed through a stable `.uiwitness/generation.json` marker.
+- Library consumers can validate and serialize immutable generation manifests and committed-generation markers through the public core API.
+
+### Changed
+
+- Contract acceptance now reads proposals only from the current committed generation and holds the contract and generation locks through revalidation, contract publication, and proposal consumption.
+
+### Security
+
+- Interrupted publication rolls back before the durable marker appears and retains the new generation only after authenticating the exact marker and referenced manifest; incomplete or ambiguous recovery fails closed.
+- Generation publication rejects unsafe links, reserved paths and descendants, oversized paths, mutable finalizer races, changed immutable files, and late no-clobber collisions while durably syncing every filesystem transition.
+
 ## [0.26.3.0] - 2026-09-03
 
 ### Added
