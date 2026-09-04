@@ -1,6 +1,6 @@
 # uiwitness-core
 
-Browser-independent UIWitness contracts for configuration validation, state-contract parsing, canonical digests, deterministic comparison and verdicts, immutable proposals and named acceptance, matrix expansion and artifact paths, coverage calculations, and schema-v1 result/report parsing.
+Browser-independent UIWitness contracts for configuration validation, state-contract parsing, canonical digests, deterministic comparison and verdicts, immutable proposals and named acceptance, committed-generation manifests and markers, matrix expansion and artifact paths, coverage calculations, and schema-v1 result/report parsing.
 
 ```ts
 import {
@@ -12,7 +12,10 @@ import {
   createContractProposalSource,
   defineConfig,
   expandMatrix,
+  generationManifestDigest,
+  parseCommittedGeneration,
   parseContract,
+  parseGenerationManifest,
   parseReport,
 } from "uiwitness-core";
 ```
