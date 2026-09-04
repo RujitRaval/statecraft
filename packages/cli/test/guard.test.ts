@@ -26,10 +26,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   guardConfiguration,
+  guardRemediateCommand,
   guardReproduceCommand,
   guardRunDigest,
   reportIsComplete,
 } from "../src/guard-adapter.js";
+import { annotateContractChange, initContract } from "../src/contract.js";
 import {
   DEFAULT_GUARD_VERDICT_PATH,
   GuardError,
@@ -201,6 +203,48 @@ afterEach(async () => {
 });
 
 describe("guardProject", () => {
+  it("initializes an all-pass contract and proposes failed initial states", async () => {
+    const passing = await fixture();
+    const passingConfiguration = await fixtureConfiguration(passing);
+    await rm(passing.contractPath);
+    runPersistedScenarioCellsMock.mockResolvedValueOnce({
+      htmlReportPath: ".uiwitness/report/index.html",
+      report: report(passingConfiguration, "passed"),
+      reportPath: ".uiwitness/report/uiwitness.json",
+    });
+
+    await expect(initContract({
+      cwd: passing.project,
+      now: () => new Date("2026-09-03T12:00:00.000Z"),
+    })).resolves.toMatchObject({
+      contractPath: "uiwitness.contract.json",
+      status: "created",
+    });
+    expect(JSON.parse(await readFile(passing.contractPath, "utf8")))
+      .toMatchObject({ coordinates: [{ expected: { status: "passed" } }] });
+
+    const failing = await fixture();
+    const failingConfiguration = await fixtureConfiguration(failing);
+    await rm(failing.contractPath);
+    runPersistedScenarioCellsMock.mockResolvedValueOnce({
+      htmlReportPath: ".uiwitness/report/index.html",
+      report: report(failingConfiguration, "failed"),
+      reportPath: ".uiwitness/report/uiwitness.json",
+    });
+
+    const result = await initContract({
+      cwd: failing.project,
+      now: () => new Date("2026-09-03T12:00:00.000Z"),
+    });
+    expect(result).toMatchObject({ status: "proposal" });
+    expect(result.proposalPath).toMatch(
+      /^\.uiwitness\/contract-candidates\/[a-f0-9]{64}\.proposal\.json$/u,
+    );
+    await expect(access(failing.contractPath)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
   it("runs one complete fresh matrix and publishes deterministic private verdict JSON", async () => {
     const value = await fixture();
     const configuration = await fixtureConfiguration(value);
@@ -407,12 +451,45 @@ describe("guardProject", () => {
     ]);
     expect(result.machineVerdict.findings).toEqual([
       expect.objectContaining({
+        remediate: expect.stringContaining(
+          "contract inspect --candidate .uiwitness/contract-candidates/",
+        ),
         reproduce: guardReproduceCommand(
           "home/success/desktop/light",
           "config dir/team's config.mjs",
         ),
       }),
     ]);
+    expect(result.proposalPath).toMatch(
+      /^\.uiwitness\/contract-candidates\/[a-f0-9]{64}\.proposal\.json$/u,
+    );
+    expect(result.metadataPath).toMatch(
+      /^\.uiwitness\/contract-candidates\/[a-f0-9]{64}\.metadata\.json$/u,
+    );
+
+    await annotateContractChange({
+      candidatePath: result.proposalPath!,
+      changeId: "expectation:home/success/desktop/light",
+      createdOn: "2026-09-03",
+      cwd: value.project,
+      expiresOn: "2026-09-17",
+      owner: "quality-team",
+      reason: "UIW-2041 tracks repair",
+    });
+    const annotatedMetadata = await readFile(
+      join(value.project, ...result.metadataPath!.split("/")),
+      "utf8",
+    );
+    const repeated = await guardProject({
+      configPath: "config dir/team's config.mjs",
+      cwd: value.project,
+      now: () => new Date("2026-09-03T12:00:00.000Z"),
+    });
+    expect(repeated.proposalPath).toBe(result.proposalPath);
+    expect(await readFile(
+      join(value.project, ...result.metadataPath!.split("/")),
+      "utf8",
+    )).toBe(annotatedMetadata);
   });
 
   it("quotes POSIX commands and emits one encoded command safe in Windows shells", () => {
@@ -438,6 +515,16 @@ describe("guardProject", () => {
     expect(Buffer.from(encoded, "base64").toString("utf16le")).toBe(
       "& 'node_modules\\.bin\\uiwitness.cmd' 'scan' '--coordinate' 'home/success/desktop/light' '--headed' '--config' 'config dir/& % ! team''s config.mjs'; exit $LASTEXITCODE",
     );
+    const remediation = guardRemediateCommand(
+      "expectation:home/success/desktop/light",
+      "candidate dir/team's proposal.json",
+      "windows",
+    );
+    expect(remediation).toMatch(
+      /^powershell\.exe -NoLogo -NoProfile -NonInteractive -EncodedCommand [A-Za-z0-9+/=]+$/u,
+    );
+    expect(Buffer.from(remediation.split(" ").at(-1)!, "base64").toString("utf16le"))
+      .toBe("& 'node_modules\\.bin\\uiwitness.cmd' 'contract' 'inspect' '--candidate' 'candidate dir/team''s proposal.json' '--change' 'expectation:home/success/desktop/light'; exit $LASTEXITCODE");
   });
 
   it("preserves an explicit config basename beginning with two dashes", async () => {

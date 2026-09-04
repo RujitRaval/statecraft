@@ -5,9 +5,14 @@ import {
   CONTRACT_FAILURE_CODES,
   CONTRACT_FINDING_KINDS,
   CONTRACT_FINDING_PRECEDENCE,
+  CONTRACT_METADATA_SCHEMA_VERSION,
+  CONTRACT_PROPOSAL_OPERATIONS,
+  CONTRACT_PROPOSAL_SCHEMA_VERSION,
   CONTRACT_SCHEMA_VERSION,
+  CONTRACT_SOURCE_SCHEMA_VERSION,
   CanonicalJsonError,
   ConfigValidationError,
+  ContractProposalValidationError,
   ContractValidationError,
   REPORT_SCHEMA_VERSION,
   ReportValidationError,
@@ -18,17 +23,30 @@ import {
   canonicalizeJson,
   canonicalJsonDigest,
   compareContract,
+  applyContractProposal,
   contractConfigDigest,
   contractDigest,
+  contractProposalDigest,
+  contractProposalSourceDigest,
   contractVerdictStatus,
+  createContractProposal,
+  createContractProposalSource,
   defineConfig,
+  emptyContractProposalMetadata,
   expandMatrix,
   parseConfig,
   parseContract,
+  parseContractProposal,
+  parseContractProposalMetadata,
+  parseContractProposalSource,
   parseExecutionResult,
   parseReport,
   screenshotArtifactPath,
+  serializeContractProposal,
+  serializeContractProposalMetadata,
+  serializeContractProposalSource,
   serializeReport,
+  withContractProposalAnnotation,
   type CanonicalJsonIssue,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
@@ -39,6 +57,13 @@ import {
   type ContractException,
   type ContractExpectation,
   type ContractFailureCode,
+  type ContractProposal,
+  type ContractProposalChange,
+  type ContractProposalMetadata,
+  type ContractProposalOperation,
+  type ContractProposalSource,
+  type ContractSourceDigest,
+  type ContractSourceExecution,
   type ContractValidationIssue,
   type ContractValidationIssueCode,
   type CoverageMetric,
@@ -60,6 +85,7 @@ import {
   type ReportSummary,
   type ReportValidationIssue,
   type ResultValidationIssue,
+  type ProposedExpectation,
   type ScreenshotArtifactPath,
   type Sha256Digest,
   type StateDefinition,
@@ -171,6 +197,60 @@ void CONTRACT_FINDING_KINDS;
 void CONTRACT_FINDING_PRECEDENCE;
 void comparison;
 void comparisonStatus;
+
+const proposalExecution: ContractSourceExecution = {
+  actual: { status: "passed" },
+  id: comparisonConfiguration.id,
+};
+const proposalSource: ContractProposalSource = createContractProposalSource({
+  configuration: [comparisonConfiguration],
+  contract: null,
+  evaluatedOn: "2026-09-03",
+  executions: [proposalExecution],
+  runDigest: configDigest,
+});
+const proposal: ContractProposal = createContractProposal(proposalSource, "1.0.0");
+const proposalChange: ContractProposalChange = proposal.changes[0]!;
+const proposalOperation: ContractProposalOperation = CONTRACT_PROPOSAL_OPERATIONS[0];
+const proposedExpectation: ProposedExpectation = { status: "passed" };
+const sourceDigest: ContractSourceDigest = "absent";
+const metadata: ContractProposalMetadata = emptyContractProposalMetadata(proposal);
+const annotatedMetadata = withContractProposalAnnotation(
+  proposal,
+  metadata,
+  proposalChange.id,
+  {
+    createdOn: "2026-09-03",
+    expiresOn: "2026-09-04",
+    owner: "quality-team",
+    reason: "UIW-2041 tracks repair",
+  },
+  "2026-09-03",
+);
+const proposalText = serializeContractProposal(proposal);
+const sourceText = serializeContractProposalSource(proposalSource);
+const metadataText = serializeContractProposalMetadata(annotatedMetadata);
+const proposalContract: UIWitnessContract = applyContractProposal({
+  acceptedOn: "2026-09-03",
+  changeIds: [proposalChange.id],
+  metadata,
+  proposal,
+  source: proposalSource,
+});
+const proposalError: UIWitnessError = new ContractProposalValidationError([]);
+void CONTRACT_METADATA_SCHEMA_VERSION;
+void CONTRACT_PROPOSAL_SCHEMA_VERSION;
+void CONTRACT_SOURCE_SCHEMA_VERSION;
+void proposalOperation;
+void proposedExpectation;
+void sourceDigest;
+void parseContractProposal(proposalText);
+void parseContractProposalSource(sourceText);
+void parseContractProposalMetadata(metadataText);
+void contractProposalDigest(proposal);
+void contractProposalSourceDigest(proposalSource);
+void proposalContract;
+void proposalError;
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",

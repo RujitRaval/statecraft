@@ -2,6 +2,7 @@ import { relative } from "node:path";
 
 import {
   ConfigValidationError,
+  ContractProposalValidationError,
   ContractValidationError,
   ResultValidationError,
 } from "uiwitness-core";
@@ -15,6 +16,16 @@ import {
   ConfigDiscoveryError,
   ConfigLoadError,
 } from "./config.js";
+import {
+  acceptContractChanges,
+  annotateContractChange,
+  initContract,
+  inspectContractChange,
+  type ContractAcceptOptions,
+  type ContractAnnotateOptions,
+  type ContractInitOptions,
+  type ContractInspectOptions,
+} from "./contract.js";
 import { InitError, initProject } from "./init.js";
 import {
   GuardError,
@@ -31,6 +42,10 @@ Usage:
   uiwitness check <url> [--max-pages <1-20>] [--headed] [--write-config]
   uiwitness scan [--config <path>] [--route <id> | --coordinate <route/state/viewport/theme>] [--headed]
   uiwitness guard [--config <path>] [--contract <path>] [--json <path>]
+  uiwitness contract init [--config <path>] [--contract <path>]
+  uiwitness contract inspect --candidate <path> --change <id>
+  uiwitness contract annotate --candidate <path> --change <id> --owner <text> --reason <text> --created-on <date> --expires-on <date>
+  uiwitness contract accept --candidate <path> --change <id>... [--config <path>] [--contract <path>]
   uiwitness open
   uiwitness --help
 
@@ -39,6 +54,7 @@ Commands:
   check Discover and inspect a public site without configuration
   scan  Execute configured UI states and persist screenshots, JSON, and HTML
   guard Run the complete matrix and compare it with the committed state contract
+  contract Initialize, inspect, annotate, or accept named contract changes
   open  Open the latest generated offline HTML report
 
 Safety:
@@ -75,6 +91,12 @@ interface ParsedGuardArguments {
   readonly contractPath?: string | undefined;
   readonly jsonPath?: string | undefined;
 }
+
+type ParsedContractArguments =
+  | ({ readonly command: "accept" } & ContractAcceptOptions)
+  | ({ readonly command: "annotate" } & ContractAnnotateOptions)
+  | ({ readonly command: "init" } & ContractInitOptions)
+  | ({ readonly command: "inspect" } & ContractInspectOptions);
 
 interface ParsedCheckArguments {
   readonly headed: boolean;
@@ -201,6 +223,117 @@ function parseGuardArguments(
     index += 1;
   }
   return Object.freeze({ configPath, contractPath, jsonPath });
+}
+
+function parseNamedOptions(
+  args: readonly string[],
+  allowed: ReadonlySet<string>,
+  repeated: ReadonlySet<string> = new Set(),
+): ReadonlyMap<string, readonly string[]> | string {
+  const values = new Map<string, string[]>();
+  for (let index = 0; index < args.length; index += 2) {
+    const option = args[index]!;
+    const value = args[index + 1];
+    if (!allowed.has(option)) return `Unknown contract option: ${option}`;
+    if (value === undefined || value.startsWith("--")) {
+      return `The ${option} option requires a value.`;
+    }
+    const existing = values.get(option) ?? [];
+    if (existing.length > 0 && !repeated.has(option)) {
+      return `The ${option} option can be specified only once.`;
+    }
+    existing.push(value);
+    values.set(option, existing);
+  }
+  return values;
+}
+
+function optionValue(
+  values: ReadonlyMap<string, readonly string[]>,
+  option: string,
+): string | undefined {
+  return values.get(option)?.[0];
+}
+
+function parseContractArguments(
+  args: readonly string[],
+): ParsedContractArguments | string {
+  const command = args[0];
+  if (command === undefined) return "The contract command requires a subcommand.";
+  const rest = args.slice(1);
+  if (command === "init") {
+    const parsed = parseNamedOptions(rest, new Set(["--config", "--contract"]));
+    if (typeof parsed === "string") return parsed;
+    const configPath = optionValue(parsed, "--config");
+    const contractPath = optionValue(parsed, "--contract");
+    return {
+      command,
+      ...(configPath === undefined ? {} : { configPath }),
+      ...(contractPath === undefined ? {} : { contractPath }),
+    };
+  }
+  if (command === "inspect") {
+    const parsed = parseNamedOptions(rest, new Set(["--candidate", "--change"]));
+    if (typeof parsed === "string") return parsed;
+    const candidatePath = optionValue(parsed, "--candidate");
+    const changeId = optionValue(parsed, "--change");
+    if (candidatePath === undefined || changeId === undefined) {
+      return "The contract inspect command requires --candidate and --change.";
+    }
+    return { candidatePath, changeId, command };
+  }
+  if (command === "annotate") {
+    const parsed = parseNamedOptions(rest, new Set([
+      "--candidate",
+      "--change",
+      "--owner",
+      "--reason",
+      "--created-on",
+      "--expires-on",
+    ]));
+    if (typeof parsed === "string") return parsed;
+    const candidatePath = optionValue(parsed, "--candidate");
+    const changeId = optionValue(parsed, "--change");
+    const owner = optionValue(parsed, "--owner");
+    const reason = optionValue(parsed, "--reason");
+    const createdOn = optionValue(parsed, "--created-on");
+    const expiresOn = optionValue(parsed, "--expires-on");
+    if ([candidatePath, changeId, owner, reason, createdOn, expiresOn].some((value) => value === undefined)) {
+      return "The contract annotate command requires --candidate, --change, --owner, --reason, --created-on, and --expires-on.";
+    }
+    return {
+      candidatePath: candidatePath!,
+      changeId: changeId!,
+      command,
+      createdOn: createdOn!,
+      expiresOn: expiresOn!,
+      owner: owner!,
+      reason: reason!,
+    };
+  }
+  if (command === "accept") {
+    const parsed = parseNamedOptions(
+      rest,
+      new Set(["--candidate", "--change", "--config", "--contract"]),
+      new Set(["--change"]),
+    );
+    if (typeof parsed === "string") return parsed;
+    const candidatePath = optionValue(parsed, "--candidate");
+    const changeIds = parsed.get("--change") ?? [];
+    if (candidatePath === undefined || changeIds.length === 0) {
+      return "The contract accept command requires --candidate and at least one --change.";
+    }
+    const configPath = optionValue(parsed, "--config");
+    const contractPath = optionValue(parsed, "--contract");
+    return {
+      candidatePath,
+      changeIds,
+      command,
+      ...(configPath === undefined ? {} : { configPath }),
+      ...(contractPath === undefined ? {} : { contractPath }),
+    };
+  }
+  return `Unknown contract subcommand: ${command}`;
 }
 
 function parseCheckArguments(
@@ -420,15 +553,20 @@ export function formatGuardSummary(result: GuardResult): string {
       `${marker} ${terminalText(finding.id ?? "run")} · ${finding.kind.toUpperCase()}`,
     );
     const machineFinding = result.machineVerdict.findings[index];
-    const reproduce = machineFinding !== null &&
+    const findingRecord = machineFinding !== null &&
         typeof machineFinding === "object" &&
         !Array.isArray(machineFinding)
-      ? (machineFinding as Readonly<Record<string, unknown>>)["reproduce"]
+      ? machineFinding as Readonly<Record<string, unknown>>
       : undefined;
+    const reproduce = findingRecord?.["reproduce"];
+    const remediate = findingRecord?.["remediate"];
     if (
       typeof reproduce === "string"
     ) {
       lines.push(`    Reproduce: ${terminalText(reproduce)}`);
+    }
+    if (typeof remediate === "string") {
+      lines.push(`    Remediate: ${terminalText(remediate)}`);
     }
   }
   if (result.comparison.findings.length > visibleFindings.length) {
@@ -444,6 +582,12 @@ export function formatGuardSummary(result: GuardResult): string {
   );
   if (result.explicitVerdictPath !== undefined) {
     lines.push(`JSON copy: ${terminalText(result.explicitVerdictPath)}`);
+  }
+  if (result.proposalPath !== undefined) {
+    lines.push(`Proposal: ${terminalText(result.proposalPath)}`);
+  }
+  if (result.metadataPath !== undefined) {
+    lines.push(`Metadata: ${terminalText(result.metadataPath)}`);
   }
   lines.push(
     result.comparison.verdict === "passed"
@@ -469,6 +613,7 @@ function expectedScanError(error: unknown): string | undefined {
 function validationError(error: unknown): string | undefined {
   if (
     !(error instanceof ConfigValidationError) &&
+    !(error instanceof ContractProposalValidationError) &&
     !(error instanceof ContractValidationError) &&
     !(error instanceof ResultValidationError)
   ) {
@@ -519,6 +664,7 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
   if (
     args[0] !== "init" &&
     args[0] !== "check" &&
+    args[0] !== "contract" &&
     args[0] !== "guard" &&
     args[0] !== "scan" &&
     args[0] !== "open"
@@ -567,6 +713,79 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
         : result.comparison.verdict === "failed" ? 1 : 2;
     } catch (error: unknown) {
       stderr(`${expectedGuardError(error) ?? "UIWitness guard failed unexpectedly."}\n`);
+      return 2;
+    }
+  }
+
+  if (args[0] === "contract") {
+    const parsed = parseContractArguments(args.slice(1));
+    if (typeof parsed === "string") {
+      stderr(`${terminalText(parsed)}\n\n${HELP}`);
+      return 2;
+    }
+    try {
+      if (parsed.command === "init") {
+        const result = await initContract({
+          configPath: parsed.configPath,
+          contractPath: parsed.contractPath,
+          cwd: options.cwd,
+        });
+        if (result.status === "created") {
+          stdout(`Created state contract: ${terminalText(result.contractPath!)}\n`);
+          return 0;
+        }
+        stdout(
+          `Contract initialization found failing states.\nProposal: ${terminalText(result.proposalPath!)}\nMetadata: ${terminalText(result.metadataPath!)}\n`,
+        );
+        return 1;
+      }
+      if (parsed.command === "inspect") {
+        const result = await inspectContractChange({
+          candidatePath: parsed.candidatePath,
+          changeId: parsed.changeId,
+          cwd: options.cwd,
+        });
+        stdout([
+          `Change: ${terminalText(result.change.id)}`,
+          `Proposal: ${terminalText(result.proposalPath)}`,
+          "Before:",
+          JSON.stringify(result.change.before, null, 2),
+          "After:",
+          JSON.stringify(result.change.after, null, 2),
+          "",
+        ].join("\n"));
+        return 0;
+      }
+      if (parsed.command === "annotate") {
+        const result = await annotateContractChange({
+          candidatePath: parsed.candidatePath,
+          changeId: parsed.changeId,
+          createdOn: parsed.createdOn,
+          cwd: options.cwd,
+          expiresOn: parsed.expiresOn,
+          owner: parsed.owner,
+          reason: parsed.reason,
+        });
+        stdout(`Annotated ${terminalText(result.changeId)} in ${terminalText(result.metadataPath)}.\n`);
+        return 0;
+      }
+      const result = await acceptContractChanges({
+        candidatePath: parsed.candidatePath,
+        changeIds: parsed.changeIds,
+        configPath: parsed.configPath,
+        contractPath: parsed.contractPath,
+        cwd: options.cwd,
+      });
+      stdout([
+        `Updated state contract: ${terminalText(result.contractPath)}`,
+        `Accepted: ${result.accepted.map(terminalText).join(", ")}`,
+        `Discarded: ${result.discarded.length === 0 ? "none" : result.discarded.map(terminalText).join(", ")}`,
+        "Proposal consumed. Run `uiwitness guard` to reconsider discarded changes.",
+        "",
+      ].join("\n"));
+      return 0;
+    } catch (error: unknown) {
+      stderr(`${expectedGuardError(error) ?? "UIWitness contract command failed unexpectedly."}\n`);
       return 2;
     }
   }

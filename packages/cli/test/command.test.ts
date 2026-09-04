@@ -18,6 +18,16 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { CheckOptions, CheckResult } from "../src/check.js";
+import type {
+  ContractAcceptOptions,
+  ContractAcceptResult,
+  ContractAnnotateOptions,
+  ContractAnnotateResult,
+  ContractInitOptions,
+  ContractInitResult,
+  ContractInspectOptions,
+  ContractInspectResult,
+} from "../src/contract.js";
 import type { GuardOptions, GuardResult } from "../src/guard.js";
 import type { ScanOptions, ScanResult } from "../src/scan.js";
 import type {
@@ -39,6 +49,19 @@ const checkPublicSiteMock = vi.hoisted(() =>
 
 const guardProjectMock = vi.hoisted(() =>
   vi.fn<(options?: GuardOptions) => Promise<GuardResult>>(),
+);
+
+const initContractMock = vi.hoisted(() =>
+  vi.fn<(options?: ContractInitOptions) => Promise<ContractInitResult>>(),
+);
+const inspectContractChangeMock = vi.hoisted(() =>
+  vi.fn<(options: ContractInspectOptions) => Promise<ContractInspectResult>>(),
+);
+const annotateContractChangeMock = vi.hoisted(() =>
+  vi.fn<(options: ContractAnnotateOptions) => Promise<ContractAnnotateResult>>(),
+);
+const acceptContractChangesMock = vi.hoisted(() =>
+  vi.fn<(options: ContractAcceptOptions) => Promise<ContractAcceptResult>>(),
 );
 
 vi.mock("../src/init.js", async (importOriginal) => {
@@ -73,6 +96,17 @@ vi.mock("../src/guard.js", async (importOriginal) => {
   return { ...original, guardProject: guardProjectMock };
 });
 
+vi.mock("../src/contract.js", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../src/contract.js")>();
+  return {
+    ...original,
+    acceptContractChanges: acceptContractChangesMock,
+    annotateContractChange: annotateContractChangeMock,
+    initContract: initContractMock,
+    inspectContractChange: inspectContractChangeMock,
+  };
+});
+
 vi.mock("../src/open.js", async (importOriginal) => {
   const original = await importOriginal<typeof import("../src/open.js")>();
   return { ...original, openReport: openReportMock };
@@ -100,6 +134,10 @@ function credentialedCheckUrl(): string {
 afterEach(async () => {
   checkPublicSiteMock.mockReset();
   guardProjectMock.mockReset();
+  initContractMock.mockReset();
+  inspectContractChangeMock.mockReset();
+  annotateContractChangeMock.mockReset();
+  acceptContractChangesMock.mockReset();
   openReportMock.mockReset();
   scanProjectMock.mockReset();
   await Promise.all(
@@ -330,6 +368,7 @@ function completedGuard(
       findings: findings.map((finding) => finding.kind === "regression"
         ? {
             ...finding,
+            remediate: "./node_modules/.bin/uiwitness contract inspect --candidate .uiwitness/contract-candidates/abc.proposal.json --change expectation:dashboard/success/desktop/light",
             reproduce: "./node_modules/.bin/uiwitness scan --coordinate dashboard/success/desktop/light --headed --config custom.mjs",
           }
         : finding) as unknown as readonly JsonValue[],
@@ -337,6 +376,12 @@ function completedGuard(
       schemaVersion: 1 as const,
     },
     report: scan.report,
+    ...(verdict === "failed"
+      ? {
+          metadataPath: ".uiwitness/contract-candidates/abc.metadata.json",
+          proposalPath: ".uiwitness/contract-candidates/abc.proposal.json",
+        }
+      : {}),
     verdictPath: ".uiwitness/contract-verdict.json",
   });
 }
@@ -798,6 +843,12 @@ All 1 execution passed.
     expect(stdout.messages.join("")).toContain(
       "./node_modules/.bin/uiwitness scan --coordinate dashboard/success/desktop/light --headed --config custom.mjs",
     );
+    expect(stdout.messages.join("")).toContain(
+      "Remediate: ./node_modules/.bin/uiwitness contract inspect",
+    );
+    expect(stdout.messages.join("")).toContain(
+      "Proposal: .uiwitness/contract-candidates/abc.proposal.json",
+    );
 
     stdout.messages.length = 0;
     guardProjectMock.mockResolvedValueOnce(completedGuard("error"));
@@ -805,6 +856,142 @@ All 1 execution passed.
       runCli({ args: ["guard"], stdout: stdout.write }),
     ).resolves.toBe(2);
     expect(stdout.messages.join("")).toContain("Verdict: RUN INVALID");
+  });
+
+  it("dispatches every contract proposal command with exact named options", async () => {
+    const stdout = outputCapture();
+    initContractMock.mockResolvedValueOnce({
+      contractPath: "uiwitness.contract.json",
+      status: "created",
+    });
+    await expect(runCli({
+      args: ["contract", "init", "--config", "custom.mjs", "--contract", "custom.json"],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(initContractMock).toHaveBeenCalledWith({
+      configPath: "custom.mjs",
+      contractPath: "custom.json",
+      cwd: "/project",
+    });
+    expect(stdout.messages.join("")).toContain("Created state contract: uiwitness.contract.json");
+
+    stdout.messages.length = 0;
+    initContractMock.mockResolvedValueOnce({
+      metadataPath: ".uiwitness/contract-candidates/abc.metadata.json",
+      proposalPath: ".uiwitness/contract-candidates/abc.proposal.json",
+      status: "proposal",
+    });
+    await expect(runCli({
+      args: ["contract", "init"],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(1);
+    expect(stdout.messages.join("")).toContain(
+      "Contract initialization found failing states.",
+    );
+
+    stdout.messages.length = 0;
+    const candidate = ".uiwitness/contract-candidates/abc.proposal.json";
+    const changeId = "expectation:dashboard/success/desktop/light";
+    inspectContractChangeMock.mockResolvedValueOnce({
+      change: {
+        after: { status: "failed" },
+        before: { status: "passed" },
+        coordinateId: "dashboard/success/desktop/light",
+        id: changeId,
+        operation: "expectation",
+      },
+      proposalPath: candidate,
+    });
+    await expect(runCli({
+      args: ["contract", "inspect", "--candidate", candidate, "--change", changeId],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(inspectContractChangeMock).toHaveBeenCalledWith({
+      candidatePath: candidate,
+      changeId,
+      cwd: "/project",
+    });
+    expect(stdout.messages.join("")).toContain(`Change: ${changeId}`);
+
+    stdout.messages.length = 0;
+    annotateContractChangeMock.mockResolvedValueOnce({
+      changeId,
+      metadataPath: ".uiwitness/contract-candidates/abc.metadata.json",
+    });
+    await expect(runCli({
+      args: [
+        "contract", "annotate",
+        "--candidate", candidate,
+        "--change", changeId,
+        "--owner", "checkout-team",
+        "--reason", "UIW-2041 tracks repair",
+        "--created-on", "2026-09-03",
+        "--expires-on", "2026-09-17",
+      ],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(annotateContractChangeMock).toHaveBeenCalledWith({
+      candidatePath: candidate,
+      changeId,
+      createdOn: "2026-09-03",
+      cwd: "/project",
+      expiresOn: "2026-09-17",
+      owner: "checkout-team",
+      reason: "UIW-2041 tracks repair",
+    });
+
+    stdout.messages.length = 0;
+    acceptContractChangesMock.mockResolvedValueOnce({
+      accepted: [changeId, "config:dashboard/success/desktop/light"],
+      contractPath: "custom.json",
+      discarded: ["remove:settings/public/desktop/light"],
+    });
+    await expect(runCli({
+      args: [
+        "contract", "accept",
+        "--candidate", candidate,
+        "--change", changeId,
+        "--change", "config:dashboard/success/desktop/light",
+        "--config", "custom.mjs",
+        "--contract", "custom.json",
+      ],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(acceptContractChangesMock).toHaveBeenCalledWith({
+      candidatePath: candidate,
+      changeIds: [changeId, "config:dashboard/success/desktop/light"],
+      configPath: "custom.mjs",
+      contractPath: "custom.json",
+      cwd: "/project",
+    });
+    expect(stdout.messages.join("")).toContain("Proposal consumed.");
+  });
+
+  it("fails contract command parsing closed before invoking services", async () => {
+    const stderr = outputCapture();
+    await expect(runCli({
+      args: ["contract", "accept", "--candidate", "candidate.json"],
+      stderr: stderr.write,
+    })).resolves.toBe(2);
+    expect(stderr.messages.join("")).toContain(
+      "requires --candidate and at least one --change",
+    );
+    expect(acceptContractChangesMock).not.toHaveBeenCalled();
+
+    stderr.messages.length = 0;
+    await expect(runCli({
+      args: ["contract", "inspect", "--candidate", "one", "--candidate", "two"],
+      stderr: stderr.write,
+    })).resolves.toBe(2);
+    expect(stderr.messages.join("")).toContain(
+      "The --candidate option can be specified only once.",
+    );
+    expect(inspectContractChangeMock).not.toHaveBeenCalled();
   });
 
   it("caps terminal guard findings at 20 and reports the omitted count", () => {

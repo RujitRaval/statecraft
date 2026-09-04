@@ -969,7 +969,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: D9–D10 and Section 4 — same-run full comparison, stable `0/1/2`, exact commands, and complete local JSON are the primary product loop.
   - Files: `packages/cli/src/command.ts`, new guard modules, CLI tests, public API docs.
   - Verify: pass/regression/drift/incomplete fixtures and shell-safe commands on supported platforms.
-- [ ] **T4 (P1, human: ~3 days / Codex: ~4h)** — Core/CLI — Implement immutable proposals, constrained metadata overlays, and named acceptance
+- [x] **T4 (P1, human: ~3 days / Codex: ~4h)** — Core/CLI — Implement immutable proposals, constrained metadata overlays, and named acceptance
   - Surfaced by: repeated reviewer concern and D11 — proposal edits or residual reuse could accept stale or unintended changes.
   - Files: core proposal/overlay schemas, CLI `contract inspect|annotate|accept`, mutation/race tests.
   - Verify: recomputation, mutation, stale digest, concurrent writer, partial-selection consumption, and no-clobber initialization tests.

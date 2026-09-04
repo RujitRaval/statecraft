@@ -478,10 +478,12 @@ reporting, `uiwitness check <url>` orchestration, overwrite-safe
 check → promotion → scan → open release gate are implemented. Keep future work in
 an explicitly approved roadmap slice.
 
-The approved State Contract Guard roadmap is active. T1 through T3 are
+The approved State Contract Guard roadmap is active. T1 through T4 are
 complete: strict contracts and RFC 8785 digests, exhaustive deterministic
 comparison, complete fresh-run `uiwitness guard` orchestration,
-exact-coordinate reproduction, and deterministic machine verdicts. T4
+exact-coordinate reproduction, deterministic machine verdicts, immutable
+content-addressed proposals, constrained metadata overlays, and named
+single-use acceptance. T5
 through T14 remain separate approved slices and must not be pulled forward
 implicitly.
 

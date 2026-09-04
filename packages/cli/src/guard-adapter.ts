@@ -7,6 +7,7 @@ import {
   type ContractComparisonResult,
   type ContractConfigurationCoordinate,
   type ContractExecutionObservation,
+  type ContractSourceExecution,
   type ContractFinding,
   type JsonValue,
   type Sha256Digest,
@@ -209,6 +210,22 @@ export function contractObservations(
   })));
 }
 
+export function contractSourceExecutions(
+  report: UIWitnessReport,
+): readonly ContractSourceExecution[] {
+  return Object.freeze(report.executions.map((execution) => Object.freeze({
+    actual: execution.status === "passed"
+      ? Object.freeze({ status: "passed" as const })
+      : Object.freeze({
+          failureCodes: Object.freeze([
+            ...new Set(execution.failures.map(({ code }) => code)),
+          ].sort()),
+          status: "failed" as const,
+        }),
+    id: coordinateId(execution),
+  })));
+}
+
 export function reportIsComplete(
   configuration: readonly ContractConfigurationCoordinate[],
   report: UIWitnessReport,
@@ -322,9 +339,32 @@ export function guardReproduceCommand(
     : args.map(posixShellWord).join(" ");
 }
 
+/** @internal Builds the copy/paste proposal inspection command for one finding. */
+export function guardRemediateCommand(
+  changeId: string,
+  proposalPath: string,
+  platform: ShellPlatform = process.platform === "win32" ? "windows" : "posix",
+): string {
+  const args = [
+    platform === "windows"
+      ? "node_modules\\.bin\\uiwitness.cmd"
+      : "./node_modules/.bin/uiwitness",
+    "contract",
+    "inspect",
+    "--candidate",
+    proposalPath,
+    "--change",
+    changeId,
+  ];
+  return platform === "windows"
+    ? windowsShellCommand(args)
+    : args.map(posixShellWord).join(" ");
+}
+
 function machineFinding(
   finding: ContractFinding,
   explicitConfigPath: string | undefined,
+  proposalPath: string | undefined,
 ): JsonValue {
   const copy = { ...finding } as Record<string, JsonValue>;
   if (
@@ -334,6 +374,19 @@ function machineFinding(
       finding.kind === "recovered-known-failure")
   ) {
     copy["reproduce"] = guardReproduceCommand(finding.id, explicitConfigPath);
+  }
+  if (proposalPath !== undefined && finding.id !== null && finding.kind !== "matched" && finding.kind !== "matched-known-failure") {
+    const operation = finding.kind === "unaccepted-addition"
+      ? "add"
+      : finding.kind === "missing-coordinate"
+        ? "remove"
+        : finding.kind === "unaccepted-config-drift"
+          ? "config"
+          : finding.kind === "expired-exception" ? "exception" : "expectation";
+    copy["remediate"] = guardRemediateCommand(
+      `${operation}:${finding.id}`,
+      proposalPath,
+    );
   }
   return copy;
 }
@@ -353,6 +406,7 @@ export function guardMachineVerdict(
   comparison: ContractComparisonResult,
   runDigest: Sha256Digest,
   explicitConfigPath: string | undefined,
+  proposalPath?: string | undefined,
 ): GuardMachineVerdict {
   return Object.freeze({
     complete: comparison.complete,
@@ -360,7 +414,7 @@ export function guardMachineVerdict(
     contractDigest: comparison.contractDigest,
     evaluatedOn: comparison.evaluatedOn,
     findings: Object.freeze(comparison.findings.map((finding) =>
-      machineFinding(finding, explicitConfigPath)
+      machineFinding(finding, explicitConfigPath, proposalPath)
     )),
     runDigest,
     schemaVersion: 1,

@@ -83,6 +83,17 @@ npx uiwitness guard
 
 Guard exits `0` when the contract matches, `1` for regressions or unaccepted drift, and `2` when an invalid or incomplete run cannot prove the contract. It writes `.uiwitness/contract-verdict.json` and gives executable findings an exact headed `scan --coordinate route/state/viewport/theme` reproduction command. The [CLI API](docs/engineering/CLI_API.md) and [core API](docs/engineering/CORE_API.md) define the path, fingerprint, contract, digest, and verdict contracts.
 
+Create the first contract from one complete run, or review a failed guard's immutable proposal one named change at a time:
+
+```bash
+npx uiwitness contract init
+npx uiwitness contract inspect --candidate .uiwitness/contract-candidates/<digest>.proposal.json --change expectation:home/success/desktop/light
+npx uiwitness contract annotate --candidate .uiwitness/contract-candidates/<digest>.proposal.json --change expectation:home/success/desktop/light --owner quality-team --reason UIW-2041 --created-on 2026-09-03 --expires-on 2026-09-17
+npx uiwitness contract accept --candidate .uiwitness/contract-candidates/<digest>.proposal.json --change expectation:home/success/desktop/light
+```
+
+Proposals are canonical, content-addressed, and immutable; annotations live in a separate constrained metadata file. Acceptance revalidates the proposal source plus the current config and contract under a writer lock, applies only explicitly named changes, consumes the proposal and metadata, and discards unselected changes. A new complete guard run is required to reconsider anything discarded.
+
 ## Configure a small, explicit matrix
 
 ```ts
@@ -158,7 +169,7 @@ Reports can contain screenshots, URLs, and application data. Treat artifacts fro
 | Package | Purpose |
 | --- | --- |
 | [`uiwitness`](https://www.npmjs.com/package/uiwitness) | Public API and the `uiwitness` executable |
-| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, state-contract, canonical-digest, comparison/verdict, matrix, coverage, and report contracts |
+| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, and report contracts |
 | [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution and local persistence |
 | [`uiwitness-report`](https://www.npmjs.com/package/uiwitness-report) | Deterministic offline report transformation and rendering |
 
@@ -197,7 +208,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first three slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, and machine verdicts. Proposal acceptance, unified generation persistence, contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first four slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, and explicit proposal inspection, annotation, and named acceptance. Unified generation persistence, contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 
