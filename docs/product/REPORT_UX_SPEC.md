@@ -9,7 +9,7 @@ When a State Contract Guard verdict is present, contract truth replaces executio
 
 ## Contract findings
 
-Guard reports place all non-ordinary-match findings before the evidence matrix in canonical order. Regressions and incomplete runs use vermilion signal fracture; unaccepted drift, active known failures, recovery, and expiry use warning amber; color is never the only cue. Every row names the exact coordinate, expected and actual outcome, optional exception owner/reason/window, and only the commands valid for that finding. Executable findings include reproduction; structural findings do not invent one.
+Guard reports place all non-ordinary-match findings before the evidence matrix in canonical order. Regressions and incomplete runs use vermilion signal fracture; unaccepted drift, active known failures, recovery, and expiry use warning amber; color is never the only cue. Every row names the exact coordinate, expected and actual outcome, optional exception owner/reason/window, and only the commands valid for that finding. Executable findings include reproduction; structural findings do not invent one. Incomplete runs show every stable machine reason with a deterministic plain-language explanation, including whether a coordinate is absent, duplicated, unexpected, or the run was declared incomplete.
 
 Commands remain selectable plain text without JavaScript. With JavaScript enabled, a 44-pixel copy control uses the constant CSP-pinned script and announces feedback through a polite live region. Stable finding anchors support offline deep links. A ruled native disclosure exposes the full contract, configuration, and semantic-run digests plus evaluation date and completeness.
 
@@ -21,6 +21,8 @@ Selecting a cell opens a viewport-scale inspection room with the full screenshot
 
 ## Filters
 Route, state, viewport, theme, pass/fail.
+
+The contract finding ledger separately combines coordinate-text search with an exact finding-type select. Valid selections round-trip through the local URL, visible counts update in a polite live region, and reset/no-match states make recovery explicit without changing the evidence-matrix filters.
 
 ## Constraints
 Fully offline; no CDN/server/font request; bundled CSS/JS; responsive; keyboard usable; screenshots dominate; purposeful finite motion only; reduced-motion safe; full-bleed and explicitly not dashboard-heavy.
@@ -36,4 +38,4 @@ The report includes validated transformation plus a responsive offline document 
 
 ## State Contract Guard T6 delivery
 
-The renderer accepts an optional validated schema-v1 contract verdict without changing the schema-v1 execution report. The Playwright runner derives guard HTML from the exact canonical verdict sidecar inside the same crash-recoverable generation transaction, so report, evidence, verdict, proposal family, manifest, and committed marker cannot describe different runs. Contract status and findings lead; the existing filters, matrix, inspection room, diagnostics, CSP, no-network boundary, and progressive no-script behavior remain intact.
+The renderer accepts an optional validated schema-v1 contract verdict without changing the schema-v1 execution report. The Playwright runner derives guard HTML from the exact canonical verdict sidecar inside the same crash-recoverable generation transaction, so report, evidence, verdict, proposal family, manifest, and committed marker cannot describe different runs. Contract status and findings lead; contract findings have their own coordinate and type filters, while the existing execution filters, matrix, inspection room, diagnostics, CSP, no-network boundary, and progressive no-script behavior remain intact.

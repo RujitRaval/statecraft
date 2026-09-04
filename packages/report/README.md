@@ -16,7 +16,7 @@ const html = renderReportHtml(report, {
 
 The renderer accepts schema-v1 reports whose screenshots use either `.uiwitness/artifacts/**` or the legacy `.statecraft/artifacts/**` root. It preserves the accepted input root when deriving relative screenshot links, while new UIWitness reports are written to `.uiwitness/report/index.html`.
 
-When `contractVerdict` is provided, the report validates and leads with the contract promise, canonical findings, exact commands, and contract/config/run digests before retaining the existing evidence matrix and inspector. Omitting it preserves the execution-only report.
+When `contractVerdict` is provided, the report validates and leads with the contract promise, canonical findings, exact allowed commands, incomplete-run reasons with deterministic explanations, and contract/config/run digests before retaining the existing evidence matrix and inspector. The contract ledger has independent coordinate-text and finding-type filters whose valid state persists in the local URL. Omitting `contractVerdict` preserves the execution-only report.
 
 Most users should install [`uiwitness`](https://www.npmjs.com/package/uiwitness). Use this package directly when embedding UIWitness's report renderer in another local tool.
 

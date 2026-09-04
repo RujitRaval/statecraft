@@ -1,6 +1,6 @@
 # UIWitness
 
-Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 and the approved Public URL Quick Check roadmap are complete, including `uiwitness check <url>`, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan → open release gate. The approved State Contract Guard roadmap is active: T1 through T5 are complete, and T6 through T14 remain separate approved slices. Keep future work in an explicitly approved roadmap slice.
+Follow `AGENTS.md`, `DESIGN.md`, and the specification files under `codex/` and `docs/`. Phase 1 through Phase 7 and the approved Public URL Quick Check roadmap are complete, including `uiwitness check <url>`, overwrite-safe `--write-config` promotion, public launch guidance, and the registry-only check → promotion → scan → open release gate. The approved State Contract Guard roadmap is active: T1 through T6 are complete, including the contract-first offline report, and T7 through T14 remain separate approved slices. Keep future work in an explicitly approved roadmap slice.
 
 ## Skill routing
 

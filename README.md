@@ -160,6 +160,8 @@ Every completed scan writes a versioned report beneath `.uiwitness/`:
 
 Filter by route, state, viewport, theme, or status. Open a cell to inspect the exact screenshot, route metadata, assertion failures, console errors, page errors, and failed requests. The report needs no server, account, network request, or external asset.
 
+Guard reports lead with the contract verdict and canonical finding ledger. Filter findings independently by coordinate text and finding type; incomplete runs preserve their exact machine reasons alongside deterministic human-readable explanations. Each finding shows only the reproduction and review commands that apply to that finding kind.
+
 ![UIWitness failure detail showing the Northline customer long-content mobile overflow and its assertion evidence](docs/assets/uiwitness-failure-detail.png)
 
 ## GitHub Actions
