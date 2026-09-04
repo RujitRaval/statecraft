@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   REPORT_SCHEMA_VERSION,
+  canonicalizeJson,
   contractProposalDigest,
   contractProposalSourceDigest,
   createContractProposal,
@@ -32,6 +33,7 @@ import {
   serializeContractProposalMetadata,
   serializeContractProposalSource,
   serializeGenerationManifest,
+  type JsonValue,
 } from "uiwitness-core";
 
 import {
@@ -109,6 +111,29 @@ function digest(contents: string | Uint8Array): `sha256:${string}` {
 }
 
 const runDigest = `sha256:${"d".repeat(64)}` as const;
+const contractVerdict = Object.freeze({
+  complete: true,
+  configDigest: `sha256:${"a".repeat(64)}`,
+  contractDigest: `sha256:${"b".repeat(64)}`,
+  evaluatedOn: "2026-09-04",
+  findings: Object.freeze([{
+    actual: Object.freeze({
+      failureCodes: Object.freeze(["ASSERTION_FAILED"]),
+      status: "failed",
+    }),
+    expected: Object.freeze({ status: "passed" }),
+    id: "home/public/desktop/light",
+    kind: "regression",
+    remediate: "uiwitness contract inspect --candidate candidate.json --change expectation:home/public/desktop/light",
+    reproduce: "uiwitness scan --coordinate home/public/desktop/light --headed",
+  }]),
+  runDigest,
+  schemaVersion: 1,
+  verdict: "failed",
+});
+const serializedContractVerdict = `${canonicalizeJson(
+  contractVerdict as JsonValue,
+)}\n`;
 const proposalSource = createContractProposalSource({
   configuration: [{
     configFingerprint: `sha256:${"a".repeat(64)}`,
@@ -152,12 +177,12 @@ const finalization = Object.freeze({
     publication: "immutable" as const,
     role: "contract-metadata" as const,
   }, {
-    contents: "{\"verdict\":\"failed\"}\n",
+    contents: serializedContractVerdict,
     path: ".uiwitness/contract-verdict.json",
     publication: "replace" as const,
     role: "contract-verdict" as const,
   }, {
-    contents: "{\"verdict\":\"failed\"}\n",
+    contents: serializedContractVerdict,
     path: "machine/verdict.json",
     publication: "exclusive" as const,
     role: "json-copy" as const,
@@ -625,11 +650,12 @@ describe("atomic generation persistence", () => {
         const lock = await acquirePersistenceLock(root);
         await expect(persistReport(root, lock, report, [], undefined, {
           artifacts: [{
-            contents: "{}\n",
+            contents: serializedContractVerdict,
             path,
             publication: "exclusive",
             role: "contract-verdict",
           }],
+          runDigest,
           toolVersion: "0.26.4",
         })).rejects.toThrow("Duplicate generation artifact path");
         await releasePersistenceLock(lock);
@@ -671,6 +697,51 @@ describe("atomic generation persistence", () => {
     }
   });
 
+  it("rejects a contract verdict whose run digest differs from the generation", async () => {
+    const root = await temporaryProject();
+    try {
+      const lock = await acquirePersistenceLock(root);
+      await expect(persistReport(root, lock, report, [], undefined, {
+        artifacts: [{
+          contents: serializedContractVerdict,
+          path: ".uiwitness/contract-verdict.json",
+          publication: "replace",
+          role: "contract-verdict",
+        }],
+        runDigest: `sha256:${"b".repeat(64)}`,
+        toolVersion: "0.26.4",
+      })).rejects.toThrow(
+        "generation run digest must exactly match the contract verdict run digest",
+      );
+      await releasePersistenceLock(lock);
+      await expect(readFile(join(root, ".uiwitness/generation.json"), "utf8"))
+        .rejects.toMatchObject({ code: "ENOENT" });
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
+  it("rejects a contract verdict when the generation omits its run digest", async () => {
+    const root = await temporaryProject();
+    try {
+      const lock = await acquirePersistenceLock(root);
+      await expect(persistReport(root, lock, report, [], undefined, {
+        artifacts: [{
+          contents: serializedContractVerdict,
+          path: ".uiwitness/contract-verdict.json",
+          publication: "replace",
+          role: "contract-verdict",
+        }],
+        toolVersion: "0.26.4",
+      })).rejects.toThrow(
+        "generation run digest must exactly match the contract verdict run digest",
+      );
+      await releasePersistenceLock(lock);
+    } finally {
+      await rm(root, { force: true, recursive: true });
+    }
+  });
+
   it("rejects abandoned journals that target descendants of reserved files", async () => {
     const root = await temporaryProject();
     try {
@@ -705,7 +776,7 @@ describe("atomic generation persistence", () => {
 
   it("snapshots mutable finalizer bytes before the first asynchronous boundary", async () => {
     const root = await temporaryProject();
-    const original = "{\"verdict\":\"original\"}\n";
+    const original = serializedContractVerdict;
     const bytes = Uint8Array.from(Buffer.from(original));
     try {
       const lock = await acquirePersistenceLock(root);
@@ -716,6 +787,7 @@ describe("atomic generation persistence", () => {
           publication: "replace",
           role: "contract-verdict",
         }],
+        runDigest,
         toolVersion: "0.26.4",
       });
       bytes.fill(0x20);

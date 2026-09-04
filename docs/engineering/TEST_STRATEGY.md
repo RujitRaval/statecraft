@@ -52,6 +52,8 @@ Report transformation tests verify deterministic first-seen column and route/sta
 
 The kinetic evidence regression also verifies failed and missing signal-fracture markers, viewport-scale dialog semantics, forward and reverse focus containment, Close and Escape cleanup with focus return, 375-, 768-, 1024-, and 1440-pixel layouts, dark color-scheme rendering, and reduced-motion behavior.
 
+The contract-first report suite covers every finding kind and fixed product label, pass/fail/error heroes, matched/promised counts, canonical finding order, expected/actual and exception metadata, valid command presence, hostile command escaping, stable deep links, full digest disclosure, CSP hash integrity, and fail-closed malformed verdict handling. Runner integration proves HTML is derived from the exact canonical verdict sidecar in the generation transaction. Browser coverage at 320, 760, and 1440 pixels checks hierarchy, no horizontal page overflow, 44-pixel copy controls, matrix/inspector retention, and complete no-script command/finding access.
+
 Registry retry coverage also requires `--prefer-online`, a distinct temporary cache for every attempt, and the complete ten-minute elapsed-time window.
 
 ## Determinism
