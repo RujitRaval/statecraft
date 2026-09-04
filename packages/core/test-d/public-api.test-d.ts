@@ -1,5 +1,6 @@
 import {
   CANONICAL_JSON_ALGORITHM,
+  COMMITTED_GENERATION_SCHEMA_VERSION,
   CONTRACT_CONFIG_DIGEST_ALGORITHM,
   CONTRACT_DIGEST_ALGORITHM,
   CONTRACT_FAILURE_CODES,
@@ -14,6 +15,9 @@ import {
   ConfigValidationError,
   ContractProposalValidationError,
   ContractValidationError,
+  GENERATION_ARTIFACT_ROLES,
+  GENERATION_MANIFEST_SCHEMA_VERSION,
+  GenerationValidationError,
   REPORT_SCHEMA_VERSION,
   ReportValidationError,
   ResultValidationError,
@@ -34,17 +38,22 @@ import {
   defineConfig,
   emptyContractProposalMetadata,
   expandMatrix,
+  generationManifestDigest,
+  parseCommittedGeneration,
   parseConfig,
   parseContract,
   parseContractProposal,
   parseContractProposalMetadata,
   parseContractProposalSource,
   parseExecutionResult,
+  parseGenerationManifest,
   parseReport,
   screenshotArtifactPath,
+  serializeCommittedGeneration,
   serializeContractProposal,
   serializeContractProposalMetadata,
   serializeContractProposalSource,
+  serializeGenerationManifest,
   serializeReport,
   withContractProposalAnnotation,
   type CanonicalJsonIssue,
@@ -76,6 +85,9 @@ import {
   type ExecutionResult,
   type ExecutionStatus,
   type FailedRequestDiagnostic,
+  type GenerationArtifactDescriptor,
+  type GenerationArtifactRole,
+  type GenerationValidationIssue,
   type JsonValue,
   type MatrixCell,
   type MatrixFilter,
@@ -90,7 +102,9 @@ import {
   type Sha256Digest,
   type StateDefinition,
   type UIWitnessConfig,
+  type UIWitnessCommittedGeneration,
   type UIWitnessContract,
+  type UIWitnessGenerationManifest,
   type UIWitnessReport,
   type UIWitnessErrorCode,
   type ViewportDefinition,
@@ -251,6 +265,38 @@ void contractProposalDigest(proposal);
 void contractProposalSourceDigest(proposalSource);
 void proposalContract;
 void proposalError;
+
+const generationArtifacts: readonly GenerationArtifactDescriptor[] = [
+  { bytes: 4, digest: configDigest, mutable: false, path: ".uiwitness/report/index.html", role: "report-html" },
+  { bytes: 6, digest: canonicalDigest, mutable: false, path: ".uiwitness/report/uiwitness.json", role: "report-json" },
+];
+const generationRole: GenerationArtifactRole = GENERATION_ARTIFACT_ROLES[0];
+const generation: UIWitnessGenerationManifest = parseGenerationManifest(
+  serializeGenerationManifest({
+    artifacts: generationArtifacts,
+    complete: true,
+    reportDigest: canonicalDigest,
+    runDigest: null,
+    schemaVersion: GENERATION_MANIFEST_SCHEMA_VERSION,
+    sourceGenerationDigests: [],
+    toolVersion: "1.0.0",
+  }),
+);
+const generationDigest = generationManifestDigest(generation);
+const committedGeneration: UIWitnessCommittedGeneration = parseCommittedGeneration(
+  serializeCommittedGeneration({
+    manifestDigest: generationDigest,
+    manifestPath: `.uiwitness/generations/${generationDigest.slice(7)}.manifest.json`,
+    schemaVersion: COMMITTED_GENERATION_SCHEMA_VERSION,
+    sourceGenerationDigests: [],
+  }),
+);
+const generationError: UIWitnessError = new GenerationValidationError([]);
+const generationIssue: GenerationValidationIssue = contractIssue;
+void generationRole;
+void committedGeneration;
+void generationError;
+void generationIssue;
 
 const config = defineConfig({
   baseURL: "http://localhost:3000",

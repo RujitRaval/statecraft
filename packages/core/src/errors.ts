@@ -4,6 +4,7 @@ export type UIWitnessErrorCode =
   | "CONFIG_INVALID"
   | "CONTRACT_INVALID"
   | "CONTRACT_PROPOSAL_INVALID"
+  | "GENERATION_INVALID"
   | "REPORT_INVALID"
   | "RESULT_INVALID";
 
@@ -47,6 +48,9 @@ export interface ContractValidationIssue {
   readonly offset?: number | undefined;
   readonly path: string;
 }
+
+/** A single generation-manifest or committed-marker validation problem. */
+export type GenerationValidationIssue = ContractValidationIssue;
 
 /** @internal Contract parsers retain 99 exact issues plus one omission marker. */
 export const CONTRACT_VALIDATION_ISSUE_LIMIT = 100;
@@ -112,6 +116,17 @@ export class ContractProposalValidationError extends UIWitnessError {
   constructor(issues: readonly ContractValidationIssue[]) {
     super("CONTRACT_PROPOSAL_INVALID", "Invalid UIWitness contract proposal.");
     this.name = "ContractProposalValidationError";
+    this.issues = boundedContractIssues(issues);
+  }
+}
+
+/** Thrown when a generation manifest or committed marker is invalid. */
+export class GenerationValidationError extends UIWitnessError {
+  readonly issues: readonly GenerationValidationIssue[];
+
+  constructor(issues: readonly GenerationValidationIssue[]) {
+    super("GENERATION_INVALID", "Invalid UIWitness generation.");
+    this.name = "GenerationValidationError";
     this.issues = boundedContractIssues(issues);
   }
 }

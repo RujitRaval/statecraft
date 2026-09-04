@@ -92,7 +92,7 @@ npx uiwitness contract annotate --candidate .uiwitness/contract-candidates/<dige
 npx uiwitness contract accept --candidate .uiwitness/contract-candidates/<digest>.proposal.json --change expectation:home/success/desktop/light
 ```
 
-Proposals are canonical, content-addressed, and immutable; annotations live in a separate constrained metadata file. Acceptance revalidates the proposal source plus the current config and contract under a writer lock, applies only explicitly named changes, consumes the proposal and metadata, and discards unselected changes. A new complete guard run is required to reconsider anything discarded.
+Proposals are canonical, content-addressed, and immutable; annotations live in a separate constrained metadata file. The runner publishes report/evidence, verdict, proposal family, optional JSON copy, and a content-addressed manifest as one crash-recoverable generation whose stable marker appears last. Acceptance requires that committed marker, revalidates the proposal source plus the current config and contract under a writer lock, applies only explicitly named changes, consumes the proposal and metadata, and discards unselected changes. A new complete guard run is required to reconsider anything discarded.
 
 ## Configure a small, explicit matrix
 
@@ -147,10 +147,14 @@ Every completed scan writes a versioned report beneath `.uiwitness/`:
 
 ```text
 .uiwitness/
-├── artifacts/        # deterministic PNG evidence
-├── contract-verdict.json # deterministic guard verdict
+├── artifacts/             # deterministic PNG evidence
+├── contract-candidates/   # immutable proposals + metadata overlays
+├── contract-generations/  # immutable proposal source snapshots
+├── contract-verdict.json  # deterministic guard verdict
+├── generation.json        # stable committed-generation marker
+├── generations/           # content-addressed generation manifests
 └── report/
-    ├── index.html    # self-contained interactive report
+    ├── index.html         # self-contained interactive report
     └── uiwitness.json
 ```
 
@@ -178,7 +182,7 @@ All four packages publish from the protected GitHub Release workflow through npm
 ## Local-first architecture
 
 ```text
-configure → expand matrix → run isolated browser cells → compare contract → persist local evidence/verdict → inspect
+configure → expand matrix → run isolated browser cells → compare contract → commit one evidence/verdict/proposal generation → inspect
 ```
 
 - No telemetry, hosted backend, database, account, cloud dependency, or required LLM.
@@ -208,7 +212,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first four slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, and explicit proposal inspection, annotation, and named acceptance. Unified generation persistence, contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first five slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, and crash-recoverable atomic generation publication. Contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

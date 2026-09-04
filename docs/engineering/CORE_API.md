@@ -145,6 +145,27 @@ Exception annotations never mutate proposal bytes. `emptyContractProposalMetadat
 
 Filesystem containment, content-addressed filenames, current config/contract revalidation, writer locking, publication, and single-use consumption remain process-based CLI responsibilities.
 
+## Generation manifests and committed markers
+
+`UIWitnessGenerationManifest` is the browser-independent schema-v1 inventory for one complete local publication. Each `GenerationArtifactDescriptor` records a canonical project-relative POSIX path, artifact role, SHA-256 digest, byte length, and whether later constrained mutation is allowed. A manifest requires exactly one immutable report JSON member and one immutable report HTML member, binds the report digest, and may bind a semantic run digest plus sorted source-generation digests.
+
+```ts
+import {
+  generationManifestDigest,
+  parseCommittedGeneration,
+  parseGenerationManifest,
+} from "uiwitness-core";
+
+const marker = parseCommittedGeneration(markerSource);
+const manifest = parseGenerationManifest(manifestSource);
+
+if (generationManifestDigest(manifest) !== marker.manifestDigest) {
+  throw new Error("Generation marker mismatch");
+}
+```
+
+`serializeGenerationManifest` and `serializeCommittedGeneration` emit exact JCS bytes with one trailing newline. Their parsers accept only canonical schema-v1 input, enforce unique lexicographically ordered paths/digests and the normative 1,024-character path maximum, and return recursively frozen values. `parseCommittedGeneration` additionally requires `.uiwitness/generations/<manifest-sha256>.manifest.json`, preventing a marker from redirecting validation to an unrelated path. Invalid input throws `GenerationValidationError` with code `GENERATION_INVALID`. `GENERATION_ARTIFACT_ROLES`, `GENERATION_MANIFEST_SCHEMA_VERSION`, and `COMMITTED_GENERATION_SCHEMA_VERSION` publish the stable protocol vocabulary. The runner owns filesystem staging, digesting actual bytes, cross-file proposal-family validation, fsync, commit ordering, and recovery.
+
 ## Matrix planning
 
 `expandMatrix(config, filter?)` expands a validated `UIWitnessConfig` into one `MatrixCell` for every configured `route x state x viewport x theme` combination. Each cell carries the route, state, named viewport, viewport dimensions, and theme that the runner needs.

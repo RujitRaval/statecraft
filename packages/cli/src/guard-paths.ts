@@ -120,6 +120,46 @@ export async function canonicalGuardWorkspace(cwd: string | undefined): Promise<
   }
 }
 
+export async function withContractLock<T>(
+  root: string,
+  action: () => Promise<T>,
+): Promise<T> {
+  const lockDirectory = resolve(root, ".uiwitness");
+  try {
+    await mkdir(lockDirectory, { mode: 0o700 });
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+  }
+  const directory = await lstat(lockDirectory);
+  if (!directory.isDirectory() || directory.isSymbolicLink()) {
+    throw new GuardError(
+      "GUARD_CONTRACT_LOCKED",
+      "The contract lock directory is not a safe regular directory.",
+      lockDirectory,
+    );
+  }
+  const lockPath = resolve(lockDirectory, "contract.lock");
+  let handle;
+  try {
+    handle = await open(lockPath, "wx", 0o600);
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new GuardError(
+        "GUARD_CONTRACT_LOCKED",
+        "Another UIWitness contract writer is active.",
+        lockPath,
+      );
+    }
+    throw error;
+  }
+  try {
+    return await action();
+  } finally {
+    await handle.close();
+    await rm(lockPath, { force: true });
+  }
+}
+
 export async function containedRegularFile(
   root: string,
   inputPath: string,
@@ -153,6 +193,17 @@ export async function preflightOutputPath(
     "Guard JSON path",
   );
   const candidate = resolve(root, inputPath);
+  const local = relative(root, candidate).split(sep).join("/");
+  if (
+    local === ".uiwitness/contract.lock" ||
+    local.startsWith(".uiwitness/.runner-")
+  ) {
+    throw new GuardError(
+      "GUARD_JSON_PATH_INVALID",
+      `Guard JSON path cannot use a UIWitness control path: ${candidate}`,
+      candidate,
+    );
+  }
   await assertRealComponents(
     root,
     candidate,

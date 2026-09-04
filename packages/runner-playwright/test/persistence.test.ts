@@ -668,6 +668,8 @@ describe("runPersistedScenarioCells", () => {
       );
       expect((await readdir(uiwitnessRoot)).sort()).toEqual([
         "artifacts",
+        "generation.json",
+        "generations",
         "report",
       ]);
       expect((await readdir(reportRoot)).sort()).toEqual([
@@ -955,7 +957,7 @@ describe("runPersistedScenarioCells", () => {
         (await readdir(join(project.path, ".uiwitness"))).some((entry) =>
           entry.startsWith(".runner-persistence-lock.claimed-"),
         ),
-      ).toBe(true);
+      ).toBe(false);
     } finally {
       await project.cleanup();
     }
@@ -992,7 +994,10 @@ describe("runPersistedScenarioCells", () => {
           ".uiwitness contains recovery state from an interrupted result-persistence run.",
         );
         expect((await stat(lock)).isDirectory()).toBe(true);
-        expect(await readFile(join(lock, phase), "utf8")).toBe(`${phase}\n`);
+        const preservedPhase = phase === "publishing" ? "recovery" : phase;
+        expect(await readFile(join(lock, preservedPhase), "utf8")).toBe(
+          `${preservedPhase}\n`,
+        );
       } finally {
         await project.cleanup();
       }
@@ -1302,7 +1307,7 @@ describe("runPersistedScenarioCells", () => {
     }
   });
 
-  it("preserves recovery state when published staging cleanup fails", async () => {
+  it("preserves committed cleanup state when published staging cleanup fails", async () => {
     const project = await temporaryProject();
     try {
       const initial = await runPersistedScenarioCells([], {
@@ -1322,7 +1327,10 @@ describe("runPersistedScenarioCells", () => {
           [],
           {
             remove: async (path, options) => {
-              if (String(path).includes(".runner-persistence-stage-")) {
+              if (
+                options?.recursive === true &&
+                String(path).includes(".runner-persistence-stage-")
+              ) {
                 throw cleanupFailure;
               }
               await rm(path, options);
@@ -1333,8 +1341,8 @@ describe("runPersistedScenarioCells", () => {
       ).rejects.toMatchObject({ errors: [cleanupFailure] });
 
       expect(lock.preserve).toBe(true);
-      expect(await readFile(join(lock.directory, "recovery"), "utf8")).toBe(
-        "recovery\n",
+      expect(await readFile(join(lock.directory, "committed"), "utf8")).toBe(
+        "committed\n",
       );
       expect(
         (await readdir(join(project.path, ".uiwitness"))).some((entry) =>

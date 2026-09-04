@@ -973,7 +973,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: repeated reviewer concern and D11 — proposal edits or residual reuse could accept stale or unintended changes.
   - Files: core proposal/overlay schemas, CLI `contract inspect|annotate|accept`, mutation/race tests.
   - Verify: recomputation, mutation, stale digest, concurrent writer, partial-selection consumption, and no-clobber initialization tests.
-- [ ] **T5 (P1, human: ~3 days / Codex: ~4h)** — Runner — Extend one atomic generation transaction
+- [x] **T5 (P1, human: ~3 days / Codex: ~4h)** — Runner — Extend one atomic generation transaction
   - Surfaced by: D17 and Section 2 — report, evidence, verdict, proposal, overlay, manifest, JSON copy, and HTML cannot publish independently.
   - Files: `packages/runner-playwright/src/persistence.ts`, generation types, recovery/fault tests.
   - Verify: injected failure after every stage/swap/fsync plus process-death recovery and orphan-proposal rejection.

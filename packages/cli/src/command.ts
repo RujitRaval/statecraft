@@ -4,6 +4,7 @@ import {
   ConfigValidationError,
   ContractProposalValidationError,
   ContractValidationError,
+  GenerationValidationError,
   ResultValidationError,
 } from "uiwitness-core";
 
@@ -615,6 +616,7 @@ function validationError(error: unknown): string | undefined {
     !(error instanceof ConfigValidationError) &&
     !(error instanceof ContractProposalValidationError) &&
     !(error instanceof ContractValidationError) &&
+    !(error instanceof GenerationValidationError) &&
     !(error instanceof ResultValidationError)
   ) {
     return undefined;
