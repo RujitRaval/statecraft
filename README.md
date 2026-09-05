@@ -177,8 +177,8 @@ Reports can contain screenshots, URLs, and application data. Treat artifacts fro
 | Package | Purpose |
 | --- | --- |
 | [`uiwitness`](https://www.npmjs.com/package/uiwitness) | Public API and the `uiwitness` executable |
-| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, and report contracts |
-| [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution and local persistence |
+| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, authentication-state policy, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, and report contracts |
+| [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution, memory-only authentication, and local persistence |
 | [`uiwitness-report`](https://www.npmjs.com/package/uiwitness-report) | Deterministic offline report transformation and rendering |
 
 All four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. The one-time bootstrap completed with its temporary token and secret removed inside the required cleanup window; normal OIDC releases keep no long-lived npm token configured and run registry verification automatically.
