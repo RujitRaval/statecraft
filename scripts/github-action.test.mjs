@@ -174,6 +174,158 @@ test("summarizes the first 20 canonical findings, including matches", () => {
   assert.match(summary, /5 additional canonical finding\(s\) omitted/u);
 });
 
+test("surfaces bounded exception ownership and lifecycle in GitHub output", () => {
+  const expected = {
+    exception: {
+      createdOn: "2026-08-20",
+      expiresOn: "2026-09-04",
+      owner: "checkout_*team*",
+      reason: "UIW-2041 | repair <pending>",
+    },
+    failureCodes: ["ASSERTION_FAILED"],
+    status: "failed",
+  };
+  const actual = { failureCodes: ["ASSERTION_FAILED"], status: "failed" };
+  const parsed = parseMachineVerdict(verdict("failed", [
+    {
+      actual,
+      expected,
+      id: "checkout/error/mobile/dark",
+      kind: "expired-exception",
+    },
+    {
+      actual,
+      expected,
+      id: "checkout/error/mobile/dark",
+      kind: "matched-known-failure",
+    },
+  ]));
+
+  const summary = buildSummary(parsed);
+  assert.match(summary, /Expected: failed \(ASSERTION\\_FAILED\)/u);
+  assert.match(summary, /Actual: failed \(ASSERTION\\_FAILED\)/u);
+  assert.match(summary, /Exception: checkout\\_\\\*team\\\* · expired 1 UTC day ago · through 2026-09-04/u);
+  assert.match(summary, /Reason: UIW-2041 \\| repair &lt;pending&gt;/u);
+  assert.match(summary, /explicitly renew with a new reason/u);
+  assert.match(summary, /exact failure-code set still matches, but the exception is expired/u);
+  assert.doesNotMatch(summary, /exception applies only/u);
+  assert.doesNotMatch(summary, /<pending>/u);
+
+  const [annotation] = annotationCommands(parsed, 1);
+  assert.match(annotation, /owner checkout_\*team\*; expired 1 UTC day ago/u);
+  assert.doesNotMatch(annotation, /\n/u);
+});
+
+test("explains added, removed, substituted, recovered, and ineligible known failures", () => {
+  const activeException = {
+    createdOn: "2026-09-01",
+    expiresOn: "2026-09-10",
+    owner: "quality-team",
+    reason: "UIW-2041 tracks repair",
+  };
+  const failed = (failureCodes) => ({
+    exception: activeException,
+    failureCodes,
+    status: "failed",
+  });
+  const parsed = parseMachineVerdict(verdict("failed", [
+    {
+      actual: { failureCodes: ["ASSERTION_FAILED", "PAGE_ERROR"], status: "failed" },
+      expected: failed(["ASSERTION_FAILED"]),
+      id: "added/error/mobile/dark",
+      kind: "changed-known-failure",
+    },
+    {
+      actual: { failureCodes: ["NAVIGATION_FAILED"], status: "failed" },
+      expected: failed(["ASSERTION_FAILED"]),
+      id: "ineligible/error/mobile/dark",
+      kind: "changed-known-failure",
+    },
+    {
+      actual: { status: "passed" },
+      expected: failed(["ASSERTION_FAILED"]),
+      id: "recovered/error/mobile/dark",
+      kind: "recovered-known-failure",
+    },
+    {
+      actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+      expected: failed(["ASSERTION_FAILED", "PAGE_ERROR"]),
+      id: "removed/error/mobile/dark",
+      kind: "changed-known-failure",
+    },
+    {
+      actual: { failureCodes: ["PAGE_ERROR"], status: "failed" },
+      expected: failed(["ASSERTION_FAILED"]),
+      id: "substituted/error/mobile/dark",
+      kind: "changed-known-failure",
+    },
+  ]));
+
+  const summary = buildSummary(parsed);
+  assert.match(summary, /Expected: failed \(ASSERTION\\_FAILED\)/u);
+  assert.match(summary, /Actual: failed \(ASSERTION\\_FAILED, PAGE\\_ERROR\)/u);
+  assert.match(summary, /Expected: failed \(ASSERTION\\_FAILED, PAGE\\_ERROR\)/u);
+  assert.match(summary, /Actual: failed \(PAGE\\_ERROR\)/u);
+  assert.match(summary, /Actual: passed/u);
+  assert.match(summary, /review and annotate a new expectation/u);
+  assert.match(summary, /cannot become a known failure/u);
+  assert.match(summary, /accept the expectation change to remove contract debt/u);
+});
+
+test("keeps exception metadata nested beneath two-digit ordered items", () => {
+  const expected = {
+    exception: {
+      createdOn: "2026-09-01",
+      expiresOn: "2026-09-10",
+      owner: "quality-team",
+      reason: "Tracked repair",
+    },
+    failureCodes: ["ASSERTION_FAILED"],
+    status: "failed",
+  };
+  const findings = [
+    ...Array.from({ length: 9 }, (_, index) => ({
+      actual: { status: "passed" },
+      expected: { status: "passed" },
+      id: `route-${String(index).padStart(2, "0")}/state/desktop/light`,
+      kind: "matched",
+    })),
+    {
+      actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+      expected,
+      id: "route-10/state/desktop/light",
+      kind: "matched-known-failure",
+    },
+  ];
+  const summary = buildSummary(parseMachineVerdict(verdict("passed", findings)));
+  assert.match(summary, /10\. route-10\/state\/desktop\/light[^\n]*\n {4}- Expected:/u);
+  assert.match(summary, /\n {4}- Exception: quality-team/u);
+});
+
+test("renders legacy default-ignorable governance text visibly", () => {
+  const expected = {
+    exception: {
+      createdOn: "2026-09-01",
+      expiresOn: "2026-09-10",
+      owner: "quality\u202Eteam",
+      reason: "UIW-2041\u034F tracks\u0007 repair",
+    },
+    failureCodes: ["ASSERTION_FAILED"],
+    status: "failed",
+  };
+  const parsed = parseMachineVerdict(verdict("passed", [{
+    actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+    expected,
+    id: "route/state/desktop/light",
+    kind: "matched-known-failure",
+  }]));
+  assert.equal(parsed.findings[0].expected.exception.owner, "quality\\u{202e}team");
+  assert.equal(parsed.findings[0].expected.exception.reason, "UIW-2041\\u{034f} tracks\\u{0007} repair");
+  const summary = buildSummary(parsed);
+  assert.doesNotMatch(summary, /\u202E|\u034F/u);
+  assert.match(summary, /quality\\\\u\\\{202e\\\}team/u);
+});
+
 test("escapes Markdown and HTML-like finding detail", () => {
   const summary = buildSummary({
     contractDigest: digest,

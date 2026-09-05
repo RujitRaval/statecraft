@@ -171,7 +171,11 @@ function contractMetadata(value, label) {
   if (typeof value !== "string" || value.trim().length === 0 || value.length > 1_024) {
     throw new TypeError(`${label} must be a non-empty bounded string.`);
   }
-  return value;
+  return [...value].map((character) =>
+    /[\p{Cc}\p{Default_Ignorable_Code_Point}]/u.test(character)
+      ? `\\u{${character.codePointAt(0).toString(16).padStart(4, "0")}}`
+      : character
+  ).join("");
 }
 
 function assertOnlyKeys(value, keys, label) {
@@ -360,7 +364,12 @@ export function parseMachineVerdict(value) {
     const finding = record(item, `Contract verdict finding ${index}`);
     if (!findingOrder.includes(finding.kind)) throw new TypeError(`Contract verdict finding ${index} has an invalid kind.`);
     validateFindingShape(finding, `Contract verdict finding ${index}`, evaluatedOn);
-    return Object.freeze({ ...finding });
+    return Object.freeze({
+      ...finding,
+      ...(Object.hasOwn(finding, "expected") && finding.expected !== null
+        ? { expected: expectation(finding.expected, `Contract verdict finding ${index}.expected`) }
+        : {}),
+    });
   });
   const identities = new Set();
   const findingsByCoordinate = new Map();
@@ -423,6 +432,7 @@ export function parseMachineVerdict(value) {
   }
   return Object.freeze({
     contractDigest,
+    evaluatedOn,
     findings: Object.freeze(findings),
     verdict: verdict.verdict,
   });
@@ -461,11 +471,78 @@ export function boundedSummary(value, maximumBytes = MAXIMUM_SUMMARY_BYTES) {
   return `${utf8Prefix(value, maximumBytes - Buffer.byteLength(suffix))}${suffix}`;
 }
 
-function findingDetail(finding) {
+function exceptionLifecycleLabel(exception, evaluatedOn) {
+  const daysUntilExpiry = (
+    Date.parse(`${exception.expiresOn}T00:00:00.000Z`) -
+    Date.parse(`${evaluatedOn}T00:00:00.000Z`)
+  ) / 86_400_000;
+  if (daysUntilExpiry < 0) {
+    const elapsed = Math.abs(daysUntilExpiry);
+    return `expired ${elapsed} UTC day${elapsed === 1 ? "" : "s"} ago`;
+  }
+  if (daysUntilExpiry === 0) return "expires today; active through UTC day end";
+  return `expires in ${daysUntilExpiry} UTC day${daysUntilExpiry === 1 ? "" : "s"}`;
+}
+
+function outcomeLabel(value) {
+  if (value === null || value === undefined) return "not present";
+  return value.status === "passed"
+    ? "passed"
+    : `failed (${value.failureCodes.join(", ")})`;
+}
+
+function exceptionEligible(value) {
+  return value?.status === "failed" && value.failureCodes.every((code) => contractFailureCodes.has(code));
+}
+
+function governanceGuidance(finding, evaluatedOn) {
+  const expected = finding.expected;
+  const actual = finding.actual;
+  if (finding.kind === "matched-known-failure") {
+    return expected?.status === "failed" && expected.exception.expiresOn < evaluatedOn
+      ? "The exact failure-code set still matches, but the exception is expired."
+      : "The exception applies only to this exact failure-code set.";
+  }
+  if (finding.kind === "changed-known-failure") {
+    return exceptionEligible(actual)
+      ? "The failure-code set changed; review and annotate a new expectation."
+      : "The failure includes an ineligible code; repair it because it cannot become a known failure.";
+  }
+  if (finding.kind === "recovered-known-failure") {
+    return "The state recovered; accept the expectation change to remove contract debt.";
+  }
+  if (finding.kind !== "expired-exception") return undefined;
+  if (actual?.status === "passed") {
+    return "The state recovered; accept the expectation change to remove contract debt.";
+  }
+  if (!exceptionEligible(actual)) {
+    return "The failure includes an ineligible code; repair it because it cannot become a known failure.";
+  }
+  if (expected?.status === "failed" && !sameStrings(actual.failureCodes, expected.failureCodes)) {
+    return "The failure-code set changed; review and annotate a new expectation.";
+  }
+  return "Repair the state, or explicitly renew with a new reason and a 1–30 day window.";
+}
+
+function findingDetail(finding, evaluatedOn) {
   const coordinate = finding.id ?? "run";
   const actual = record(finding.actual ?? {}, "Finding actual outcome");
   const codes = Array.isArray(actual.failureCodes) ? actual.failureCodes.join(", ") : actual.status;
-  return `${markdown(coordinate)} — ${markdown(finding.kind)}${codes === undefined ? "" : ` — ${markdown(codes)}`}`;
+  const lines = [
+    `${markdown(coordinate)} — ${markdown(finding.kind)}${codes === undefined ? "" : ` — ${markdown(codes)}`}`,
+  ];
+  const expected = finding.expected;
+  if (expected?.status === "failed" && expected.exception !== null) {
+    lines.push(
+      `- Expected: ${markdown(outcomeLabel(expected))}`,
+      `- Actual: ${markdown(outcomeLabel(finding.actual))}`,
+      `- Exception: ${markdown(expected.exception.owner)} · ${markdown(exceptionLifecycleLabel(expected.exception, evaluatedOn))} · through ${expected.exception.expiresOn}`,
+      `- Reason: ${markdown(expected.exception.reason)}`,
+    );
+  }
+  const guidance = governanceGuidance(finding, evaluatedOn);
+  if (guidance !== undefined) lines.push(`- Next: ${markdown(guidance)}`);
+  return lines.join("\n");
 }
 
 export function buildSummary(parsed, options = {}) {
@@ -488,7 +565,12 @@ export function buildSummary(parsed, options = {}) {
     "",
     "## Finding details",
     "",
-    ...(detail.length === 0 ? ["None."] : detail.map((finding, index) => `${index + 1}. ${findingDetail(finding)}`)),
+    ...(detail.length === 0 ? ["None."] : detail.map((finding, index) => {
+      const marker = `${index + 1}. `;
+      const body = findingDetail(finding, parsed.evaluatedOn)
+        .replaceAll("\n", `\n${" ".repeat(marker.length)}`);
+      return `${marker}${body}`;
+    })),
   ];
   if (detailedTotal > detail.length) {
     lines.push("", `${detailedTotal - detail.length} additional canonical finding(s) omitted from this bounded summary.`);
@@ -508,7 +590,11 @@ export function annotationCommands(parsed, cap) {
     .slice(0, cap)
     .map((finding) => {
       const title = `UIWitness ${finding.kind}`;
-      const message = `${finding.id ?? "run"}: ${finding.kind}`;
+      const expected = finding.expected;
+      const exception = expected?.status === "failed" && expected.exception !== null
+        ? `; owner ${expected.exception.owner}; ${exceptionLifecycleLabel(expected.exception, parsed.evaluatedOn)}`
+        : "";
+      const message = `${finding.id ?? "run"}: ${finding.kind}${exception}`;
       return `::error title=${workflowProperty(title)}::${workflowMessage(message)}`;
     }));
 }

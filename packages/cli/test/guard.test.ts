@@ -17,6 +17,7 @@ import { pathToFileURL } from "node:url";
 
 import {
   contractConfigDigest,
+  parseContractProposal,
   parseReport,
   type ContractConfigurationCoordinate,
   type UIWitnessContract,
@@ -631,6 +632,46 @@ describe("guardProject", () => {
         expect.objectContaining({ reproduce: expect.anything() }),
       );
     }
+  });
+
+  it.each([
+    ["exact failure", "failed", "ASSERTION_FAILED", "exception"],
+    ["changed failure", "failed", "PAGE_ERROR", "expectation"],
+    ["recovered failure", "passed", "ASSERTION_FAILED", "expectation"],
+  ] as const)("offers only the valid %s lifecycle operation", async (
+    _label,
+    status,
+    failureCode,
+    operation,
+  ) => {
+    const value = await fixture();
+    const configuration = await fixtureConfiguration(value);
+    await writeKnownFailureContract(value, { expiresOn: "2026-09-02" });
+    mockRunReport(report(configuration, status, failureCode), true);
+
+    const result = await guardProject({
+      cwd: value.project,
+      now: () => new Date("2026-09-03T12:00:00.000Z"),
+    });
+
+    const proposal = parseContractProposal(await readFile(
+      join(value.project, result.proposalPath!),
+      "utf8",
+    ));
+    expect(proposal.changes.map(({ id }) => id)).toEqual([
+      `${operation}:home/success/desktop/light`,
+    ]);
+    expect(result.machineVerdict.findings[0]).toMatchObject({
+      expected: {
+        exception: {
+          createdOn: "2026-09-01",
+          expiresOn: "2026-09-02",
+          owner: "quality-team",
+          reason: "Tracked by UIW-1842.",
+        },
+      },
+      kind: "expired-exception",
+    });
   });
 
   it("fails closed when the fresh report is incomplete", async () => {
