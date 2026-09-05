@@ -19,13 +19,16 @@ import { chromium } from "playwright";
 import { describe, expect, it } from "vitest";
 
 import {
+  canonicalizeJson,
   expandMatrix,
   parseConfig,
   parseExecutionResult,
   parseReport,
   screenshotArtifactPath,
   serializeReport,
+  type JsonValue,
   type MatrixCell,
+  type Sha256Digest,
 } from "uiwitness-core";
 
 import { runPersistedScenarioCells } from "../src/index.js";
@@ -116,6 +119,63 @@ function allIdentifierCells(): readonly MatrixCell[] {
       },
     }),
   );
+}
+
+const contractDigest = `sha256:${"a".repeat(64)}` as Sha256Digest;
+
+function contractVerdictContents(): string {
+  return `${canonicalizeJson({
+    complete: true,
+    configDigest: contractDigest,
+    contractDigest,
+    evaluatedOn: "2026-09-04",
+    findings: [
+      {
+        actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+        expected: { status: "passed" },
+        id: "capture/ordered/compact/light",
+        kind: "regression",
+        remediate: "uiwitness contract inspect --candidate candidate.json --change expectation:capture/ordered/compact/light",
+        reproduce: "uiwitness scan --coordinate capture/ordered/compact/light --headed",
+      },
+    ],
+    runDigest: contractDigest,
+    schemaVersion: 1,
+    verdict: "failed",
+  } as JsonValue)}\n`;
+}
+
+function largeContractVerdictContents(count = 2_000): string {
+  const findings = Array.from({ length: count }, (_, index) => {
+    const id = `bulk/row-${String(index).padStart(4, "0")}/desktop/light`;
+    return index % 2 === 0
+      ? {
+          actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+          expected: { status: "passed" },
+          id,
+          kind: "regression",
+          remediate: `uiwitness contract inspect --change regression:${id}`,
+          reproduce: `uiwitness scan --coordinate ${id}`,
+        }
+      : {
+          actual: { status: "passed" },
+          currentConfigFingerprint: contractDigest,
+          expected: null,
+          id,
+          kind: "unaccepted-addition",
+          remediate: `uiwitness contract inspect --change addition:${id}`,
+        };
+  });
+  return `${canonicalizeJson({
+    complete: true,
+    configDigest: contractDigest,
+    contractDigest,
+    evaluatedOn: "2026-09-04",
+    findings,
+    runDigest: contractDigest,
+    schemaVersion: 1,
+    verdict: "failed",
+  } as JsonValue)}\n`;
 }
 
 async function temporaryProject(): Promise<{
@@ -289,7 +349,21 @@ describe("runPersistedScenarioCells", () => {
           const page = await context.newPage();
           await page.goto(reportUrl, { waitUntil: "load" });
 
-          const imageWidths = await page.locator("img").evaluateAll((images) =>
+          for (const thumbnail of await page.locator("img.thumbnail").all()) {
+            await thumbnail.scrollIntoViewIfNeeded();
+          }
+          await page.waitForFunction(() =>
+            Array.from(document.querySelectorAll("img.thumbnail")).every((image) =>
+              image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0
+            ),
+          );
+          await page.evaluate(() => {
+            window.scrollTo(0, 0);
+            document.querySelectorAll(".matrix-scroll").forEach((element) => {
+              element.scrollLeft = 0;
+            });
+          });
+          const imageWidths = await page.locator("img.thumbnail").evaluateAll((images) =>
             images.map((image) => (image as HTMLImageElement).naturalWidth),
           );
           expect(imageWidths.length).toBeGreaterThan(0);
@@ -563,6 +637,379 @@ describe("runPersistedScenarioCells", () => {
       } finally {
         await noScriptContext.close();
       }
+    } finally {
+      Reflect.deleteProperty(globalThis, eventKey);
+      await browser.close();
+      await project.cleanup();
+    }
+  }, 30_000);
+
+  it("publishes and renders the exact committed contract verdict sidecar", async () => {
+    const project = await temporaryProject();
+    const browser = await chromium.launch({ headless: true });
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
+    Reflect.set(globalThis, eventKey, []);
+    try {
+      const run = await runPersistedScenarioCells(persistenceCells(["ordered"]), {
+        baseURL,
+        finalizeGeneration: () => ({
+          artifacts: [{
+            contents: contractVerdictContents(),
+            path: ".uiwitness/contract-verdict.json",
+            publication: "replace",
+            role: "contract-verdict",
+          }],
+          runDigest: contractDigest,
+          toolVersion: "0.0.0-test",
+        }),
+        generatedAt: new Date("2026-09-04T12:00:00.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      await expect(
+        readFile(join(project.path, ".uiwitness/contract-verdict.json"), "utf8"),
+      ).resolves.toBe(contractVerdictContents());
+      const reportUrl = pathToFileURL(
+        join(project.path, ...run.htmlReportPath.split("/")),
+      ).href;
+
+      for (const width of [320, 760, 1_440]) {
+        const context = await browser.newContext({
+          viewport: { height: 900, width },
+        });
+        try {
+          const page = await context.newPage();
+          await page.goto(reportUrl, { waitUntil: "load" });
+          expect(await page.locator("body").getAttribute("data-contract-verdict"))
+            .toBe("failed");
+          expect(await page.locator("#contract-findings").isVisible()).toBe(true);
+          expect(await page.locator("#matrix").isVisible()).toBe(true);
+          expect(
+            await page.locator("#contract-findings").evaluate((findings) => {
+              const matrix = document.querySelector("#matrix");
+              return matrix instanceof HTMLElement &&
+                findings.getBoundingClientRect().top < matrix.getBoundingClientRect().top;
+            }),
+          ).toBe(true);
+          expect(await page.getByText("Expected", { exact: true }).isVisible()).toBe(true);
+          expect(await page.getByText("Actual", { exact: true }).isVisible()).toBe(true);
+          expect(await page.getByRole("button", { name: "Copy" }).count()).toBe(2);
+          expect(
+            await page.getByRole("button", { name: "Copy" }).evaluateAll((buttons) =>
+              buttons.every((button) => button.getBoundingClientRect().height >= 44)
+            ),
+          ).toBe(true);
+          if (width === 1_440) {
+            const copyButton = page.locator("button[data-copy-target]").first();
+            await page.evaluate(() => {
+              const nativeTimeout = window.setTimeout.bind(window);
+              window.setTimeout = ((callback: TimerHandler, delay?: number) =>
+                nativeTimeout(callback, delay === 120 ? 10_000 : delay)) as typeof window.setTimeout;
+              Object.defineProperty(navigator, "clipboard", {
+                configurable: true,
+                value: undefined,
+              });
+              Object.defineProperty(document, "execCommand", {
+                configurable: true,
+                value: (command: string) => {
+                  document.documentElement.dataset["copyFallback"] = command;
+                  return true;
+                },
+              });
+            });
+            await copyButton.focus();
+            await page.keyboard.press("Enter");
+            await page.waitForFunction(() =>
+              document.querySelector("[data-copy-target]")?.textContent === "Copied"
+            );
+            expect(await copyButton.textContent()).toBe("Copied");
+            expect(await page.locator("#copy-status").textContent()).toBe(
+              "Command copied.",
+            );
+            expect(
+              await page.locator("html").getAttribute("data-copy-fallback"),
+            ).toBe("copy");
+
+            const nativeCopyButton = page.locator("button[data-copy-target]").nth(1);
+            const nativeCommand = await page.locator(
+              `#${await nativeCopyButton.getAttribute("data-copy-target")}`,
+            ).textContent();
+            await page.evaluate(() => {
+              delete document.documentElement.dataset["copyFallback"];
+              Object.defineProperty(navigator, "clipboard", {
+                configurable: true,
+                value: {
+                  writeText: async (value: string) => {
+                    document.documentElement.dataset["copyNative"] = value;
+                  },
+                },
+              });
+              Object.defineProperty(document, "execCommand", {
+                configurable: true,
+                value: () => {
+                  document.documentElement.dataset["copyFallback"] = "unexpected";
+                  return true;
+                },
+              });
+            });
+            await nativeCopyButton.focus();
+            await page.keyboard.press("Enter");
+            await page.waitForFunction(() =>
+              document.querySelectorAll("[data-copy-target]")[1]?.textContent === "Copied"
+            );
+            expect(
+              await page.locator("html").getAttribute("data-copy-native"),
+            ).toBe(nativeCommand);
+            expect(
+              await page.locator("html").getAttribute("data-copy-fallback"),
+            ).toBeNull();
+
+            await page.evaluate(() => {
+              const button = document.querySelectorAll("[data-copy-target]")[1];
+              if (button instanceof HTMLButtonElement) {
+                button.textContent = "Copy";
+                button.classList.remove("is-copied");
+              }
+              const status = document.querySelector("#copy-status");
+              if (status !== null) status.textContent = "";
+              Object.defineProperty(navigator, "clipboard", {
+                configurable: true,
+                value: {
+                  writeText: async () => {
+                    throw new Error("injected native clipboard failure");
+                  },
+                },
+              });
+              Object.defineProperty(document, "execCommand", {
+                configurable: true,
+                value: () => false,
+              });
+            });
+            await nativeCopyButton.focus();
+            await page.keyboard.press("Enter");
+            await page.waitForFunction(() =>
+              document.querySelector("#copy-status")?.textContent?.startsWith("Copy failed")
+            );
+            expect(await nativeCopyButton.textContent()).toBe("Copy");
+            expect(await nativeCopyButton.getAttribute("class")).not.toContain(
+              "is-copied",
+            );
+            expect(await page.locator("#copy-status").textContent()).toBe(
+              "Copy failed. Select and copy the command manually.",
+            );
+          }
+          const overflow = await page.evaluate(() => ({
+            clientWidth: document.documentElement.clientWidth,
+            offenders: Array.from(document.querySelectorAll("body *"))
+              .filter((element) => {
+                const box = element.getBoundingClientRect();
+                return box.right > document.documentElement.clientWidth + 0.5 ||
+                  box.left < -0.5;
+              })
+              .slice(0, 10)
+              .map((element) => ({
+                className: element.className,
+                left: element.getBoundingClientRect().left,
+                right: element.getBoundingClientRect().right,
+                tag: element.tagName,
+              })),
+            scrollWidth: document.documentElement.scrollWidth,
+          }));
+          expect(overflow.scrollWidth, JSON.stringify({ width, ...overflow }))
+            .toBe(overflow.clientWidth);
+        } finally {
+          await context.close();
+        }
+      }
+
+      const noScript = await browser.newContext({
+        javaScriptEnabled: false,
+        viewport: { height: 900, width: 320 },
+      });
+      try {
+        const page = await noScript.newPage();
+        await page.goto(reportUrl, { waitUntil: "load" });
+        expect(await page.locator("[data-contract-finding]").isVisible()).toBe(true);
+        expect(
+          await page.getByText(
+            "uiwitness scan --coordinate capture/ordered/compact/light --headed",
+            { exact: true },
+          ).isVisible(),
+        ).toBe(true);
+        expect(await page.getByRole("button", { name: "Copy" }).count()).toBe(0);
+      } finally {
+        await noScript.close();
+      }
+    } finally {
+      Reflect.deleteProperty(globalThis, eventKey);
+      await browser.close();
+      await project.cleanup();
+    }
+  }, 30_000);
+
+  it("filters thousands of contract findings without reordering or truncating them", async () => {
+    const project = await temporaryProject();
+    const browser = await chromium.launch({ headless: true });
+    const eventKey = Symbol.for("uiwitness.test.capture-events");
+    Reflect.set(globalThis, eventKey, []);
+    try {
+      const verdictContents = largeContractVerdictContents();
+      const run = await runPersistedScenarioCells(persistenceCells(["ordered"]), {
+        baseURL,
+        finalizeGeneration: () => ({
+          artifacts: [{
+            contents: verdictContents,
+            path: ".uiwitness/contract-verdict.json",
+            publication: "replace",
+            role: "contract-verdict",
+          }],
+          runDigest: contractDigest,
+          toolVersion: "0.0.0-test",
+        }),
+        generatedAt: new Date("2026-09-04T12:00:00.000Z"),
+        projectDirectory: project.path,
+        scenarioBaseDirectory,
+      });
+      const reportUrl = pathToFileURL(
+        join(project.path, ...run.htmlReportPath.split("/")),
+      ).href;
+      const page = await browser.newPage({ viewport: { height: 900, width: 1_440 } });
+      const pageErrors: string[] = [];
+      page.on("pageerror", (error) => pageErrors.push(error.message));
+      await page.goto(reportUrl, { waitUntil: "load" });
+
+      const findingLocator = page.locator("[data-contract-finding]");
+      const visibleFindings = page.locator("[data-contract-finding]:visible");
+      const initialCoordinates = await findingLocator.evaluateAll((items) =>
+        items.map((item) => (item as HTMLElement).dataset["contractCoordinate"])
+      );
+      expect(initialCoordinates).toHaveLength(2_000);
+      expect(initialCoordinates[0]).toBe("bulk/row-0000/desktop/light");
+      expect(initialCoordinates.at(-1)).toBe("bulk/row-1999/desktop/light");
+
+      const elapsed = await page.evaluate(async () => {
+        const input = document.querySelector('input[name="finding-query"]');
+        if (!(input instanceof HTMLInputElement)) return Number.POSITIVE_INFINITY;
+        const started = performance.now();
+        input.focus();
+        input.value = "row-1998";
+        input.dispatchEvent(new InputEvent("input", { bubbles: true }));
+        await new Promise<void>((resolve) => requestAnimationFrame(() =>
+          requestAnimationFrame(() => resolve())
+        ));
+        return performance.now() - started;
+      });
+      expect(elapsed).toBeLessThan(5_000);
+      expect(await visibleFindings.count()).toBe(1);
+      expect(await page.locator("#finding-filter-results").textContent()).toBe(
+        "Showing 1 of 2000 findings.",
+      );
+      expect(new URL(page.url()).searchParams.get("finding-query")).toBe("row-1998");
+
+      await page.locator('select[name="finding-kind"]').selectOption("regression");
+      expect(await visibleFindings.count()).toBe(1);
+      expect(new URL(page.url()).searchParams.get("finding-kind")).toBe("regression");
+      await page.reload({ waitUntil: "load" });
+      expect(await page.locator('input[name="finding-query"]').inputValue()).toBe(
+        "row-1998",
+      );
+      expect(await page.locator('select[name="finding-kind"]').inputValue()).toBe(
+        "regression",
+      );
+      expect(await visibleFindings.count()).toBe(1);
+
+      const targetId = await visibleFindings.getAttribute("id");
+      await page.locator('select[name="finding-kind"]').selectOption(
+        "unaccepted-addition",
+      );
+      expect(await visibleFindings.count()).toBe(0);
+      const filteredDeepLink = new URL(reportUrl);
+      filteredDeepLink.searchParams.set("finding-kind", "unaccepted-addition");
+      filteredDeepLink.searchParams.set("finding-query", "row-1998");
+      filteredDeepLink.hash = targetId ?? "";
+      const deepLinkPage = await browser.newPage({
+        viewport: { height: 900, width: 1_440 },
+      });
+      try {
+        await deepLinkPage.goto(filteredDeepLink.href, { waitUntil: "load" });
+        expect(
+          await deepLinkPage.locator('input[name="finding-query"]').inputValue(),
+        ).toBe("row-1998");
+        expect(
+          await deepLinkPage.locator('select[name="finding-kind"]').inputValue(),
+        ).toBe("unaccepted-addition");
+        expect(
+          await deepLinkPage.locator("[data-contract-finding]:visible").count(),
+        ).toBe(1);
+        expect(new URL(deepLinkPage.url()).hash).toBe(`#${targetId}`);
+      } finally {
+        await deepLinkPage.close();
+      }
+
+      await page.getByRole("button", { name: "Reset finding filters" }).focus();
+      await page.keyboard.press("Enter");
+      await expect.poll(() => visibleFindings.count()).toBe(2_000);
+      await page.locator('input[name="finding-query"]').focus();
+      await page.keyboard.type("row-0001");
+      await expect.poll(() => visibleFindings.count()).toBe(1);
+      await page.getByRole("button", { name: "Reset finding filters" }).focus();
+      await page.keyboard.press("Enter");
+      await expect.poll(() => visibleFindings.count()).toBe(2_000);
+      expect(
+        await findingLocator.evaluateAll((items) =>
+          items.map((item) => (item as HTMLElement).dataset["contractCoordinate"])
+        ),
+      ).toEqual(initialCoordinates);
+
+      const mobile = await browser.newContext({ viewport: { height: 900, width: 320 } });
+      try {
+        const mobilePage = await mobile.newPage();
+        await mobilePage.goto(reportUrl, { waitUntil: "load" });
+        const controlsFit = await mobilePage
+          .locator("#finding-filters input, #finding-filters select, #finding-filters button")
+          .evaluateAll((controls) => controls.every((control) => {
+            const box = control.getBoundingClientRect();
+            return box.height >= 44 && box.left >= 0 && box.right <= 320;
+          }));
+        expect(controlsFit).toBe(true);
+        const mobileOverflow = await mobilePage.evaluate(() => ({
+          clientWidth: document.documentElement.clientWidth,
+          offenders: Array.from(document.querySelectorAll("body *"))
+            .filter((element) => {
+              const box = element.getBoundingClientRect();
+              return box.left < -0.5 || box.right > document.documentElement.clientWidth + 0.5;
+            })
+            .slice(0, 10)
+            .map((element) => ({
+              className: element.className,
+              left: element.getBoundingClientRect().left,
+              right: element.getBoundingClientRect().right,
+              tag: element.tagName,
+            })),
+          scrollWidth: document.documentElement.scrollWidth,
+        }));
+        expect(mobileOverflow.scrollWidth, JSON.stringify(mobileOverflow)).toBe(
+          mobileOverflow.clientWidth,
+        );
+      } finally {
+        await mobile.close();
+      }
+
+      const noScript = await browser.newContext({
+        javaScriptEnabled: false,
+        viewport: { height: 900, width: 320 },
+      });
+      try {
+        const noScriptPage = await noScript.newPage();
+        await noScriptPage.goto(reportUrl, { waitUntil: "load" });
+        expect(await noScriptPage.locator("#finding-filters").isVisible()).toBe(false);
+        expect(
+          await noScriptPage.locator("[data-contract-finding]:visible").count(),
+        ).toBe(2_000);
+      } finally {
+        await noScript.close();
+      }
+      expect(pageErrors).toEqual([]);
     } finally {
       Reflect.deleteProperty(globalThis, eventKey);
       await browser.close();

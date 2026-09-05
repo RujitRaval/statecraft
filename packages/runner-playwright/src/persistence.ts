@@ -51,7 +51,11 @@ import {
   type UIWitnessCommittedGeneration,
   type Sha256Digest,
 } from "uiwitness-core";
-import { REPORT_HTML_PATH, renderReportHtml } from "uiwitness-report";
+import {
+  REPORT_HTML_PATH,
+  renderReportHtml,
+  type ContractVerdictReportInput,
+} from "uiwitness-report";
 
 import {
   diagnosticErrorMessage,
@@ -1497,8 +1501,30 @@ export async function persistReport(
       await (operations.writeFile ?? writePrivateFile)(destination, artifact.screenshot);
     }
 
+    const selectedFinalization = suppliedFinalization ??
+      snapshotGenerationFinalization({ toolVersion: await runnerVersion() });
+    validateGenerationSidecars(selectedFinalization);
+    const contractVerdictArtifact = selectedFinalization.artifacts?.find(
+      ({ role }) => role === "contract-verdict",
+    );
+    const contractVerdict = contractVerdictArtifact === undefined
+      ? undefined
+      : JSON.parse(
+          validateCanonicalJsonSidecar(contractVerdictArtifact),
+        ) as ContractVerdictReportInput;
+    if (
+      contractVerdict !== undefined &&
+      selectedFinalization.runDigest !== contractVerdict.runDigest
+    ) {
+      throw new TypeError(
+        "The generation run digest must exactly match the contract verdict run digest.",
+      );
+    }
     const reportContents = serializeReport(report);
-    const htmlContents = renderReportHtml(report);
+    const htmlContents = renderReportHtml(
+      report,
+      contractVerdict === undefined ? {} : { contractVerdict },
+    );
     const stagedReport = join(stagingRoot, reportFileName);
     assertContained(stagingRoot, stagedReport);
     await (operations.writeFile ?? writePrivateFile)(stagedReport, reportContents);
@@ -1506,9 +1532,6 @@ export async function persistReport(
     assertContained(stagingRoot, stagedHtml);
     await (operations.writeFile ?? writePrivateFile)(stagedHtml, htmlContents);
 
-    const selectedFinalization = suppliedFinalization ??
-      snapshotGenerationFinalization({ toolVersion: await runnerVersion() });
-    validateGenerationSidecars(selectedFinalization);
     const sidecars = [...(selectedFinalization.artifacts ?? [])];
     const sidecarPaths = new Set<string>();
     const stagedAdditional: Array<{

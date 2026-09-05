@@ -81,7 +81,7 @@ Once a repository has a committed `uiwitness.contract.json`, guard every promise
 npx uiwitness guard
 ```
 
-Guard exits `0` when the contract matches, `1` for regressions or unaccepted drift, and `2` when an invalid or incomplete run cannot prove the contract. It writes `.uiwitness/contract-verdict.json` and gives executable findings an exact headed `scan --coordinate route/state/viewport/theme` reproduction command. The [CLI API](docs/engineering/CLI_API.md) and [core API](docs/engineering/CORE_API.md) define the path, fingerprint, contract, digest, and verdict contracts.
+Guard exits `0` when the contract matches, `1` for regressions or unaccepted drift, and `2` when an invalid or incomplete run cannot prove the contract. It writes `.uiwitness/contract-verdict.json`, gives executable findings an exact headed `scan --coordinate route/state/viewport/theme` reproduction command, and places the promise verdict plus actionable findings before the existing evidence matrix in the offline report. The [CLI API](docs/engineering/CLI_API.md), [core API](docs/engineering/CORE_API.md), and [report API](docs/engineering/REPORT_API.md) define the path, fingerprint, contract, digest, verdict, and rendering contracts.
 
 Create the first contract from one complete run, or review a failed guard's immutable proposal one named change at a time:
 
@@ -160,6 +160,8 @@ Every completed scan writes a versioned report beneath `.uiwitness/`:
 
 Filter by route, state, viewport, theme, or status. Open a cell to inspect the exact screenshot, route metadata, assertion failures, console errors, page errors, and failed requests. The report needs no server, account, network request, or external asset.
 
+Guard reports lead with the contract verdict and canonical finding ledger. Filter findings independently by coordinate text and finding type; incomplete runs preserve their exact machine reasons alongside deterministic human-readable explanations. Each finding shows only the reproduction and review commands that apply to that finding kind.
+
 ![UIWitness failure detail showing the Northline customer long-content mobile overflow and its assertion evidence](docs/assets/uiwitness-failure-detail.png)
 
 ## GitHub Actions
@@ -212,7 +214,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first five slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, and crash-recoverable atomic generation publication. Contract-first reporting, the Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first six slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, crash-recoverable atomic generation publication, and contract-first offline reporting. The Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

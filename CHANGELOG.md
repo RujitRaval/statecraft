@@ -4,6 +4,24 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.5.0] - 2026-09-04
+
+### Added
+
+- The offline HTML report now leads with the state-contract verdict, promised and matched counts, actionable findings, exact expected and actual outcomes, exception ownership, stable deep links, and copyable reproduction or remediation commands before the existing evidence matrix.
+- Contract findings can be filtered by coordinate and finding type with URL-restorable state, canonical ordering, accessible live counts, keyboard reset behavior, and complete no-script output; browser coverage verifies responsive operation with 2,000 findings.
+- Incomplete-run findings now preserve and explain every deterministic machine reason instead of collapsing missing, duplicate, unexpected, and declared-incomplete evidence into one generic message.
+
+### Changed
+
+- Report rendering accepts an additive schema-v1 contract-verdict input, while ordinary execution-only report consumers retain the existing one-argument API and output.
+- Atomic generation publication now renders from the exact canonical verdict sidecar and requires its semantic run digest to match the generation finalizer before any report set is committed.
+
+### Security
+
+- Contract-verdict rendering fails closed on malformed digests, dates, outcomes, failure codes, exception windows, duplicate or noncanonical findings, inconsistent verdicts, invalid command combinations, oversized input, and mismatched completeness.
+- Contract-first reports remain network-independent and CSP-pinned, keep verdict data out of executable script, escape commands and labels, and expose every finding when JavaScript is unavailable.
+
 ## [0.26.4.0] - 2026-09-03
 
 ### Added

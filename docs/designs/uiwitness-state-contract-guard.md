@@ -977,7 +977,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: D17 and Section 2 — report, evidence, verdict, proposal, overlay, manifest, JSON copy, and HTML cannot publish independently.
   - Files: `packages/runner-playwright/src/persistence.ts`, generation types, recovery/fault tests.
   - Verify: injected failure after every stage/swap/fsync plus process-death recovery and orphan-proposal rejection.
-- [ ] **T6 (P2, human: ~3 days / Codex: ~4h)** — Report — Build the contract-first offline verdict experience
+- [x] **T6 (P2, human: ~3 days / Codex: ~4h)** — Report — Build the contract-first offline verdict experience
   - Surfaced by: Section 11 — verdict/findings must lead without replacing the existing evidence matrix or violating `DESIGN.md`.
   - Files: `packages/report/src/**`, report fixtures/tests, `docs/product/REPORT_UX_SPEC.md`, `DESIGN.md` only if an approved clarification is needed.
   - Verify: all state fixtures at desktop/760/320, CSP/no-script, keyboard/screen-reader/reduced-motion, then `/design-review`.
