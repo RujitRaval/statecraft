@@ -5,9 +5,17 @@ import {
   chromium,
   type Browser,
   type BrowserContext,
+  type BrowserContextOptions,
   type LaunchOptions,
   type Page,
 } from "playwright";
+
+import {
+  AuthenticationError,
+  prepareAuthenticationState,
+  type RunAuthenticationOptions,
+} from "./authentication.js";
+import type { AuthenticationStorageState } from "uiwitness-core";
 
 /** Playwright primitives and matrix metadata available while one cell runs. */
 export interface CellExecutionContext {
@@ -42,6 +50,7 @@ export type CellExecutionOutcome<Value> =
 
 /** Browser launch settings for one programmatic execution run. */
 export interface RunExecutionCellsOptions {
+  readonly authentication?: RunAuthenticationOptions | undefined;
   readonly launchOptions?: LaunchOptions;
 }
 
@@ -64,10 +73,46 @@ function rejected<Value>(
   return Object.freeze({ cell, reason, status: "rejected" });
 }
 
+/** @internal Creates one isolated cell context and keeps auth seeding failures opaque. */
+export async function createCellBrowserContext(
+  browser: Browser,
+  cell: MatrixCell,
+  authenticationState: AuthenticationStorageState | undefined,
+  authenticationSetupPath: string | undefined,
+): Promise<BrowserContext> {
+  try {
+    const storageState = authenticationState === undefined
+      ? undefined
+      : structuredClone(authenticationState) as unknown as Exclude<
+          BrowserContextOptions["storageState"],
+          string | undefined
+        >;
+    return await browser.newContext({
+      ...(storageState === undefined
+        ? {}
+        : { storageState }),
+      viewport: {
+        height: cell.viewport.height,
+        width: cell.viewport.width,
+      },
+    });
+  } catch (error: unknown) {
+    if (authenticationSetupPath !== undefined) {
+      throw new AuthenticationError(
+        "AUTH_SETUP_FAILED",
+        authenticationSetupPath,
+      );
+    }
+    throw error;
+  }
+}
+
 async function runCell<Value>(
   browser: Browser,
   cell: MatrixCell,
   execute: CellExecutor<Value>,
+  authenticationState: AuthenticationStorageState | undefined,
+  authenticationSetupPath: string | undefined,
 ): Promise<CellRun<Value>> {
   const startedAt = performance.now();
   let context: BrowserContext | undefined;
@@ -75,12 +120,12 @@ async function runCell<Value>(
   let outcome: CellExecutionOutcome<Value>;
 
   try {
-    context = await browser.newContext({
-      viewport: {
-        height: cell.viewport.height,
-        width: cell.viewport.width,
-      },
-    });
+    context = await createCellBrowserContext(
+      browser,
+      cell,
+      authenticationState,
+      authenticationSetupPath,
+    );
     const page = await context.newPage();
     const execution = Object.freeze({ cell, context, page });
     executionStartTimes.set(execution, startedAt);
@@ -92,6 +137,9 @@ async function runCell<Value>(
     }
     outcome = Object.freeze({ cell, status: "fulfilled", value });
   } catch (reason: unknown) {
+    if (reason instanceof AuthenticationError && context === undefined) {
+      throw reason;
+    }
     outcome = rejected(cell, reason);
   }
 
@@ -132,10 +180,23 @@ export async function runExecutionCells<Value>(
 
   let browser = await chromium.launch(options.launchOptions);
   let browserNeedsClose = true;
+  let authenticationState: AuthenticationStorageState | undefined;
   try {
+    if (options.authentication !== undefined) {
+      authenticationState = await prepareAuthenticationState(
+        browser,
+        options.authentication,
+      );
+    }
     const outcomes: CellExecutionOutcome<Value>[] = [];
     for (const [index, cell] of cells.entries()) {
-      const run = await runCell(browser, cell, execute);
+      const run = await runCell(
+        browser,
+        cell,
+        execute,
+        authenticationState,
+        options.authentication?.config.setup,
+      );
       outcomes.push(run.outcome);
 
       if (run.contextCleanupFailed && index < cells.length - 1) {

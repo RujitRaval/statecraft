@@ -123,6 +123,35 @@ The returned immutable array preserves cell order. Each `CellExecutionOutcome<Va
 
 A rejected cell does not abort later cells. Initial or replacement browser launch and browser cleanup failures reject the run because no remaining cell can execute safely. An empty cell list returns an empty immutable array without launching Chromium.
 
+## Memory-only authentication
+
+Every navigated, captured, and persisted runner option can carry `authentication: RunAuthenticationOptions`. `config` is the parsed core `AuthenticationConfig`; `baseURL` identifies the application origin; and `setupBaseDirectory` resolves its trusted local module.
+
+```ts
+import { expandMatrix, parseConfig } from "uiwitness-core";
+import { runPersistedScenarioCells } from "uiwitness-runner-playwright";
+
+const config = parseConfig(unknownConfig);
+const cells = expandMatrix(config);
+const run = await runPersistedScenarioCells(cells, {
+  ...(config.authentication === undefined ? {} : {
+    authentication: {
+      baseURL: config.baseURL,
+      config: config.authentication,
+      setupBaseDirectory: process.cwd(),
+    },
+  }),
+  baseURL: config.baseURL,
+  projectDirectory: process.cwd(),
+});
+```
+
+The setup module default-exports `AuthSetup = ({ context, page }) => Promise<void>`. It runs exactly once in a dedicated context, reads user-controlled secrets itself, and must return `undefined`. The runner calls `context.storageState()` without a path, validates it through the core origin/cookie policy, closes the setup context, and provides a deep copy to each fresh cell context. Cell mutations never flow into another cell. A browser replacement after unsafe cell cleanup reuses only that already validated in-memory snapshot; login does not repeat.
+
+Module/import/shape/return failures use `AUTH_SETUP_INVALID`; hook, storage-state, or setup-context cleanup failures use `AUTH_SETUP_FAILED`; scope violations use `AUTH_ORIGIN_NOT_ALLOWED` or `AUTH_COOKIE_NOT_ALLOWED`. `AuthenticationError` exposes only the stable code and configured module path, discarding raw thrown values. The runner retains no UIWitness-owned auth file, report field, log record, or cleanup artifact and drops its last state reference with the completed run. Trusted modules can still read, print, transmit, or throw secrets and remain outside this guarantee.
+
+`shared-readonly` is an operator assertion that all cells may safely use one non-mutating account. Multiple roles, stored state, and authenticated sharding are not supported.
+
 `RunExecutionCellsOptions.launchOptions` exposes Playwright's launch settings directly. This keeps the API small and supports headed orchestration later without wrapping Playwright.
 
 ## Typed scenarios and hooks
@@ -294,8 +323,8 @@ This API does not discover configuration, print terminal output, choose exit cod
 
 ## Current boundary
 
-Phase 3 and State Contract Guard T5 are complete. The runner owns browser reuse, per-cell isolation, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and crash-recoverable generation persistence. The CLI consumes this API through `scan`, `check`, and `guard`; the report package remains a pure validated renderer, and contract comparison remains core-owned.
+Phase 3 and State Contract Guard T5/T9 are complete. The runner owns browser reuse, per-cell isolation, once-per-run memory-only authentication, scenarios/hooks, viewport/theme, navigation/readiness, screenshot capture, sanitized diagnostics, assertions, failure policies, core result translation, and crash-recoverable generation persistence. The CLI consumes this API through `scan`, `check`, and `guard`; the report package remains a pure validated renderer, and contract comparison remains core-owned.
 
 ## Dependency decision
 
-Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `uiwitness-report` for deterministic HTML rendering; no browser dependency enters `uiwitness-core` or the report package.
+Playwright `1.62.1` is an exact runtime dependency because the runner exposes its `Page`, `BrowserContext`, and `LaunchOptions` types and must stay paired with its browser protocol and Chromium build. The runner also depends on browser-independent `uiwitness-report` for deterministic HTML rendering. Core uses pinned `tldts` only for browser-neutral Public Suffix List validation; no browser dependency enters `uiwitness-core` or the report package.

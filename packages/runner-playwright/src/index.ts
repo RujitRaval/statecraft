@@ -1,4 +1,13 @@
 export {
+  AuthenticationError,
+} from "./authentication.js";
+export type {
+  AuthenticationErrorCode,
+  AuthSetup,
+  AuthSetupContext,
+  RunAuthenticationOptions,
+} from "./authentication.js";
+export {
   discoverPublicRoutes,
   PublicRouteDiscoveryError,
 } from "./discovery.js";

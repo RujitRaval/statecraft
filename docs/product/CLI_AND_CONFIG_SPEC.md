@@ -42,6 +42,39 @@ uiwitness scan --headed
 
 `--route` matches one configured route ID exactly and rejects an unknown ID before creating output. `--coordinate` is the atomic `route/state/viewport/theme` selector used by guard reproduction commands; it must resolve to exactly one configured cell and cannot be combined with `--route`. Scenario paths resolve from the selected config's directory, while `.uiwitness/` belongs to the invocation working directory. The summary groups executions by route, reports pass/fail status and coverage from schema-v1 metadata, and prints `.uiwitness/report/index.html`. Each completed scan writes deterministic PNGs, schema-v1 JSON, and the offline HTML report.
 
+Private applications may declare one `authentication` block with a trusted local `setup` module and the optional `shared-readonly` mode. The module runs once per complete scan, reads its own environment or secret-manager inputs, and returns no state. UIWitness validates Playwright's memory-only storage state and deep-copies it into every otherwise-fresh cell context. The setup file must stay beneath the invocation workspace through regular, non-linked boundaries. Origin or cookie scope violations and opaque setup failures exit `2` before any product cell is created.
+
+```ts
+authentication: {
+  setup: "./uiwitness/auth.mjs",
+  mode: "shared-readonly",
+  additionalOrigins: ["https://id.example.com"],
+  cookieScopes: [{
+    domain: ".example.com",
+    pathPrefix: "/",
+    secure: "required",
+    partitionKeys: ["https://app.example.com"],
+  }],
+}
+```
+
+```js
+export default async function authenticate({ page }) {
+  const email = process.env.UIWITNESS_LOGIN_EMAIL;
+  const password = process.env.UIWITNESS_LOGIN_PASSWORD;
+  if (email === undefined || password === undefined) {
+    throw new Error("Required authentication environment is unavailable.");
+  }
+  await page.goto("https://app.example.com/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL("https://app.example.com/");
+}
+```
+
+Setup and scenario modules are trusted arbitrary local code, not sandboxes. They can print or transmit anything they read. UIWitness's enforceable guarantee is narrower: its own state validation, errors, reports, verdicts, fingerprints, and files never serialize credentials, cookies, local storage, headers, or setup return values.
+
 ### `uiwitness guard`
 Run the entire configured matrix once and compare only that fresh in-memory result with a committed state contract.
 
@@ -56,7 +89,7 @@ Guard treats the invocation directory as its workspace and never searches a pare
 
 After validating every input and output boundary, guard runs the complete unfiltered matrix in normal headless mode. It never compares an earlier report. The deterministic machine verdict is written to `.uiwitness/contract-verdict.json`; `--json` requests an additional contained copy and refuses to replace an existing path. Executable regressions, changed known failures, and recovered known failures include an exact shell-safe headed `scan --coordinate` reproduction command. Structural drift deliberately has no coordinate reproduction command.
 
-A matching complete contract exits `0`, including exact active known failures. A complete run with a regression, recovery, expired exception, or unaccepted matrix/config drift exits `1` and publishes an immutable content-addressed proposal with a separate metadata overlay. Invalid input, unsafe output, setup failure, incomplete execution, or an internal error exits `2`. The current slice publishes the verdict and proposal family after the runner's existing report transaction; the approved atomic-generation task will bring report, evidence, and contract outputs under one transaction.
+A matching complete contract exits `0`, including exact active known failures. A complete run with a regression, recovery, expired exception, or unaccepted matrix/config drift exits `1` and publishes an immutable content-addressed proposal with a separate metadata overlay. Invalid input, unsafe output, setup failure, incomplete execution, or an internal error exits `2`. Report, evidence, verdict, proposal family, and generation metadata publish in one crash-recoverable transaction.
 
 ### `uiwitness contract`
 

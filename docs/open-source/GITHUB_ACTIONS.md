@@ -119,7 +119,7 @@ The Action uses the repository's immutable `actions/upload-artifact` revision an
 
 The workflow needs only `contents: read`. A normal `pull_request` run for a fork receives a read-only token and no repository secrets. The Action asks for no write permission and performs no pull-request mutation.
 
-Do not work around missing fork secrets with `pull_request_target` or a secret-bearing `workflow_run` that checks out untrusted contribution code. Environment approval does not sandbox a scenario or future authentication module. Secret-bearing authenticated coverage belongs on the exact reviewed commit promoted to a protected trusted branch; the memory-only authentication protocol is a later roadmap slice.
+Do not work around missing fork secrets with `pull_request_target` or a secret-bearing `workflow_run` that checks out untrusted contribution code. Environment approval does not sandbox a scenario or authentication module. Keep the ordinary fork `pull_request` guard secret-free. For private states, review the exact commit first, promote that same commit to a branch allowed by a protected environment, require an environment reviewer, and run the authenticated guard there. The auth module reads environment values itself; UIWitness holds the resulting validated storage state only in memory and never creates an auth-state artifact. Use a non-mutating shared account because `shared-readonly` is an operator promise, not a server-side sandbox.
 
 Scenario and config modules are trusted repository code and execute with the job's privileges. UIWitness can keep its own adapter deterministic and injection-safe, but it cannot sandbox code your repository chooses to run.
 

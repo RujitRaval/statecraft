@@ -3,6 +3,7 @@ import {
   mkdir,
   mkdtemp,
   readFile,
+  readdir,
   realpath,
   rm,
   writeFile,
@@ -74,6 +75,53 @@ async function projectFixture(): Promise<{
   return { configPath, project };
 }
 
+async function authenticatedProjectFixture(): Promise<{
+  readonly configPath: string;
+  readonly project: string;
+}> {
+  const fixture = await projectFixture();
+  const configDirectory = join(fixture.project, "config");
+  await writeFile(
+    join(configDirectory, "auth.mjs"),
+    `export default async function ({ context, page }) {
+  const secret = process.env.UIWITNESS_AUTH_SECRET_CANARY;
+  await page.route("https://uiwitness.invalid/**", route => route.fulfill({ contentType: "text/html", body: "<main>login</main>" }));
+  await page.goto("https://uiwitness.invalid/login");
+  await page.evaluate(value => localStorage.setItem("session", value), secret);
+  await context.addCookies([{ name: "session", value: secret, url: "https://uiwitness.invalid" }]);
+}
+`,
+    "utf8",
+  );
+  const scenarioPath = join(configDirectory, "scenarios", "pass.mjs");
+  await writeFile(
+    scenarioPath,
+    `export default {
+  async beforeNavigate({ page }) {
+    await page.route("**/*", route => route.fulfill({ contentType: "text/html", status: 200, body: "<!doctype html><h1>Authenticated</h1>" }));
+  },
+  async assert({ context, page }) {
+    const expected = process.env.UIWITNESS_AUTH_SECRET_CANARY;
+    const stored = await page.evaluate(() => localStorage.getItem("session"));
+    const cookies = await context.cookies("https://uiwitness.invalid");
+    if (stored !== expected || cookies.find(cookie => cookie.name === "session")?.value !== expected) throw new Error("Authentication state missing");
+  },
+};
+`,
+    "utf8",
+  );
+  const source = await readFile(fixture.configPath, "utf8");
+  await writeFile(
+    fixture.configPath,
+    source.replace(
+      "  baseURL:",
+      '  authentication: { setup: "./auth.mjs" },\n  baseURL:',
+    ),
+    "utf8",
+  );
+  return fixture;
+}
+
 afterEach(async () => {
   await Promise.all(
     projects.splice(0).map((project) =>
@@ -83,6 +131,59 @@ afterEach(async () => {
 });
 
 describe("scanProject", () => {
+  it("uses one memory-only login without serializing its secret state", async () => {
+    const fixture = await authenticatedProjectFixture();
+    const canary = "UIWITNESS_AUTH_SECRET_CANARY_d951c9";
+    process.env["UIWITNESS_AUTH_SECRET_CANARY"] = canary;
+    try {
+      const run = await scanProject({
+        configPath: "config/custom.mjs",
+        cwd: fixture.project,
+        routeId: "dashboard",
+      });
+
+      expect(run.report.executions[0]?.status).toBe("passed");
+      const files = await readdir(join(fixture.project, ".uiwitness"), {
+        recursive: true,
+        withFileTypes: true,
+      });
+      for (const file of files) {
+        if (!file.isFile()) continue;
+        const contents = await readFile(join(file.parentPath, file.name));
+        expect(contents.includes(Buffer.from(canary))).toBe(false);
+      }
+    } finally {
+      delete process.env["UIWITNESS_AUTH_SECRET_CANARY"];
+    }
+  });
+
+  it("rejects an authentication setup outside the workspace before browser work", async () => {
+    const fixture = await projectFixture();
+    const outside = await realpath(
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-auth-outside-")),
+    );
+    projects.push(outside);
+    const setupPath = join(outside, "auth.mjs");
+    await writeFile(setupPath, "export default async function () {}\n", "utf8");
+    const source = await readFile(fixture.configPath, "utf8");
+    await writeFile(
+      fixture.configPath,
+      source.replace(
+        "  baseURL:",
+        `  authentication: { setup: ${JSON.stringify(setupPath)} },\n  baseURL:`,
+      ),
+      "utf8",
+    );
+
+    await expect(scanProject({
+      configPath: "config/custom.mjs",
+      cwd: fixture.project,
+    })).rejects.toMatchObject({ code: "SCAN_AUTH_SETUP_PATH_INVALID" });
+    await expect(access(join(fixture.project, ".uiwitness"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
   it("filters the matrix, resolves scenarios from the config, and persists output", async () => {
     const fixture = await projectFixture();
 

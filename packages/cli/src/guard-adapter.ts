@@ -142,6 +142,41 @@ export async function guardConfiguration(
     failedRequest: config.failOn?.failedRequest ?? defaultFailurePolicy.failedRequest,
     pageError: config.failOn?.pageError ?? defaultFailurePolicy.pageError,
   };
+  const authentication = config.authentication === undefined
+    ? undefined
+    : {
+        additionalOrigins: Object.freeze(
+          [...(config.authentication.additionalOrigins ?? [])].sort(),
+        ),
+        cookieScopes: Object.freeze(
+          (config.authentication.cookieScopes ?? [])
+            .map((scope) => Object.freeze({
+              domain: scope.domain,
+              partitionKeys: Object.freeze(
+                [...(scope.partitionKeys ?? [])].sort(),
+              ),
+              pathPrefix: scope.pathPrefix,
+              secure: scope.secure,
+            }))
+            .sort((left, right) => {
+              if (left.domain < right.domain) return -1;
+              if (left.domain > right.domain) return 1;
+              if (left.pathPrefix < right.pathPrefix) return -1;
+              if (left.pathPrefix > right.pathPrefix) return 1;
+              return 0;
+            }),
+        ),
+        mode: config.authentication.mode ?? "shared-readonly",
+        setup: posixRelative(
+          root,
+          await containedRegularFile(
+            root,
+            resolve(dirname(configPath), config.authentication.setup),
+            "GUARD_AUTH_SETUP_PATH_INVALID",
+            "Guard authentication setup path",
+          ),
+        ),
+      };
   const coordinates: ContractConfigurationCoordinate[] = [];
 
   for (const route of config.routes) {
@@ -162,7 +197,7 @@ export async function guardConfiguration(
             theme,
             viewportId,
           };
-          const configFingerprint = canonicalJsonDigest({
+          const fingerprintV1 = {
             consoleError: policy.consoleError,
             failedRequest: policy.failedRequest,
             height: viewport.height,
@@ -174,7 +209,17 @@ export async function guardConfiguration(
             theme,
             viewportId,
             width: viewport.width,
-          });
+          };
+          const configFingerprint = canonicalJsonDigest(
+            authentication === undefined
+              ? fingerprintV1
+              : {
+                  ...fingerprintV1,
+                  authentication,
+                  evidence: { masks: [], retention: "all" },
+                  fingerprintVersion: 2,
+                },
+          );
           coordinates.push({
             configFingerprint,
             id: coordinateId(identity),

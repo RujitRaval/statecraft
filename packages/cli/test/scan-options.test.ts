@@ -33,6 +33,90 @@ afterEach(async () => {
 });
 
 describe("scanProject options", () => {
+  it("preflights and forwards one normalized authentication setup", async () => {
+    const project = await realpath(
+      await mkdtemp(join(tmpdir(), "uiwitness-cli-scan-auth-options-")),
+    );
+    projects.push(project);
+    const configDirectory = join(project, "config");
+    await mkdir(configDirectory);
+    await writeFile(
+      join(configDirectory, "auth.mjs"),
+      "export default async function () {};\n",
+      "utf8",
+    );
+    const configPath = join(configDirectory, "custom.mjs");
+    await writeFile(
+      configPath,
+      `export default {
+  authentication: { additionalOrigins: ["https://id.example.com"], setup: "./auth.mjs" },
+  baseURL: "https://app.example.com",
+  routes: [{ id: "home", path: "/", states: [{ id: "success", setup: "./scenario.mjs" }] }],
+  themes: ["light"],
+  viewports: { wide: { height: 900, width: 1440 } },
+};\n`,
+      "utf8",
+    );
+    runPersistedScenarioCellsMock.mockResolvedValue({
+      generation: {},
+      htmlReportPath: ".uiwitness/report/index.html",
+      report: parseReport({
+        executions: [],
+        generatedAt: "2026-08-20T18:00:00.000Z",
+        project: { baseURL: "https://app.example.com" },
+        schemaVersion: 1,
+        summary: {
+          coverage: {
+            execution: { covered: 0, percentage: 0, total: 0 },
+            responsive: { covered: 0, percentage: 0, total: 0 },
+            state: { covered: 0, percentage: 0, total: 0 },
+            theme: { covered: 0, percentage: 0, total: 0 },
+          },
+          durationMs: 0,
+          executions: 0,
+          failed: 0,
+          passed: 0,
+          routes: 0,
+          states: 0,
+        },
+      }),
+      reportPath: ".uiwitness/report/uiwitness.json",
+    });
+
+    await scanProject({ configPath, cwd: project });
+
+    expect(runPersistedScenarioCellsMock.mock.calls[0]![1]).toMatchObject({
+      authentication: {
+        baseURL: "https://app.example.com",
+        config: {
+          additionalOrigins: ["https://id.example.com:443"],
+          mode: "shared-readonly",
+          setup: "./auth.mjs",
+        },
+        setupBaseDirectory: configDirectory,
+      },
+    });
+
+    const secret = "UIWITNESS_UPSTREAM_ERROR_SECRET";
+    runPersistedScenarioCellsMock.mockRejectedValueOnce(Object.assign(
+      new Error(secret),
+      {
+        code: "AUTH_SETUP_FAILED",
+        name: "AuthenticationError",
+        setupPath: "./auth.mjs",
+      },
+    ));
+    const error = await scanProject({ configPath, cwd: project })
+      .catch((reason: unknown) => reason);
+
+    expect(error).toBeInstanceOf(ScanError);
+    expect(error).toMatchObject({ code: "SCAN_AUTHENTICATION_FAILED" });
+    expect(String(error)).toBe(
+      "ScanError: AUTH_SETUP_FAILED: Authentication setup could not seed the run (./auth.mjs).",
+    );
+    expect(String(error)).not.toContain(secret);
+  });
+
   it("selects one exact route/state/viewport/theme coordinate", async () => {
     const project = await realpath(
       await mkdtemp(join(tmpdir(), "uiwitness-cli-scan-coordinate-")),

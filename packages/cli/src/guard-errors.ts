@@ -1,5 +1,6 @@
 /** Stable categories for expected State Contract Guard failures. */
 export type GuardErrorCode =
+  | "GUARD_AUTH_SETUP_PATH_INVALID"
   | "GUARD_CONFIG_PATH_INVALID"
   | "GUARD_CONTRACT_NOT_FOUND"
   | "GUARD_CONTRACT_PATH_INVALID"

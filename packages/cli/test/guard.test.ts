@@ -17,6 +17,7 @@ import { pathToFileURL } from "node:url";
 
 import {
   contractConfigDigest,
+  parseConfig,
   parseContractProposal,
   parseReport,
   type ContractConfigurationCoordinate,
@@ -61,6 +62,7 @@ async function temporaryProject(prefix = "uiwitness-cli-guard-"): Promise<string
 }
 
 async function fixture(options: {
+  readonly authentication?: boolean;
   readonly configDirectory?: string;
   readonly configFilename?: string;
   readonly routePath?: string;
@@ -70,6 +72,13 @@ async function fixture(options: {
   await mkdir(configDirectory, { recursive: true });
   const scenarioPath = join(configDirectory, "scenario.mjs");
   await writeFile(scenarioPath, "export default {};\n", "utf8");
+  if (options.authentication === true) {
+    await writeFile(
+      join(configDirectory, "auth.mjs"),
+      "export default async function () {};\n",
+      "utf8",
+    );
+  }
   const configPath = join(
     configDirectory,
     options.configFilename ?? "uiwitness.config.mjs",
@@ -77,6 +86,7 @@ async function fixture(options: {
   await writeFile(
     configPath,
     `export default {
+  ${options.authentication === true ? 'authentication: { additionalOrigins: ["https://id.example.test"], cookieScopes: [{ domain: ".example.test", pathPrefix: "/account", secure: "required", partitionKeys: ["https://example.test"] }], setup: "./auth.mjs" },' : ""}
   baseURL: "https://example.test",
   routes: [{ id: "home", path: ${JSON.stringify(options.routePath ?? "/?token=secret#private")}, states: [{ id: "success", setup: "./scenario.mjs" }] }],
   themes: ["light"],
@@ -88,7 +98,7 @@ async function fixture(options: {
     readonly default: Parameters<typeof guardConfiguration>[0];
   };
   const configuration = await guardConfiguration(
-    imported.default,
+    parseConfig(imported.default),
     configPath,
     project,
   );
@@ -237,7 +247,7 @@ async function fixtureConfiguration(value: GuardFixture): Promise<readonly Contr
   const imported = (await import(`${pathToFileURL(value.configPath).href}?config=${Date.now()}`)) as {
     readonly default: Parameters<typeof guardConfiguration>[0];
   };
-  return guardConfiguration(imported.default, value.configPath, value.project);
+  return guardConfiguration(parseConfig(imported.default), value.configPath, value.project);
 }
 
 beforeEach(() => {
@@ -359,6 +369,32 @@ describe("guardProject", () => {
     expect(guardRunDigest(configuration, hostSpecificReport)).toBe(
       guardRunDigest(configuration, completedReport),
     );
+  });
+
+  it("locks authenticated coordinates to fingerprint v2 without secret values", async () => {
+    const value = await fixture({ authentication: true });
+    const configuration = await fixtureConfiguration(value);
+
+    expect(configuration[0]!.configFingerprint).toBe(
+      "sha256:b14cc03197d0df02d3631666a10a7fef5a187aaa1d1c5704d51ae6ea1efb52d1",
+    );
+    expect(JSON.stringify(configuration)).not.toContain("SECRET");
+    mockRunReport(report(configuration, "passed"));
+
+    await guardProject({
+      cwd: value.project,
+      now: () => new Date("2026-09-03T12:00:00.000Z"),
+    });
+    expect(runPersistedScenarioCellsMock.mock.calls[0]![1]).toMatchObject({
+      authentication: {
+        baseURL: "https://example.test",
+        config: {
+          mode: "shared-readonly",
+          setup: "./auth.mjs",
+        },
+        setupBaseDirectory: value.project,
+      },
+    });
   });
 
   it("normalizes execution, failure, diagnostic, and request ordering in run digests", async () => {

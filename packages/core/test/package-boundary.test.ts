@@ -50,6 +50,7 @@ describe("uiwitness-core package boundary", () => {
     await expect(access(typesUrl)).resolves.toBeUndefined();
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule).sort()).toEqual([
+      "AuthenticationStateError",
       "CANONICAL_JSON_ALGORITHM",
       "COMMITTED_GENERATION_SCHEMA_VERSION",
       "CONTRACT_CONFIG_DIGEST_ALGORITHM",
@@ -107,6 +108,7 @@ describe("uiwitness-core package boundary", () => {
       "serializeContractProposalSource",
       "serializeGenerationManifest",
       "serializeReport",
+      "validateAuthenticationStorageState",
       "withContractProposalAnnotation",
     ]);
   });

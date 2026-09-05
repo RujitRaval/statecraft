@@ -1319,6 +1319,24 @@ All 1 execution passed.
     );
   });
 
+  it("prints only the stable auth code and setup path for login failures", async () => {
+    const stderr = outputCapture();
+    scanProjectMock.mockRejectedValue(
+      new (await import("../src/scan.js")).ScanError(
+        "SCAN_AUTHENTICATION_FAILED",
+        "AUTH_SETUP_FAILED: Authentication setup could not seed the run (./uiwitness/auth.mjs).",
+        "./uiwitness/auth.mjs",
+      ),
+    );
+
+    await expect(
+      runCli({ args: ["scan"], stderr: stderr.write }),
+    ).resolves.toBe(2);
+    expect(stderr.messages.join("")).toBe(
+      "AUTH_SETUP_FAILED: Authentication setup could not seed the run (./uiwitness/auth.mjs).\n",
+    );
+  });
+
   it("does not expose unexpected scan errors", async () => {
     const stderr = outputCapture();
     scanProjectMock.mockRejectedValue(new Error("secret internal detail"));

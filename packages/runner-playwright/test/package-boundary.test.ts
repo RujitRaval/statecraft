@@ -64,6 +64,7 @@ describe("uiwitness-runner-playwright package boundary", () => {
     await expect(access(typesUrl)).resolves.toBeUndefined();
     const builtModule = await import(importUrl.href);
     expect(Object.keys(builtModule)).toEqual([
+      "AuthenticationError",
       "discoverPublicRoutes",
       "PublicRouteDiscoveryError",
       "runExecutionCells",

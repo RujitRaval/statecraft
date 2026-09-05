@@ -1,3 +1,4 @@
+import { realpath } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 import {
@@ -30,6 +31,8 @@ type ScanGenerationFinalizer = (
 
 /** Stable categories for expected scan-orchestration failures. */
 export type ScanErrorCode =
+  | "SCAN_AUTHENTICATION_FAILED"
+  | "SCAN_AUTH_SETUP_PATH_INVALID"
   | "SCAN_COORDINATE_INVALID"
   | "SCAN_COORDINATE_NOT_FOUND"
   | "SCAN_ROUTE_NOT_FOUND"
@@ -80,6 +83,12 @@ interface ScanLoadedProjectOptions {
 }
 
 const coordinatePartPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const authenticationErrorCodes = new Set([
+  "AUTH_COOKIE_NOT_ALLOWED",
+  "AUTH_ORIGIN_NOT_ALLOWED",
+  "AUTH_SETUP_FAILED",
+  "AUTH_SETUP_INVALID",
+]);
 
 function coordinateFilter(coordinate: string): {
   readonly routeId: string;
@@ -148,23 +157,73 @@ export async function scanLoadedProject(
     );
   }
 
+  if (loaded.config.authentication !== undefined) {
+    try {
+      const { containedRegularFile } = await import("./guard-paths.js");
+      const authenticationWorkspace = await realpath(options.projectDirectory);
+      await containedRegularFile(
+        authenticationWorkspace,
+        resolve(dirname(loaded.path), loaded.config.authentication.setup),
+        "GUARD_AUTH_SETUP_PATH_INVALID",
+        "Authentication setup path",
+      );
+    } catch (error: unknown) {
+      throw new ScanError(
+        "SCAN_AUTH_SETUP_PATH_INVALID",
+        error instanceof Error
+          ? error.message
+          : "Authentication setup path is invalid.",
+        loaded.config.authentication.setup,
+      );
+    }
+  }
+
   const { runPersistedScenarioCells } = await import(
     "uiwitness-runner-playwright"
   );
-  const run = await runPersistedScenarioCells(cells, {
-    baseURL: loaded.config.baseURL,
-    ...(loaded.config.failOn === undefined
-      ? {}
-      : { failOn: loaded.config.failOn }),
-    ...(options.headed === true
-      ? { launchOptions: { headless: false } }
-      : {}),
-    projectDirectory: options.projectDirectory,
-    scenarioBaseDirectory: dirname(loaded.path),
-    ...(options.finalizeGeneration === undefined
-      ? {}
-      : { finalizeGeneration: options.finalizeGeneration }),
-  });
+  let run;
+  try {
+    run = await runPersistedScenarioCells(cells, {
+      ...(loaded.config.authentication === undefined
+        ? {}
+        : {
+            authentication: {
+              baseURL: loaded.config.baseURL,
+              config: loaded.config.authentication,
+              setupBaseDirectory: dirname(loaded.path),
+            },
+          }),
+      baseURL: loaded.config.baseURL,
+      ...(loaded.config.failOn === undefined
+        ? {}
+        : { failOn: loaded.config.failOn }),
+      ...(options.headed === true
+        ? { launchOptions: { headless: false } }
+        : {}),
+      projectDirectory: options.projectDirectory,
+      scenarioBaseDirectory: dirname(loaded.path),
+      ...(options.finalizeGeneration === undefined
+        ? {}
+        : { finalizeGeneration: options.finalizeGeneration }),
+    });
+  } catch (error: unknown) {
+    const code = (error as Error & { readonly code?: unknown }).code;
+    const setupPath = (error as Error & { readonly setupPath?: unknown }).setupPath;
+    if (
+      error instanceof Error &&
+      error.name === "AuthenticationError" &&
+      typeof code === "string" &&
+      authenticationErrorCodes.has(code) &&
+      typeof setupPath === "string"
+    ) {
+      throw new ScanError(
+        "SCAN_AUTHENTICATION_FAILED",
+        `${code}: Authentication setup could not seed the run (${setupPath}).`,
+        setupPath,
+      );
+    }
+    throw error;
+  }
   return Object.freeze({
     configPath: loaded.path,
     generation: run.generation,

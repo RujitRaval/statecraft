@@ -202,9 +202,14 @@ export async function runScenarioCells<Value>(
   options: RunScenarioCellsOptions = {},
 ): Promise<readonly CellExecutionOutcome<Value>[]> {
   const lifecycleOptions: RunExecutionCellsOptions =
-    options.launchOptions === undefined
-      ? {}
-      : { launchOptions: options.launchOptions };
+    {
+      ...(options.authentication === undefined
+        ? {}
+        : { authentication: options.authentication }),
+      ...(options.launchOptions === undefined
+        ? {}
+        : { launchOptions: options.launchOptions }),
+    };
 
   return runExecutionCells(
     cells,

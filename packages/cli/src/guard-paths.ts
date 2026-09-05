@@ -57,7 +57,7 @@ async function assertRealComponents(
   label: string,
 ): Promise<void> {
   if (!isContained(root, candidate) || candidate === root) {
-    throw new GuardError(code, `${label} must stay beneath the guard workspace: ${candidate}`, candidate);
+    throw new GuardError(code, `${label} must stay beneath the workspace: ${candidate}`, candidate);
   }
 
   const segments = relative(root, candidate).split(sep);

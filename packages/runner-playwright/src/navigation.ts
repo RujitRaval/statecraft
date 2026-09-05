@@ -98,6 +98,28 @@ function navigationSettings(
   if (baseURL.protocol !== "http:" && baseURL.protocol !== "https:") {
     throw new TypeError("baseURL must be a valid HTTP(S) URL.");
   }
+  if (options.authentication !== undefined) {
+    if (baseURL.username.length > 0 || baseURL.password.length > 0) {
+      throw new TypeError("Authenticated baseURL values cannot contain credentials.");
+    }
+    let authenticationBaseURL: URL;
+    try {
+      authenticationBaseURL = new URL(options.authentication.baseURL);
+    } catch {
+      throw new TypeError("authentication.baseURL must match baseURL.");
+    }
+    if (
+      authenticationBaseURL.username.length > 0 ||
+      authenticationBaseURL.password.length > 0
+    ) {
+      throw new TypeError(
+        "authentication.baseURL cannot contain credentials.",
+      );
+    }
+    if (authenticationBaseURL.origin !== baseURL.origin) {
+      throw new TypeError("authentication.baseURL must match baseURL.");
+    }
+  }
 
   const selector = options.readiness?.selector;
   if (selector !== undefined && selector.trim().length === 0) {
@@ -177,9 +199,14 @@ async function applyTheme(page: Page, theme: string): Promise<void> {
 function lifecycleOptions(
   options: RunNavigatedScenarioCellsOptions,
 ): RunExecutionCellsOptions {
-  return options.launchOptions === undefined
-    ? {}
-    : { launchOptions: options.launchOptions };
+  return {
+    ...(options.authentication === undefined
+      ? {}
+      : { authentication: options.authentication }),
+    ...(options.launchOptions === undefined
+      ? {}
+      : { launchOptions: options.launchOptions }),
+  };
 }
 
 /**
