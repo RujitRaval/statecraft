@@ -166,7 +166,7 @@ Guard reports lead with the contract verdict and canonical finding ledger. Filte
 
 ## GitHub Actions
 
-UIWitness is a normal CLI job; no custom Marketplace action or hosted service is required. The copy-ready [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) covers application readiness, Chromium installation, exit codes, privacy, and uploading the complete `.uiwitness` bundle with `if: always()` so failures retain their evidence.
+UIWitness ships a thin composite Contract Guard Action over the project-local CLI—no hosted service or implicit package download. Pin the Action's complete release SHA, lock the matching `uiwitness` package version, grant only `contents: read`, and keep evidence upload off unless the captured application data is appropriate for GitHub artifacts. The copy-ready [GitHub Actions guide](docs/open-source/GITHUB_ACTIONS.md) covers application readiness, version parity, bounded summaries and annotations, fork safety, exit codes, rollback, and explicit one-day evidence retention.
 
 Reports can contain screenshots, URLs, and application data. Treat artifacts from a public repository as public, use only fictional or approved test data, and choose the shortest useful retention period.
 
@@ -214,7 +214,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first six slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, crash-recoverable atomic generation publication, and contract-first offline reporting. The Action, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first seven slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, crash-recoverable atomic generation publication, contract-first offline reporting, and the full-SHA-pinned GitHub Action adapter. Exception governance, auth/privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

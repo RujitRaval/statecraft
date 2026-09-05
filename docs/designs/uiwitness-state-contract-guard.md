@@ -981,7 +981,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: Section 11 — verdict/findings must lead without replacing the existing evidence matrix or violating `DESIGN.md`.
   - Files: `packages/report/src/**`, report fixtures/tests, `docs/product/REPORT_UX_SPEC.md`, `DESIGN.md` only if an approved clarification is needed.
   - Verify: all state fixtures at desktop/760/320, CSP/no-script, keyboard/screen-reader/reduced-motion, then `/design-review`.
-- [ ] **T7 (P1, human: ~2 days / Codex: ~3h)** — GitHub — Publish the thin full-SHA-pinned Action adapter
+- [x] **T7 (P1, human: ~2 days / Codex: ~3h)** — GitHub — Publish the thin full-SHA-pinned Action adapter
   - Surfaced by: D16, D20, D24–D25 — Action/CLI parity, fork safety, minimum permissions, injection safety, and bounded output are mandatory.
   - Files: root `action.yml`, `.github/actions/**` if needed, Action tests, `docs/open-source/GITHUB_ACTIONS.md`.
   - Verify: project-local version match, malicious input/fork secret sentinel, 512 KiB summary, annotation caps, upload-off default.

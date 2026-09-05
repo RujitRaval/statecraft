@@ -406,6 +406,24 @@ function outputCapture(): {
 }
 
 describe("runCli", () => {
+  it("prints the exact installed package version for Action parity", async () => {
+    const stdout = outputCapture();
+    const stderr = outputCapture();
+    const manifest = JSON.parse(
+      await readFile(new URL("../package.json", import.meta.url), "utf8"),
+    ) as { readonly version: string };
+
+    await expect(
+      runCli({
+        args: ["--version"],
+        stderr: stderr.write,
+        stdout: stdout.write,
+      }),
+    ).resolves.toBe(0);
+    expect(stdout.messages).toEqual([`${manifest.version}\n`]);
+    expect(stderr.messages).toEqual([]);
+  });
+
   it.each(["--help", "-h", "help"])(
     "prints help for %s without touching the filesystem",
     async (argument) => {

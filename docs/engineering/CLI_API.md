@@ -14,8 +14,11 @@ uiwitness contract inspect --candidate <path> --change <id>
 uiwitness contract annotate --candidate <path> --change <id> --owner <text> --reason <text> --created-on <date> --expires-on <date>
 uiwitness contract accept --candidate <path> --change <id>... [--config <path>] [--contract <path>]
 uiwitness open
+uiwitness --version
 uiwitness --help
 ```
+
+`uiwitness --version` prints the exact installed three-component npm package version and exits `0`. The official GitHub Action uses this process-only handshake before browser work and rejects any mismatch with the Action checkout's four-component repository version translated to npm SemVer.
 
 `init` creates:
 
@@ -77,7 +80,7 @@ The terminal summary is derived from report metadata, groups cells by route, pri
 
 Opening is read-only: it does not parse, create, or modify the report. A completed scan now publishes the fixed HTML target that `open` consumes.
 
-`runCli` accepts injectable arguments, working directory, and stdout/stderr writers for embedding and deterministic tests. `CliExitCode` is the stable `0 | 1 | 2` command contract.
+`runCli` accepts injectable arguments, working directory, and stdout/stderr writers for embedding and deterministic tests. `CliExitCode` is the stable `0 | 1 | 2` command contract. Exact package-version reporting is additive and performs no project discovery or browser work.
 
 ## Discovery
 

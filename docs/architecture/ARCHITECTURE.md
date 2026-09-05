@@ -12,6 +12,7 @@ packages/report
 packages/cli
 docs
 .github/workflows
+action.yml
 ```
 Do not create empty future packages.
 
@@ -61,6 +62,12 @@ The promotion slice adds explicit `--write-config`/`writeConfig`. It extracts th
 The State Contract Guard orchestration slices add process-based `guard`, exact-coordinate `scan`, and `contract init|inspect|annotate|accept`. Guard anchors all config, contract, scenario, verdict, source-generation, proposal, and metadata paths to the canonical invocation workspace, rejects symbolic links and hard links, prevalidates inputs before browser launch, then holds the contract-writer lock from its contract snapshot through publication. It executes the complete unfiltered matrix and compares only that run's in-memory schema-v1 report through `uiwitness-core`. The adapter owns the exhaustive v1 config fingerprint and semantic run digest projections. Its generation finalizer returns a deterministic private machine verdict, proposal family when needed, and optional no-clobber JSON copy to the runner transaction. Stable `0`/`1`/`2` process meaning and shell-safe reproduction/remediation commands contain no diagnostic messages.
 
 Core owns canonical immutable proposal sources, named operations, constrained metadata overlays, generation manifests/markers, digest verification, and selected-change application. The CLI owns proposal construction, content-addressed filenames, safe workspace boundaries, contract-writer locking, current config/contract revalidation, safe contract replacement or initial no-clobber creation, and single-use proposal consumption. Acceptance follows the shared lock order—contract lock, then runner generation lock—so its marker validation, contract commit, and proposal consumption cannot interleave with a generation publisher. The mutable overlay is separate from proposal bytes so review metadata cannot change proposal identity. Acceptance requires the proposal's source generation to resolve through the current committed marker and requires the source/proposal paths and roles in that marker's digest-bound manifest. The CLI surface remains process-only; the runner owns the complete local generation transaction and validates proposal-family structure without learning comparison policy.
+
+### GitHub Action
+
+The root composite `action.yml` is a hosted presentation adapter over the existing CLI process contract. It resolves only the adopting repository's installed `uiwitness` executable, compares `uiwitness --version` with the Action checkout's repository version before browser work, and forwards the optional config and contract paths as shell-free argv values. It does not import core, runner, report, or CLI implementation modules and never downloads a fallback executable.
+
+The adapter preserves CLI exit classes, requires one invocation-exclusive `--json` verdict copy so stale workspace evidence cannot satisfy a new run, strictly validates that sidecar only for bounded presentation, and emits escaped aggregate outputs, a deterministic 512 KiB step summary, and at most 50 blocking annotations. It requests no write permission or pull-request mutation. A separately pinned `actions/upload-artifact` composite step runs only after explicit opt-in and defaults to one-day retention. Release-time Action-SHA/package parity remains T14's consumer-proof responsibility.
 
 ### apps/example-nextjs
 The Phase 6 example is a real Next.js App Router application and a deterministic product-state fixture. It owns a self-hosted visual system, fixed commerce-operations data, a narrow `/api/dashboard` response contract, and a client-rendered `/dashboard` state boundary. The page begins in a deliberate loading state, validates the API payload before rendering, classifies a valid no-data payload as empty, and turns transport, HTTP, or contract failures into a recoverable error state. UIWitness scenarios can intercept the API without adding test-only behavior to production components. Theme styling follows the runner-owned `data-theme` attribute before application scripts execute.

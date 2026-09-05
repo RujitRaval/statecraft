@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { relative } from "node:path";
 
 import {
@@ -48,6 +49,7 @@ Usage:
   uiwitness contract annotate --candidate <path> --change <id> --owner <text> --reason <text> --created-on <date> --expires-on <date>
   uiwitness contract accept --candidate <path> --change <id>... [--config <path>] [--contract <path>]
   uiwitness open
+  uiwitness --version
   uiwitness --help
 
 Commands:
@@ -63,6 +65,16 @@ Safety:
 `;
 
 const maximumGuardTerminalFindings = 20;
+
+async function cliVersion(): Promise<string> {
+  const manifest = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { readonly version?: unknown };
+  if (typeof manifest.version !== "string" || manifest.version.length === 0) {
+    throw new TypeError("UIWitness package version is unavailable.");
+  }
+  return manifest.version;
+}
 
 /** Stable process outcomes exposed by the current command foundation. */
 export type CliExitCode = 0 | 1 | 2;
@@ -655,6 +667,11 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
     (args[0] === "--help" || args[0] === "-h" || args[0] === "help")
   ) {
     stdout(HELP);
+    return 0;
+  }
+
+  if (args.length === 1 && args[0] === "--version") {
+    stdout(`${await cliVersion()}\n`);
     return 0;
   }
 

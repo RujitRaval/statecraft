@@ -10,6 +10,7 @@ npx uiwitness check https://example.com --write-config
 npx uiwitness scan
 npx uiwitness guard
 npx uiwitness contract init
+npx uiwitness --version
 ```
 
 `check <url>` needs no UIWitness config. It discovers at most five same-origin HTML pages by default, checks each at mobile/desktop × light/dark, and writes screenshots, schema-v1 JSON, and the kinetic offline report beneath `.uiwitness/`. Use `--max-pages <1-20>` to change the bounded discovery budget or `--headed` to watch Chromium. Add `--write-config` to save an overwrite-safe `uiwitness.config.mts` and `uiwitness/scenarios/public/default.mts`; the untouched result runs through `npx uiwitness scan`. Run it only against websites you own or are authorized to test.
@@ -19,6 +20,8 @@ New `check`, `scan`, and `open` operations use `.uiwitness/report/uiwitness.json
 `init` generates `uiwitness.config.mts` and `uiwitness/scenarios/home/success.mts`, so the starter works without changing npm's default package type.
 
 `guard` executes the complete configured matrix and compares that fresh result with `uiwitness.contract.json`. It commits the deterministic `.uiwitness/contract-verdict.json` together with report/evidence, any proposal family, a content-addressed manifest, and the stable `.uiwitness/generation.json` marker. It exits `0` for a match, `1` for contract failures or unaccepted drift, and `2` when the run cannot prove the contract. Regressions include an exact headed `scan --coordinate route/state/viewport/theme` command. Config, contract, scenario, and explicit `--json` paths are restricted to real non-symbolic-link paths beneath the invocation directory.
+
+`--version` prints the exact installed package version without project discovery. The official full-SHA-pinned GitHub Action uses it to reject Action/package drift before launching Chromium.
 
 `contract init` creates the first contract only after a complete run; a failing run produces an immutable proposal instead. Failed guards likewise commit a content-addressed proposal plus a separate metadata overlay in the current generation. Use `contract inspect --candidate <path> --change <id>` to review one named `add`, `remove`, `config`, `expectation`, or `exception` change. Failed expectations require `contract annotate` ownership, reason, and a current 1–30 day exception before `contract accept`. Acceptance requires the current committed marker to bind the source and proposal, revalidates the source, current config, and current contract, applies only repeated `--change <id>` selections, consumes the proposal and overlay, and requires a fresh guard run for discarded changes.
 
