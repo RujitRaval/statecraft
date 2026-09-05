@@ -1,5 +1,6 @@
 import type { Sha256Digest } from "./canonical-json.js";
 import type {
+  ContractException,
   ContractExpectation,
   ContractFailureCode,
 } from "./contract.js";
@@ -31,6 +32,39 @@ export const CONTRACT_FINDING_KINDS: readonly [
 ] as const);
 
 export type ContractFindingKind = (typeof CONTRACT_FINDING_KINDS)[number];
+
+/** Calendar state for one accepted exception on a specific UTC evaluation date. */
+export interface ContractExceptionLifecycle {
+  readonly daysUntilExpiry: number;
+  readonly status: "active" | "expired";
+}
+
+function utcCalendarDay(value: string, label: string): number {
+  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value) || value.startsWith("0000-")) {
+    throw new RangeError(`${label} must be a real UTC calendar date.`);
+  }
+  const instant = Date.parse(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(instant) || new Date(instant).toISOString().slice(0, 10) !== value) {
+    throw new RangeError(`${label} must be a real UTC calendar date.`);
+  }
+  return instant / 86_400_000;
+}
+
+/** Derives active-through-expiry semantics without consulting the local timezone. */
+export function contractExceptionLifecycle(
+  exception: Pick<ContractException, "expiresOn">,
+  evaluatedOn: string,
+): ContractExceptionLifecycle {
+  if (typeof exception !== "object" || exception === null) {
+    throw new TypeError("Contract exception must be an object.");
+  }
+  const daysUntilExpiry = utcCalendarDay(exception.expiresOn, "Exception expiry") -
+    utcCalendarDay(evaluatedOn, "Evaluation date");
+  return Object.freeze({
+    daysUntilExpiry,
+    status: daysUntilExpiry < 0 ? "expired" : "active",
+  });
+}
 
 /**
  * Total ordering used after coordinate ID ordering. Lower values are more

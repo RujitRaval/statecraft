@@ -30,6 +30,7 @@ import {
   applyContractProposal,
   contractConfigDigest,
   contractDigest,
+  contractExceptionLifecycle,
   contractProposalDigest,
   contractProposalSourceDigest,
   contractVerdictStatus,
@@ -64,6 +65,7 @@ import {
   type ContractConfigurationCoordinate,
   type ContractExecutionObservation,
   type ContractException,
+  type ContractExceptionLifecycle,
   type ContractExpectation,
   type ContractFailureCode,
   type ContractProposal,
@@ -116,6 +118,8 @@ const contractException: ContractException = {
   owner: "checkout-team",
   reason: "UIW-1842 tracks the repair",
 };
+const contractExceptionState: ContractExceptionLifecycle =
+  contractExceptionLifecycle(contractException, "2026-09-03");
 const contractExpectation: ContractExpectation = {
   exception: contractException,
   failureCodes: ["ASSERTION_FAILED"],
@@ -416,12 +420,14 @@ void readableScreenshotPath;
 void resultValidationError;
 void reportValidationError;
 void reportIssue;
+void contractExceptionState;
 
 export type PublicTypeContract = {
   config: UIWitnessConfig;
   contract: UIWitnessContract;
   contractCoordinate: ContractCoordinate;
   contractException: ContractException;
+  contractExceptionLifecycle: ContractExceptionLifecycle;
   contractExpectation: ContractExpectation;
   contractFailureCode: ContractFailureCode;
   contractIssue: ContractValidationIssue;

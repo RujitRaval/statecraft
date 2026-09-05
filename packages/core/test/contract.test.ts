@@ -428,6 +428,35 @@ describe("contract schema", () => {
     expectContractIssues(source(value), [{ code: "invalid_value", path }]);
   });
 
+  it.each([
+    ["owner", "checkout\u202Eteam"],
+    ["reason", "UIW-2041\u034F tracks repair"],
+    ["reason", "UIW-2041\u0007 tracks repair"],
+  ])("preserves schema-v1 known-failure %s text for backward compatibility", (field, legacyValue) => {
+    const exception = {
+      createdOn: "2026-09-02",
+      expiresOn: "2026-09-03",
+      owner: "owner",
+      reason: "reason",
+      [field]: legacyValue,
+    };
+    const value = contract({
+      coordinates: [coordinate({
+        expected: {
+          exception,
+          failureCodes: ["ASSERTION_FAILED"],
+          status: "failed",
+        },
+      })],
+    });
+    const parsed = parseContract(source(value));
+    const expected = parsed.coordinates[0]!.expected;
+    expect(expected.status).toBe("failed");
+    if (expected.status === "failed") {
+      expect(expected.exception[field as "owner" | "reason"]).toBe(legacyValue);
+    }
+  });
+
   it("enforces the 1,024-character contract text boundary", () => {
     const exactOwner = "o".repeat(1_024);
     const exactRoutePath = `/${"a".repeat(1_023)}`;

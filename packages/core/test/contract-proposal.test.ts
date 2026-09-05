@@ -103,7 +103,7 @@ describe("contract proposals", () => {
     }))).toThrow(ContractProposalValidationError);
   });
 
-  it("emits add, remove, config, expectation, and exception operations deterministically", () => {
+  it("emits only lifecycle-valid add, remove, config, expectation, and exception operations", () => {
     const home = configuration("home");
     const removed = configuration("removed");
     const existing: UIWitnessContract = {
@@ -136,10 +136,155 @@ describe("contract proposals", () => {
     expect(createContractProposal(source, "0.26.2").changes.map(({ id }) => id)).toEqual([
       "config:home/public/desktop/light",
       "expectation:home/public/desktop/light",
-      "exception:home/public/desktop/light",
       "remove:removed/public/desktop/light",
       "add:settings/public/desktop/light",
     ]);
+
+    const renewalSource = createContractProposalSource({
+      configuration: [home],
+      contract: { ...existing, configDigest: contractConfigDigest([home]), coordinates: [existing.coordinates[0]!] },
+      evaluatedOn: "2026-09-03",
+      executions: [execution(home, ["ASSERTION_FAILED"])],
+      runDigest,
+    });
+    expect(createContractProposal(renewalSource, "0.26.2").changes.map(({ id }) => id)).toEqual([
+      "exception:home/public/desktop/light",
+    ]);
+  });
+
+  it("requires explicit renewal metadata with a changed reason", () => {
+    const home = configuration("home");
+    const previousException = {
+      createdOn: "2026-08-01",
+      expiresOn: "2026-08-15",
+      owner: "ui-team",
+      reason: "UIW-1842 tracks the café repair",
+    };
+    const existing: UIWitnessContract = {
+      configDigest: contractConfigDigest([home]),
+      coordinates: [{
+        ...home,
+        expected: {
+          exception: previousException,
+          failureCodes: ["ASSERTION_FAILED"],
+          status: "failed",
+        },
+      }],
+      schemaVersion: 1,
+    };
+    const source = createContractProposalSource({
+      configuration: [home],
+      contract: existing,
+      evaluatedOn: "2026-09-03",
+      executions: [execution(home, ["ASSERTION_FAILED"])],
+      runDigest,
+    });
+    const proposal = createContractProposal(source, "0.26.2");
+    const changeId = "exception:home/public/desktop/light";
+
+    expect(() => withContractProposalAnnotation(
+      proposal,
+      emptyContractProposalMetadata(proposal),
+      changeId,
+      { ...previousException, createdOn: "2026-09-03", expiresOn: "2026-09-17" },
+      "2026-09-03",
+    )).toThrow(expect.objectContaining({
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          message: "Renewing an exception requires an updated reason.",
+        }),
+      ]),
+    }));
+
+    expect(() => withContractProposalAnnotation(
+      proposal,
+      emptyContractProposalMetadata(proposal),
+      changeId,
+      {
+        ...previousException,
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-17",
+        reason: "UIW-1842 tracks the cafe\u0301 repair",
+      },
+      "2026-09-03",
+    )).toThrow(expect.objectContaining({
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          message: "Renewing an exception requires an updated reason.",
+        }),
+      ]),
+    }));
+
+    const metadata = withContractProposalAnnotation(
+      proposal,
+      emptyContractProposalMetadata(proposal),
+      changeId,
+      {
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-17",
+        owner: "ui-team",
+        reason: "UIW-1842 remains open after the accessibility review",
+      },
+      "2026-09-03",
+    );
+    expect(applyContractProposal({
+      acceptedOn: "2026-09-03",
+      changeIds: [changeId],
+      metadata,
+      proposal,
+      source,
+    }).coordinates[0]!.expected).toMatchObject({
+      exception: { reason: "UIW-1842 remains open after the accessibility review" },
+      failureCodes: ["ASSERTION_FAILED"],
+      status: "failed",
+    });
+
+    const directMetadata = (exception: typeof previousException) => ({
+      annotations: { [changeId]: exception },
+      proposalDigest: contractProposalDigest(proposal),
+      schemaVersion: 1 as const,
+    });
+    expect(() => applyContractProposal({
+      acceptedOn: "2026-09-03",
+      changeIds: [changeId],
+      metadata: directMetadata({
+        ...previousException,
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-17",
+      }),
+      proposal,
+      source,
+    })).toThrow(expect.objectContaining({
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          message: "Renewing an exception requires an updated reason.",
+        }),
+      ]),
+    }));
+    expect(() => applyContractProposal({
+      acceptedOn: "2026-09-03",
+      changeIds: [changeId],
+      metadata: directMetadata({
+        createdOn: "2026-09-03",
+        expiresOn: "2026-10-03",
+        owner: "ui-team",
+        reason: "UIW-1842 repair is now blocked on the upstream component",
+      }),
+      proposal,
+      source,
+    })).not.toThrow();
+    expect(() => applyContractProposal({
+      acceptedOn: "2026-09-03",
+      changeIds: [changeId],
+      metadata: directMetadata({
+        createdOn: "2026-09-03",
+        expiresOn: "2026-10-04",
+        owner: "ui-team",
+        reason: "UIW-1842 repair is now blocked on the upstream component",
+      }),
+      proposal,
+      source,
+    })).toThrow(ContractProposalValidationError);
   });
 
   it("applies only named changes and requires constrained metadata for failures", () => {
@@ -299,6 +444,53 @@ describe("contract proposals", () => {
         expiresOn: "2026-09-04",
         owner: "quality-team",
         reason: "irrelevant metadata",
+      },
+      "2026-09-03",
+    )).toThrow(ContractProposalValidationError);
+
+    const ineligibleSource = createContractProposalSource({
+      configuration: [home],
+      contract: null,
+      evaluatedOn: "2026-09-03",
+      executions: [execution(home, ["NAVIGATION_FAILED"])],
+      runDigest,
+    });
+    const ineligibleProposal = createContractProposal(ineligibleSource, "0.26.2");
+    expect(() => withContractProposalAnnotation(
+      ineligibleProposal,
+      emptyContractProposalMetadata(ineligibleProposal),
+      ineligibleProposal.changes[0]!.id,
+      {
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-04",
+        owner: "quality-team",
+        reason: "Cannot be excepted",
+      },
+      "2026-09-03",
+    )).toThrow(ContractProposalValidationError);
+
+    expect(() => withContractProposalAnnotation(
+      proposal,
+      emptyContractProposalMetadata(proposal),
+      changeId,
+      {
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-04",
+        owner: "quality-team\u202E",
+        reason: "UIW-2041\u034F tracks repair",
+      },
+      "2026-09-03",
+    )).toThrow(ContractProposalValidationError);
+
+    expect(() => withContractProposalAnnotation(
+      proposal,
+      emptyContractProposalMetadata(proposal),
+      changeId,
+      {
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-04",
+        owner: "quality-team",
+        reason: "UIW-2041 tracks repair\u0007",
       },
       "2026-09-03",
     )).toThrow(ContractProposalValidationError);

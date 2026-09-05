@@ -81,6 +81,7 @@ describe("uiwitness-core package boundary", () => {
       "compareContract",
       "contractConfigDigest",
       "contractDigest",
+      "contractExceptionLifecycle",
       "contractProposalDigest",
       "contractProposalSourceDigest",
       "contractVerdictStatus",
