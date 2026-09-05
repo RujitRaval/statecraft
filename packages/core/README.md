@@ -8,6 +8,7 @@ import {
   compareContract,
   contractConfigDigest,
   contractDigest,
+  contractExceptionLifecycle,
   createContractProposal,
   createContractProposalSource,
   defineConfig,
@@ -19,6 +20,8 @@ import {
   parseReport,
 } from "uiwitness-core";
 ```
+
+`contractExceptionLifecycle(exception, evaluatedOn)` returns the deterministic active or expired state and signed days until expiry using the same UTC calendar boundary as contract comparison.
 
 New writer paths are restricted to `.uiwitness/artifacts/**`. `parseReport` keeps schema version 1 compatible with both `.uiwitness/artifacts/**` and legacy `.statecraft/artifacts/**` screenshot references. The public `ScreenshotArtifactPath` type is writer-only, while `ReportScreenshotArtifactPath` and `ReportExecutionResult` represent the two-root read contract.
 
