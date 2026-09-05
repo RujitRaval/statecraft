@@ -119,6 +119,8 @@ export default defineConfig({
 });
 ```
 
+Authentication is optional. Add `authentication: { setup: "./uiwitness/auth.mjs", mode: "shared-readonly" }` when the matrix needs one non-mutating account. Its trusted setup hook runs once, reads credentials directly from your environment or secret manager, and seeds every fresh cell context from validated in-memory state. UIWitness never writes a storage-state file; parent-domain, additional-origin, and partitioned cookies require explicit scopes. Fork pull requests must remain secret-free.
+
 Scenarios are trusted local modules. They can intercept deterministic API responses, wait for product-specific readiness, and make assertions with the same Playwright page used for capture:
 
 ```js
@@ -175,8 +177,8 @@ Reports can contain screenshots, URLs, and application data. Treat artifacts fro
 | Package | Purpose |
 | --- | --- |
 | [`uiwitness`](https://www.npmjs.com/package/uiwitness) | Public API and the `uiwitness` executable |
-| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, and report contracts |
-| [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution and local persistence |
+| [`uiwitness-core`](https://www.npmjs.com/package/uiwitness-core) | Browser-independent config, authentication-state policy, state-contract, canonical-digest, comparison/verdict, proposal/acceptance, matrix, coverage, and report contracts |
+| [`uiwitness-runner-playwright`](https://www.npmjs.com/package/uiwitness-runner-playwright) | Isolated Playwright execution, memory-only authentication, and local persistence |
 | [`uiwitness-report`](https://www.npmjs.com/package/uiwitness-report) | Deterministic offline report transformation and rendering |
 
 All four packages publish from the protected GitHub Release workflow through npm trusted publishing with provenance. The one-time bootstrap completed with its temporary token and secret removed inside the required cleanup window; normal OIDC releases keep no long-lived npm token configured and run registry verification automatically.
@@ -214,7 +216,7 @@ Start with [CONTRIBUTING.md](CONTRIBUTING.md). The [Quick Check guide](docs/open
 
 ## Roadmap
 
-The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first eight slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, crash-recoverable atomic generation publication, contract-first offline reporting, the full-SHA-pinned GitHub Action adapter, and complete exception governance. Authentication, privacy, and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
+The current release is the local-first v0.1 product: explicit matrices, deterministic Playwright scenarios, offline evidence, CI usage, a complete example, the completed [public URL Quick Check](docs/designs/public-url-quick-check.md), and the first nine slices of the approved [State Contract Guard roadmap](docs/designs/uiwitness-state-contract-guard.md): strict contracts, deterministic comparison, fresh-run guard orchestration, exact-coordinate reproduction, machine verdicts, explicit proposal inspection/annotation/named acceptance, crash-recoverable atomic generation publication, contract-first offline reporting, the full-SHA-pinned GitHub Action adapter, complete exception governance, and memory-only shared-read-only authentication. Evidence privacy and sharding remain sequenced roadmap work. Hosted collaboration remains out of scope unless real demand appears.
 
 ## License
 

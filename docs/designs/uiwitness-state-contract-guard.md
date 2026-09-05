@@ -989,7 +989,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: D18, D23 and Sections 2/4 — known failures must be exact, owned, visible, recoverable, and limited to 30 days.
   - Files: core/CLI/report/Action governance surfaces and fixtures.
   - Verify: added/removed/substituted codes, eligibility, expiry/renewal/recovery across terminal/JSON/HTML/GitHub.
-- [ ] **T9 (P1, human: ~4 days / Codex: ~6h)** — Runner/Core — Add memory-only shared-read-only authentication
+- [x] **T9 (P1, human: ~4 days / Codex: ~6h)** — Runner/Core — Add memory-only shared-read-only authentication
   - Surfaced by: D12, D20–D21 and Section 3 — reusable auth must validate origin/cookie scope and never persist UIWitness-owned state.
   - Files: core config schema, runner auth lifecycle/types, CLI validation, security docs/tests.
   - Verify: once-per-run login, fresh cells, origin/domain/path/secure/partition/public-suffix matrix, secret canaries, authenticated-shard rejection.

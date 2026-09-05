@@ -7,7 +7,7 @@ UIWitness ships a thin composite Action that runs the `uiwitness` version alread
 Install the exact UIWitness release and its documented Playwright version as development dependencies, commit the lockfile, and make sure your application can be built and served in CI.
 
 ```bash
-npm install --save-dev --save-exact uiwitness@0.26.7 playwright@1.62.1
+npm install --save-dev --save-exact uiwitness@0.26.8 playwright@1.62.1
 ```
 
 Pin the Action to the full 40-character commit SHA for the same release. Replace `<full-release-commit-sha>` below with the SHA shown on that GitHub Release. The SemVer comment is for humans; the SHA is the cryptographically stable reference.
@@ -56,12 +56,12 @@ jobs:
           exit 1
       - name: Guard promised product states
         id: uiwitness
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.8
 ```
 
 The Action reads its own checked-in `VERSION`, runs the project-local `uiwitness --version`, and stops before browser work if the versions differ. Each guard invocation writes and validates a new exclusive internal `--json` verdict copy, so stale evidence already in the workspace cannot satisfy the current job. The repair for version drift is exact: update the package and Action pin to the same release, reinstall, and commit the lockfile. UIWitness does not fall back to `npx`, a global binary, or an implicit package download.
 
-Full SemVer tags such as `v0.26.7` are protected by repository tag rules and are a readable convenience, but GitHub can technically move a tag. Mutable major tags are not published. Use the full release SHA for the strongest supply-chain boundary. To roll back, pin both the dependency and Action to the prior known-good release and rerun the same consumer proof.
+Full SemVer tags such as `v0.26.8` are protected by repository tag rules and are a readable convenience, but GitHub can technically move a tag. Mutable major tags are not published. Use the full release SHA for the strongest supply-chain boundary. To roll back, pin both the dependency and Action to the prior known-good release and rerun the same consumer proof.
 
 ## Inputs
 
@@ -80,7 +80,7 @@ Values move from Action expressions into environment variables and then into a s
 ```yaml
       - name: Guard a non-default contract
         id: uiwitness
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.8
         with:
           config: config/uiwitness.config.mts
           contract: contracts/product-states.json
@@ -107,7 +107,7 @@ Evidence upload is off by default. Enable it only when the repository and captur
 
 ```yaml
       - name: Guard and retain evidence for one day
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.8
         with:
           upload-artifact: true
           retention-days: 1
@@ -119,7 +119,7 @@ The Action uses the repository's immutable `actions/upload-artifact` revision an
 
 The workflow needs only `contents: read`. A normal `pull_request` run for a fork receives a read-only token and no repository secrets. The Action asks for no write permission and performs no pull-request mutation.
 
-Do not work around missing fork secrets with `pull_request_target` or a secret-bearing `workflow_run` that checks out untrusted contribution code. Environment approval does not sandbox a scenario or future authentication module. Secret-bearing authenticated coverage belongs on the exact reviewed commit promoted to a protected trusted branch; the memory-only authentication protocol is a later roadmap slice.
+Do not work around missing fork secrets with `pull_request_target` or a secret-bearing `workflow_run` that checks out untrusted contribution code. Environment approval does not sandbox a scenario or authentication module. Keep the ordinary fork `pull_request` guard secret-free. For private states, review the exact commit first, promote that same commit to a branch allowed by a protected environment, require an environment reviewer, and run the authenticated guard there. The auth module reads environment values itself; UIWitness holds the resulting validated storage state only in memory and never creates an auth-state artifact. Use a non-mutating shared account because `shared-readonly` is an operator promise, not a server-side sandbox.
 
 Scenario and config modules are trusted repository code and execute with the job's privileges. UIWitness can keep its own adapter deterministic and injection-safe, but it cannot sandbox code your repository chooses to run.
 

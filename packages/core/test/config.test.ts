@@ -49,6 +49,13 @@ function captureValidationError(input: unknown): ConfigValidationError {
   throw new Error("Expected config validation to fail.");
 }
 
+function credentialedURL(value: string): string {
+  const url = new URL(value);
+  url.username = "test-user";
+  url.password = "test-password";
+  return url.href;
+}
+
 describe("defineConfig", () => {
   it("provides typing without cloning or changing the config", () => {
     const config = validConfig();
@@ -62,6 +69,35 @@ describe("parseConfig", () => {
     const config = validConfig();
 
     expect(parseConfig(config)).toEqual(config);
+  });
+
+  it("normalizes strict shared-read-only authentication origins", () => {
+    const config = parseConfig({
+      ...validConfig(),
+      baseURL: "https://app.example.com",
+      authentication: {
+        additionalOrigins: ["https://id.example.com"],
+        cookieScopes: [{
+          domain: ".example.com",
+          partitionKeys: ["https://app.example.com:443"],
+          pathPrefix: "/account",
+          secure: "required",
+        }],
+        setup: "./uiwitness/auth.mjs",
+      },
+    });
+
+    expect(config.authentication).toEqual({
+      additionalOrigins: ["https://id.example.com:443"],
+      cookieScopes: [{
+        domain: ".example.com",
+        partitionKeys: ["https://app.example.com:443"],
+        pathPrefix: "/account",
+        secure: "required",
+      }],
+      mode: "shared-readonly",
+      setup: "./uiwitness/auth.mjs",
+    });
   });
 
   it.each([
@@ -79,6 +115,77 @@ describe("parseConfig", () => {
       label: "malformed base URL",
       mutate: (): unknown => ({ ...validConfig(), baseURL: "not a URL" }),
       expected: { code: "invalid_value", path: "$.baseURL" },
+    },
+    {
+      label: "authenticated base URL credentials",
+      mutate: (): unknown => ({
+        ...validConfig(),
+        authentication: { setup: "./uiwitness/auth.mjs" },
+        baseURL: credentialedURL("https://app.example.com"),
+      }),
+      expected: { code: "invalid_value", path: "$.baseURL" },
+    },
+    {
+      label: "unknown authentication mode",
+      mutate: (): unknown => ({
+        ...validConfig(),
+        authentication: {
+          mode: "per-cell",
+          setup: "./uiwitness/auth.mjs",
+        },
+      }),
+      expected: { code: "invalid_value", path: "$.authentication.mode" },
+    },
+    {
+      label: "authentication origin with a path",
+      mutate: (): unknown => ({
+        ...validConfig(),
+        authentication: {
+          additionalOrigins: ["https://id.example.com/login"],
+          setup: "./uiwitness/auth.mjs",
+        },
+      }),
+      expected: {
+        code: "invalid_value",
+        path: "$.authentication.additionalOrigins[0]",
+      },
+    },
+    {
+      label: "public-suffix cookie scope",
+      mutate: (): unknown => ({
+        ...validConfig(),
+        authentication: {
+          cookieScopes: [{
+            domain: ".github.io",
+            pathPrefix: "/",
+            secure: "required",
+          }],
+          setup: "./uiwitness/auth.mjs",
+        },
+      }),
+      expected: {
+        code: "invalid_value",
+        path: "$.authentication.cookieScopes[0].domain",
+      },
+    },
+    {
+      label: "default-rule public-suffix cookie scope",
+      mutate: (): unknown => ({
+        ...validConfig(),
+        baseURL: "https://app.unknown-suffix",
+        authentication: {
+          cookieScopes: [{
+            domain: ".unknown-suffix",
+            pathPrefix: "/",
+            secure: "required",
+          }],
+          setup: "./uiwitness/auth.mjs",
+        },
+      }),
+      expected: {
+        code: "invalid_value",
+        path: "$.authentication.cookieScopes[0].domain",
+      },
     },
     {
       label: "invalid route ID",
@@ -176,6 +283,7 @@ describe("parseConfig", () => {
     };
     const error = captureValidationError({
       ...validConfig(),
+      baseURL: "https://app.example.com",
       routes: [duplicatedRoute, duplicatedRoute],
       themes: ["light", "light"],
     });
@@ -187,6 +295,123 @@ describe("parseConfig", () => {
         expect.objectContaining({ code: "duplicate", path: "$.themes[1]" }),
       ]),
     );
+  });
+
+  it("reports duplicate normalized authentication boundaries", () => {
+    const error = captureValidationError({
+      ...validConfig(),
+      baseURL: "https://app.example.com",
+      authentication: {
+        additionalOrigins: [
+          "https://id.example.com",
+          "https://id.example.com:443",
+        ],
+        cookieScopes: [
+          { domain: ".example.com", pathPrefix: "/", secure: "required" },
+          { domain: ".example.com", pathPrefix: "/", secure: "permitted" },
+        ],
+        setup: "./uiwitness/auth.mjs",
+      },
+    });
+
+    expect(error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "duplicate",
+        path: "$.authentication.additionalOrigins[1]",
+      }),
+      expect.objectContaining({
+        code: "duplicate",
+        path: "$.authentication.cookieScopes[1]",
+      }),
+    ]));
+  });
+
+  it("reports duplicate normalized partition origins", () => {
+    const error = captureValidationError({
+      ...validConfig(),
+      authentication: {
+        cookieScopes: [{
+          domain: "localhost",
+          partitionKeys: ["http://localhost", "http://localhost:80"],
+          pathPrefix: "/",
+          secure: "permitted",
+        }],
+        setup: "./uiwitness/auth.mjs",
+      },
+    });
+
+    expect(error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "duplicate",
+        path: "$.authentication.cookieScopes[0].partitionKeys[1]",
+      }),
+    ]));
+  });
+
+  it("rejects cookie scopes unrelated to every authenticated origin", () => {
+    const error = captureValidationError({
+      ...validConfig(),
+      authentication: {
+        cookieScopes: [{
+          domain: "unrelated.example",
+          pathPrefix: "/",
+          secure: "required",
+        }],
+        setup: "./uiwitness/auth.mjs",
+      },
+    });
+
+    expect(error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: "invalid_value",
+        path: "$.authentication.cookieScopes[0].domain",
+      }),
+    ]));
+  });
+
+  it.each(["   ", `./${"a".repeat(1_023)}`])(
+    "rejects an unusable authentication setup path %j",
+    (setup) => {
+      const error = captureValidationError({
+        ...validConfig(),
+        authentication: { setup },
+      });
+
+      expect(error.issues).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          code: "invalid_value",
+          path: "$.authentication.setup",
+        }),
+      ]));
+    },
+  );
+
+  it.each([
+    ["additional origins", { additionalOrigins: [] }],
+    ["cookie scopes", { cookieScopes: [] }],
+    [
+      "partition origins",
+      {
+        cookieScopes: [{
+          domain: "localhost",
+          partitionKeys: [],
+          pathPrefix: "/",
+          secure: "permitted",
+        }],
+      },
+    ],
+  ])("rejects empty authentication %s", (_label, authenticationValue) => {
+    const error = captureValidationError({
+      ...validConfig(),
+      authentication: {
+        ...authenticationValue,
+        setup: "./uiwitness/auth.mjs",
+      },
+    });
+
+    expect(error.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "invalid_value" }),
+    ]));
   });
 
   it("keeps every accepted route on the configured origin", () => {

@@ -33,6 +33,10 @@ export default defineConfig({
 
 `parseConfig(input)` strictly validates an unknown value and returns a `UIWitnessConfig`. It rejects unknown properties, non-HTTP(S) base URLs, empty collections, invalid viewport dimensions, malformed IDs, duplicate route/state/theme IDs, empty scenario paths, and route paths that are not local slash-prefixed paths.
 
+The optional `authentication` object accepts one non-empty setup-module path, only `mode: "shared-readonly"` (the default), exact additional HTTP(S) origins, and explicit cookie scopes. Origins are normalized to scheme, punycoded host, and effective port. Cookie domains must be lowercase ASCII hosts, match the application or an additional origin, and cannot be ICANN or private public suffixes; scope paths begin with `/`, secure policy is explicit, and optional partition keys are normalized exact origins. Arrays and normalized values cannot be empty or duplicated.
+
+`validateAuthenticationStorageState(state, options)` is the browser-independent enforcement boundary used by the runner. It returns a detached frozen `AuthenticationStorageState` only when every local-storage origin and cookie domain/path/secure/partition attribute stays inside the parsed policy. It throws an opaque `AuthenticationStateError` with `AUTH_ORIGIN_NOT_ALLOWED` or `AUTH_COOKIE_NOT_ALLOWED`; neither error contains cookie names, values, origins, local-storage keys, or secret data.
+
 Route, state, theme, and viewport IDs use lowercase letters and numbers separated by single hyphens. Domain-specific IDs such as `payment-declined` are supported.
 
 The underlying Zod schema is intentionally private. Callers use `parseConfig` so validation behavior and errors remain UIWitness-owned contracts rather than validator-specific APIs.
@@ -45,7 +49,7 @@ The underlying Zod schema is intentionally private. Callers use `parseConfig` so
 - a deterministic `issues` array containing `code`, `path`, and `message`;
 - UIWitness-owned issue codes that do not expose Zod's internal issue types.
 
-Configuration and scenario modules are trusted local code running with the user's privileges. Validation checks their declared shape; it does not execute or inspect scenario modules.
+Configuration, scenario, and authentication modules are trusted local code running with the user's privileges. Validation checks their declared shape; it does not sandbox, execute, or inspect setup modules.
 
 ## State contracts and canonical JSON
 

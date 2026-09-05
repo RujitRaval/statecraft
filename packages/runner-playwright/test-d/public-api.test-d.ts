@@ -1,5 +1,6 @@
 import {
   discoverPublicRoutes,
+  AuthenticationError,
   PUBLIC_SITE_OVERFLOW_TOLERANCE_PX,
   PublicRouteDiscoveryError,
   loadScenario,
@@ -15,6 +16,9 @@ import {
   ScenarioLoadError,
   ScenarioCaptureError,
   type AssertionStatus,
+  type AuthenticationErrorCode,
+  type AuthSetup,
+  type AuthSetupContext,
   type AssertionScenarioContext,
   type CapturedScenarioCell,
   type DiscoveredPublicRoute,
@@ -37,6 +41,7 @@ import {
   type PersistedScenarioRun,
   type RejectedCellExecution,
   type RunExecutionCellsOptions,
+  type RunAuthenticationOptions,
   type RunCapturedScenarioCellsOptions,
   type RunNavigatedScenarioCellsOptions,
   type RunPersistedScenarioCellsOptions,
@@ -51,6 +56,24 @@ import {
   type UIWitnessScenario,
   type PublicRouteDiscoveryErrorCode,
 } from "uiwitness-runner-playwright";
+
+const authSetup: AuthSetup = async (context: AuthSetupContext) => {
+  void context.context;
+  void context.page;
+};
+const authOptions: RunAuthenticationOptions = {
+  baseURL: "https://uiwitness.invalid",
+  config: { setup: "./uiwitness/auth.mjs" },
+  setupBaseDirectory: process.cwd(),
+};
+const authError = new AuthenticationError(
+  "AUTH_SETUP_FAILED",
+  "./uiwitness/auth.mjs",
+);
+const authErrorCode: AuthenticationErrorCode = authError.code;
+void authSetup;
+void authOptions;
+void authErrorCode;
 
 declare const execution: CellExecutionContext;
 

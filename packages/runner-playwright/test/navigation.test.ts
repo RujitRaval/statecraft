@@ -17,6 +17,13 @@ const missingBrowserExecutable = path.join(
   "uiwitness-missing-navigation-browser-executable",
 );
 
+function credentialedURL(value: string): string {
+  const url = new URL(value);
+  url.username = "test-user";
+  url.password = "test-password";
+  return url.href;
+}
+
 async function localOrigin(responseDelayMs = 0): Promise<{
   readonly close: () => Promise<void>;
   readonly origin: string;
@@ -510,6 +517,36 @@ describe("runNavigatedScenarioCells", () => {
   it.each([
     ["invalid base URL", { baseURL: "not-a-url" }, "valid HTTP(S) URL"],
     ["non-HTTP base URL", { baseURL: "file:///tmp/app" }, "valid HTTP(S) URL"],
+    [
+      "cross-origin authentication base URL",
+      {
+        authentication: {
+          baseURL: "https://other.invalid",
+          config: { setup: "./auth.mjs" },
+        },
+        baseURL,
+      },
+      "authentication.baseURL must match baseURL",
+    ],
+    [
+      "credentialed navigation base URL with authentication",
+      {
+        authentication: { baseURL, config: { setup: "./auth.mjs" } },
+        baseURL: credentialedURL(baseURL),
+      },
+      "Authenticated baseURL values cannot contain credentials",
+    ],
+    [
+      "credentialed authentication base URL",
+      {
+        authentication: {
+          baseURL: credentialedURL(baseURL),
+          config: { setup: "./auth.mjs" },
+        },
+        baseURL,
+      },
+      "authentication.baseURL cannot contain credentials",
+    ],
     [
       "empty readiness selector",
       { baseURL, readiness: { selector: "  " } },

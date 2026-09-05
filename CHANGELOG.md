@@ -4,6 +4,25 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.8.0] - 2026-09-05
+
+### Added
+
+- Private applications can now run `uiwitness scan` and `uiwitness guard` with one trusted, once-per-run login module whose validated session is copied into every otherwise-fresh browser cell.
+- The strict authentication configuration supports exact additional origins and explicit cookie domain, path, secure, and partition-key boundaries for the single `shared-readonly` mode.
+- Core and Playwright runner packages now expose typed authentication policies, browser-neutral in-memory state validation, setup hooks, and stable opaque failure codes.
+
+### Changed
+
+- Authenticated coordinates use fingerprint version 2 so enabling or changing a non-secret authentication policy creates explicit contract drift while unauthenticated coordinates retain their existing v1 fingerprints.
+- CLI, runner, architecture, API, security, testing, package, and GitHub Actions guidance now document the authenticated local and protected-CI workflow and its deliberate no-sharding limitation.
+
+### Security
+
+- Authentication setup files must be readable, single-link regular files beneath the canonical invocation workspace, and UIWitness never writes captured cookies or local storage to a storage-state file.
+- Cookie validation rejects unmatched domains, unsafe paths, unexpected partitions, insecure required cookies, ICANN/private/default-rule public suffixes, and credential-bearing origins; setup and context-seeding failures cannot expose secret-bearing framework messages.
+- Secret-canary coverage verifies authentication values stay out of UIWitness-owned reports, evidence, verdicts, fingerprints, diagnostics, temporary paths, and generated artifacts.
+
 ## [0.26.7.0] - 2026-09-05
 
 ### Added

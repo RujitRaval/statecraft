@@ -103,6 +103,10 @@ export {
   defineConfig,
   parseConfig,
 } from "./config.js";
+export {
+  AuthenticationStateError,
+  validateAuthenticationStorageState,
+} from "./authentication.js";
 export type {
   FailurePolicy,
   RouteDefinition,
@@ -110,6 +114,16 @@ export type {
   UIWitnessConfig,
   ViewportDefinition,
 } from "./config.js";
+export type {
+  AuthenticationConfig,
+  AuthenticationCookieScope,
+  AuthenticationLocalStorageEntry,
+  AuthenticationMode,
+  AuthenticationOriginStorage,
+  AuthenticationStateErrorCode,
+  AuthenticationStorageCookie,
+  AuthenticationStorageState,
+} from "./authentication.js";
 export {
   CanonicalJsonError,
   ConfigValidationError,

@@ -12,6 +12,7 @@ import {
   CONTRACT_SCHEMA_VERSION,
   CONTRACT_SOURCE_SCHEMA_VERSION,
   CanonicalJsonError,
+  AuthenticationStateError,
   ConfigValidationError,
   ContractProposalValidationError,
   ContractValidationError,
@@ -56,8 +57,14 @@ import {
   serializeContractProposalSource,
   serializeGenerationManifest,
   serializeReport,
+  validateAuthenticationStorageState,
   withContractProposalAnnotation,
   type CanonicalJsonIssue,
+  type AuthenticationConfig,
+  type AuthenticationCookieScope,
+  type AuthenticationMode,
+  type AuthenticationStateErrorCode,
+  type AuthenticationStorageState,
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
   type ContractCoordinate,
@@ -111,6 +118,31 @@ import {
   type UIWitnessErrorCode,
   type ViewportDefinition,
 } from "uiwitness-core";
+
+const authenticationMode: AuthenticationMode = "shared-readonly";
+const authenticationCookieScope: AuthenticationCookieScope = {
+  domain: ".example.com",
+  pathPrefix: "/",
+  secure: "required",
+};
+const authenticationConfig: AuthenticationConfig = {
+  cookieScopes: [authenticationCookieScope],
+  mode: authenticationMode,
+  setup: "./uiwitness/auth.mjs",
+};
+const authenticationState: AuthenticationStorageState =
+  validateAuthenticationStorageState({ cookies: [], origins: [] }, {
+    authentication: authenticationConfig,
+    baseURL: "https://app.example.com",
+  });
+const authenticationError = new AuthenticationStateError(
+  "AUTH_COOKIE_NOT_ALLOWED",
+  "Authentication cookie is outside the configured scope.",
+);
+const authenticationErrorCode: AuthenticationStateErrorCode =
+  authenticationError.code;
+void authenticationState;
+void authenticationErrorCode;
 
 const contractException: ContractException = {
   createdOn: "2026-09-02",

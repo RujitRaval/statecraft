@@ -5,6 +5,12 @@ import {
   type ConfigValidationIssue,
   type ConfigValidationIssueCode,
 } from "./errors.js";
+import {
+  authenticationCookieDomainIsPublicSuffix,
+  normalizedAuthenticationOrigin,
+  validAuthenticationCookieDomain,
+  type AuthenticationConfig,
+} from "./authentication.js";
 
 /** Pixel dimensions for a named browser viewport. */
 export interface ViewportDefinition {
@@ -34,6 +40,7 @@ export interface FailurePolicy {
 
 /** The complete user-authored UIWitness configuration contract. */
 export interface UIWitnessConfig {
+  readonly authentication?: AuthenticationConfig | undefined;
   readonly baseURL: string;
   readonly failOn?: FailurePolicy | undefined;
   readonly routes: readonly RouteDefinition[];
@@ -118,8 +125,87 @@ const failurePolicySchema = z.strictObject({
   pageError: z.boolean().optional(),
 });
 
+const originSchema = z.string().max(1_024).transform((value, context) => {
+  const normalized = normalizedAuthenticationOrigin(value);
+  if (normalized === null) {
+    context.addIssue({
+      code: "custom",
+      message: "Origins must be exact credential-free HTTP(S) origins without a path, query, or fragment.",
+    });
+    return z.NEVER;
+  }
+  return normalized;
+});
+
+const cookieScopeSchema = z.strictObject({
+  domain: z.string().max(253).refine(
+    (value) =>
+      validAuthenticationCookieDomain(value) &&
+      !authenticationCookieDomainIsPublicSuffix(value),
+    { message: "Cookie domains must be lowercase ASCII hosts and cannot be public suffixes." },
+  ),
+  partitionKeys: z.array(originSchema).min(1).optional().superRefine((values, context) => {
+    if (values === undefined) return;
+    const seen = new Set<string>();
+    values.forEach((value, index) => {
+      if (seen.has(value)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate partition origin "${value}".`,
+          params: { uiwitnessIssueCode: "duplicate" },
+          path: [index],
+        });
+      }
+      seen.add(value);
+    });
+  }),
+  pathPrefix: z.string().max(1_024).refine((value) => value.startsWith("/"), {
+    message: "Cookie path prefixes must start with '/'.",
+  }),
+  secure: z.enum(["required", "permitted"]),
+});
+
+const authenticationSchema = z.strictObject({
+  additionalOrigins: z.array(originSchema).min(1).optional().superRefine((values, context) => {
+    if (values === undefined) return;
+    const seen = new Set<string>();
+    values.forEach((value, index) => {
+      if (seen.has(value)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate authentication origin "${value}".`,
+          params: { uiwitnessIssueCode: "duplicate" },
+          path: [index],
+        });
+      }
+      seen.add(value);
+    });
+  }),
+  cookieScopes: z.array(cookieScopeSchema).min(1).optional().superRefine((values, context) => {
+    if (values === undefined) return;
+    const seen = new Set<string>();
+    values.forEach((value, index) => {
+      const key = `${value.domain}\u0000${value.pathPrefix}`;
+      if (seen.has(key)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate cookie scope for "${value.domain}${value.pathPrefix}".`,
+          params: { uiwitnessIssueCode: "duplicate" },
+          path: [index],
+        });
+      }
+      seen.add(key);
+    });
+  }),
+  mode: z.literal("shared-readonly").default("shared-readonly"),
+  setup: z.string().max(1_024).refine((value) => value.trim().length > 0, {
+    message: "Authentication setup paths cannot be empty.",
+  }),
+});
+
 const configSchema = z
   .strictObject({
+    authentication: authenticationSchema.optional(),
     baseURL: z
       .string()
       .url()
@@ -153,6 +239,46 @@ const configSchema = z
   })
   .superRefine((config, context) => {
     addDuplicateIdIssues(config.routes, context, "route", ["routes"]);
+    if (config.authentication === undefined) return;
+    const baseURL = new URL(config.baseURL);
+    if (baseURL.username.length > 0 || baseURL.password.length > 0) {
+      context.addIssue({
+        code: "custom",
+        message: "Authenticated baseURL values cannot contain credentials.",
+        path: ["baseURL"],
+      });
+    }
+    const applicationOrigin = normalizedAuthenticationOrigin(
+      baseURL.origin,
+    );
+    if (applicationOrigin === null) return;
+    const origins = [
+      applicationOrigin,
+      ...(config.authentication.additionalOrigins ?? []),
+    ];
+    config.authentication.additionalOrigins?.forEach((origin, index) => {
+      if (origin === applicationOrigin) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate authentication origin "${origin}".`,
+          params: { uiwitnessIssueCode: "duplicate" },
+          path: ["authentication", "additionalOrigins", index],
+        });
+      }
+    });
+    const hosts = origins.map((origin) => new URL(origin).hostname);
+    config.authentication.cookieScopes?.forEach((scope, index) => {
+      const domain = scope.domain.startsWith(".")
+        ? scope.domain.slice(1)
+        : scope.domain;
+      if (!hosts.some((host) => host === domain || host.endsWith(`.${domain}`))) {
+        context.addIssue({
+          code: "custom",
+          message: "Cookie scopes must match the application or an additional origin.",
+          path: ["authentication", "cookieScopes", index, "domain"],
+        });
+      }
+    });
   });
 
 /**
