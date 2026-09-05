@@ -32,6 +32,7 @@ export type {
 export {
   CONTRACT_FINDING_KINDS,
   CONTRACT_FINDING_PRECEDENCE,
+  contractExceptionLifecycle,
   contractVerdictStatus,
 } from "./contract-verdict.js";
 export {
@@ -81,6 +82,7 @@ export type {
 } from "./contract-proposal.js";
 export type {
   ChangedKnownFailureContractFinding,
+  ContractExceptionLifecycle,
   ContractActualOutcome,
   ContractComparisonResult,
   ContractFinding,

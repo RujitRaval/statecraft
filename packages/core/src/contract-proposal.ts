@@ -166,8 +166,14 @@ const proposalSchema = z.strictObject({
 const exceptionSchema = z.strictObject({
   createdOn: dateSchema,
   expiresOn: dateSchema,
-  owner: z.string().min(1).max(1_024),
-  reason: z.string().min(1).max(1_024),
+  owner: z.string().min(1).max(1_024).refine(
+    (value) => !/[\p{Cc}\p{Default_Ignorable_Code_Point}]/u.test(value),
+    "Exception ownership cannot contain control or default-ignorable Unicode characters.",
+  ),
+  reason: z.string().min(1).max(1_024).refine(
+    (value) => !/[\p{Cc}\p{Default_Ignorable_Code_Point}]/u.test(value),
+    "Exception reasons cannot contain control or default-ignorable Unicode characters.",
+  ),
 });
 const metadataSchema = z.strictObject({
   annotations: z.record(z.string(), exceptionSchema),
@@ -431,7 +437,10 @@ export function createContractProposal(
     }
     if (
       before.expected.status === "failed" &&
-      isExpired(before.expected, validated.evaluatedOn)
+      isExpired(before.expected, validated.evaluatedOn) &&
+      actual.status === "failed" &&
+      canonicalizeJson(expected as unknown as JsonValue) ===
+        canonicalizeJson(actual as unknown as JsonValue)
     ) {
       changes.push(change("exception", id, before.expected.exception, null));
     }
@@ -476,6 +485,25 @@ function validateException(exception: ContractException, evaluatedOn: string): v
     throw new ContractProposalValidationError([{
       code: "invalid_value",
       message: "Accepted exceptions require non-empty ownership, valid current dates, and a 1-30 day lifetime.",
+      path: "$.annotations",
+    }]);
+  }
+}
+
+function validateRenewalReason(
+  proposalChange: ContractProposalChange,
+  exception: ContractException,
+): void {
+  if (proposalChange.operation !== "exception") return;
+  const before = proposalChange.before as Readonly<Record<string, unknown>> | null;
+  if (
+    typeof before?.["reason"] === "string" &&
+    before["reason"].normalize("NFC").trim() ===
+      exception.reason.normalize("NFC").trim()
+  ) {
+    throw new ContractProposalValidationError([{
+      code: "invalid_value",
+      message: "Renewing an exception requires an updated reason.",
       path: "$.annotations",
     }]);
   }
@@ -642,6 +670,7 @@ export function applyContractProposal(input: {
         }]);
       }
       validateException(annotation, acceptedOn);
+      validateRenewalReason(proposalChange, annotation);
       coordinates.set(proposalChange.coordinateId, {
         ...current,
         expected: { ...current.expected, exception: { ...annotation } },
@@ -683,7 +712,13 @@ function changeAcceptsAnnotation(change: ContractProposalChange): boolean {
   const expectation = change.operation === "add"
     ? after?.["expected"] as Readonly<Record<string, unknown>> | undefined
     : after;
-  return expectation?.["status"] === "failed";
+  const failureCodes = expectation?.["failureCodes"];
+  return expectation?.["status"] === "failed" &&
+    Array.isArray(failureCodes) &&
+    failureCodes.every((code) =>
+      typeof code === "string" &&
+      (CONTRACT_FAILURE_CODES as readonly string[]).includes(code)
+    );
 }
 
 export function withContractProposalAnnotation(
@@ -724,6 +759,7 @@ export function withContractProposalAnnotation(
     schemaVersion: validatedMetadata.schemaVersion,
   }));
   validateException(updated.annotations[changeId]!, evaluatedOn);
+  validateRenewalReason(selected, updated.annotations[changeId]!);
   return updated;
 }
 

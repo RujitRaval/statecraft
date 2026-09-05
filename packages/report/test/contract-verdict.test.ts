@@ -74,6 +74,9 @@ describe("contract-first report", () => {
     expect(html).toContain("checkout-team");
     expect(html).toContain("UIW-1842 tracks the repair");
     expect(html).toContain("2026-09-01 → 2026-09-15");
+    expect(html).toContain('data-exception-status="active"');
+    expect(html).toContain("Expires in 11 UTC days");
+    expect(html).toContain("applies only to the displayed exact failure-code set");
     expect(html).toContain("uiwitness scan --coordinate dashboard/error/desktop/dark --headed");
     expect(html).toContain("&lt;candidate&gt;&amp;.json");
     expect(html).toContain('data-copy-target="finding-');
@@ -113,6 +116,64 @@ describe("contract-first report", () => {
     });
 
     expect(html).toContain("1 promise · 1 matched coordinate · 1 known failure");
+  });
+
+  it("presents expired and recovered exceptions with explicit lifecycle guidance", () => {
+    const expectation = {
+      exception: {
+        createdOn: "2026-09-01",
+        expiresOn: "2026-09-03",
+        owner: "quality-team",
+        reason: "UIW-2010 tracks the repair",
+      },
+      failureCodes: ["ASSERTION_FAILED"],
+      status: "failed",
+    };
+    const html = renderReportHtml(reportFixture(), {
+      contractVerdict: {
+        ...verdictFixture(),
+        findings: [
+          {
+            actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+            expected: expectation,
+            id: "billing/error/mobile/dark",
+            kind: "expired-exception",
+            remediate: "uiwitness contract inspect --candidate proposal.json --change exception:billing/error/mobile/dark",
+          },
+          {
+            actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+            expected: expectation,
+            id: "billing/error/mobile/dark",
+            kind: "matched-known-failure",
+          },
+          {
+            actual: { status: "passed" },
+            expected: { ...expectation, exception: { ...expectation.exception, expiresOn: "2026-09-15" } },
+            id: "checkout/error/mobile/dark",
+            kind: "recovered-known-failure",
+            remediate: "uiwitness contract inspect --candidate proposal.json --change expectation:checkout/error/mobile/dark",
+            reproduce: "uiwitness scan --coordinate checkout/error/mobile/dark --headed",
+          },
+          {
+            actual: { failureCodes: ["NAVIGATION_FAILED"], status: "failed" },
+            expected: { ...expectation, exception: { ...expectation.exception, expiresOn: "2026-09-15" } },
+            id: "shipping/error/mobile/dark",
+            kind: "changed-known-failure",
+            remediate: "uiwitness contract inspect --candidate proposal.json --change expectation:shipping/error/mobile/dark",
+            reproduce: "uiwitness scan --coordinate shipping/error/mobile/dark --headed",
+          },
+        ],
+        evaluatedOn: "2026-09-04",
+      },
+    });
+
+    expect(html).toContain('data-exception-status="expired"');
+    expect(html).toContain("Expired 1 UTC day ago");
+    expect(html).toContain("explicitly renew with a new reason");
+    expect(html).toContain("exact failure-code set still matches, but the exception is expired");
+    expect(html).not.toContain("accepted exception applies");
+    expect(html).toContain("Accept the expectation change to remove this stale contract debt");
+    expect(html).toContain("ineligible code. Repair it because it cannot become a known failure");
   });
 
   it("keeps report data out of the CSP-pinned interaction script", () => {
@@ -224,11 +285,22 @@ describe("contract-first report", () => {
           ? { reproduce: "uiwitness scan --coordinate a/b/c/d --headed" }
           : {}),
       };
+      const findings = kind === "expired-exception"
+        ? [
+            findingWithCommands,
+            {
+              actual: findingWithCommands.actual,
+              expected: findingWithCommands.expected,
+              id: findingWithCommands.id,
+              kind: "matched-known-failure",
+            },
+          ]
+        : [findingWithCommands];
       const html = renderReportHtml(reportFixture(), {
         contractVerdict: {
           ...verdictFixture(),
           complete,
-          findings: [findingWithCommands],
+          findings,
           verdict,
         },
       });
@@ -275,6 +347,69 @@ describe("contract-first report", () => {
         },
       })
     ).toThrow("canonical order");
+
+    const expired = {
+      actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+      expected: {
+        exception: {
+          createdOn: "2026-09-01",
+          expiresOn: "2026-09-03",
+          owner: "quality-team",
+          reason: "Tracked debt",
+        },
+        failureCodes: ["ASSERTION_FAILED"],
+        status: "failed",
+      },
+      id: "a/b/c/d",
+      kind: "expired-exception",
+      remediate: "uiwitness contract inspect --candidate proposal.json --change exception:a/b/c/d",
+    };
+    expect(() =>
+      renderReportHtml(reportFixture(), {
+        contractVerdict: {
+          ...verdictFixture(),
+          findings: [expired],
+        },
+      })
+    ).toThrow("missing its coordinate outcome");
+    expect(() =>
+      renderReportHtml(reportFixture(), {
+        contractVerdict: {
+          ...verdictFixture(),
+          findings: [
+            expired,
+            {
+              actual: { failureCodes: ["PAGE_ERROR"], status: "failed" },
+              expected: expired.expected,
+              id: expired.id,
+              kind: "changed-known-failure",
+              remediate: "uiwitness contract inspect --candidate proposal.json --change expectation:a/b/c/d",
+              reproduce: "uiwitness scan --coordinate a/b/c/d --headed",
+            },
+          ],
+        },
+      })
+    ).toThrow("disagree on outcomes");
+
+    const legacyHtml = renderReportHtml(reportFixture(), {
+        contractVerdict: {
+          ...verdictFixture(),
+          findings: [{
+            ...verdictFixture().findings[2],
+            expected: {
+              ...verdictFixture().findings[2]!.expected,
+              exception: {
+                ...verdictFixture().findings[2]!.expected.exception,
+                owner: "quality\u202Eteam",
+                reason: "UIW-2041\u034F tracks\u0007 repair",
+              },
+            },
+          }],
+          verdict: "passed",
+        },
+      });
+    expect(legacyHtml).toContain("quality\\u{202e}team");
+    expect(legacyHtml).toContain("UIW-2041\\u{034f} tracks\\u{0007} repair");
   });
 
   it.each([

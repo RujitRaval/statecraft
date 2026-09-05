@@ -174,6 +174,85 @@ describe("contract proposal CLI services", () => {
     await expect(access(published.metadata)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  it("renews an exact expired failure only with a newly justified exception", async () => {
+    const fixture = await project();
+    const knownFailureContract: UIWitnessContract = {
+      ...fixture.contract,
+      coordinates: fixture.contract.coordinates.map((coordinate) => ({
+        ...coordinate,
+        expected: {
+          exception: {
+            createdOn: "2026-08-15",
+            expiresOn: "2026-09-02",
+            owner: "checkout-team",
+            reason: "UIW-2041 tracks the repair",
+          },
+          failureCodes: ["ASSERTION_FAILED"],
+          status: "failed" as const,
+        },
+      })),
+    };
+    await writeFile(
+      join(fixture.root, "uiwitness.contract.json"),
+      `${JSON.stringify(knownFailureContract, null, 2)}\n`,
+    );
+    const source = createContractProposalSource({
+      configuration: fixture.source.configuration,
+      contract: knownFailureContract,
+      evaluatedOn: "2026-09-03",
+      executions: fixture.source.executions,
+      runDigest,
+    });
+    const published = await publish(fixture.root, source);
+    const changeId = "exception:home/public/desktop/light";
+    const now = () => new Date("2026-09-03T12:00:00.000Z");
+
+    await expect(annotateContractChange({
+      candidatePath: published.candidate,
+      changeId,
+      createdOn: "2026-09-03",
+      cwd: fixture.root,
+      expiresOn: "2026-09-17",
+      now,
+      owner: "checkout-team",
+      reason: "UIW-2041 tracks the repair",
+    })).rejects.toMatchObject({
+      issues: expect.arrayContaining([
+        expect.objectContaining({ message: "Renewing an exception requires an updated reason." }),
+      ]),
+    });
+
+    await annotateContractChange({
+      candidatePath: published.candidate,
+      changeId,
+      createdOn: "2026-09-03",
+      cwd: fixture.root,
+      expiresOn: "2026-09-17",
+      now,
+      owner: "checkout-team",
+      reason: "UIW-2041 is now blocked on the upstream component fix",
+    });
+    await acceptContractChanges({
+      candidatePath: published.candidate,
+      changeIds: [changeId],
+      cwd: fixture.root,
+      now,
+    });
+
+    expect(parseContract(
+      await readFile(join(fixture.root, "uiwitness.contract.json"), "utf8"),
+    ).coordinates[0]!.expected).toMatchObject({
+      exception: {
+        createdOn: "2026-09-03",
+        expiresOn: "2026-09-17",
+        owner: "checkout-team",
+        reason: "UIW-2041 is now blocked on the upstream component fix",
+      },
+      failureCodes: ["ASSERTION_FAILED"],
+      status: "failed",
+    });
+  });
+
   it("rejects proposal mutation and stale committed contracts", async () => {
     const fixture = await project();
     const published = await publish(fixture.root, fixture.source);

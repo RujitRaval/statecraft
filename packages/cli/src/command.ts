@@ -2,11 +2,17 @@ import { readFile } from "node:fs/promises";
 import { relative } from "node:path";
 
 import {
+  CONTRACT_FAILURE_CODES,
   ConfigValidationError,
   ContractProposalValidationError,
   ContractValidationError,
   GenerationValidationError,
   ResultValidationError,
+  contractExceptionLifecycle,
+  type ContractActualOutcome,
+  type ContractExpectation,
+  type ContractFinding,
+  type ContractProposalChange,
 } from "uiwitness-core";
 
 import {
@@ -124,7 +130,8 @@ function terminalText(value: string): string {
     const codePoint = character.codePointAt(0)!;
     if (
       codePoint <= 0x1f ||
-      (codePoint >= 0x7f && codePoint <= 0x9f)
+      (codePoint >= 0x7f && codePoint <= 0x9f) ||
+      /\p{Default_Ignorable_Code_Point}/u.test(character)
     ) {
       if (character === "\n") {
         safe += "\\n";
@@ -140,6 +147,14 @@ function terminalText(value: string): string {
     }
   }
   return safe;
+}
+
+function inspectJson(value: unknown): string {
+  return JSON.stringify(
+    value,
+    (_key, nested) => typeof nested === "string" ? terminalText(nested) : nested,
+    2,
+  ) ?? "undefined";
 }
 
 function parseScanArguments(
@@ -465,6 +480,96 @@ function quantity(
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function contractOutcomeLabel(
+  outcome: ContractActualOutcome | ContractExpectation | null,
+): string {
+  if (outcome === null) return "not present";
+  return outcome.status === "passed"
+    ? "passed"
+    : `failed (${outcome.failureCodes.join(", ")})`;
+}
+
+function exceptionLifecycleLabel(
+  exception: Extract<ContractExpectation, { readonly status: "failed" }>["exception"],
+  evaluatedOn: string,
+): string {
+  const lifecycle = contractExceptionLifecycle(exception, evaluatedOn);
+  if (lifecycle.status === "expired") {
+    return `expired ${quantity(Math.abs(lifecycle.daysUntilExpiry), "UTC day")} ago`;
+  }
+  if (lifecycle.daysUntilExpiry === 0) {
+    return "expires today; active through 23:59:59.999 UTC";
+  }
+  return `expires in ${quantity(lifecycle.daysUntilExpiry, "UTC day")}`;
+}
+
+function exceptionEligible(outcome: ContractActualOutcome | null): boolean {
+  return outcome?.status === "failed" && outcome.failureCodes.every((code) =>
+    (CONTRACT_FAILURE_CODES as readonly string[]).includes(code)
+  );
+}
+
+function governanceGuidance(
+  finding: ContractFinding,
+  evaluatedOn: string,
+): string | undefined {
+  const expected = "expected" in finding ? finding.expected : null;
+  const actual = "actual" in finding ? finding.actual : null;
+  switch (finding.kind) {
+    case "matched-known-failure":
+      return expected?.status === "failed" &&
+          contractExceptionLifecycle(expected.exception, evaluatedOn).status === "expired"
+        ? "The exact failure-code set still matches, but the exception is expired."
+        : "The exception applies only to this exact failure-code set.";
+    case "changed-known-failure":
+      return exceptionEligible(actual)
+        ? "The failure-code set changed; review and annotate a new expectation."
+        : "The failure includes an ineligible code; repair it because it cannot become a known failure.";
+    case "recovered-known-failure":
+      return "The state recovered; accept the expectation change to remove contract debt.";
+    case "expired-exception":
+      if (actual?.status === "passed") {
+        return "The state recovered; accept the expectation change to remove contract debt.";
+      }
+      if (!exceptionEligible(actual)) {
+        return "The failure includes an ineligible code; repair it because it cannot become a known failure.";
+      }
+      if (
+        actual?.status === "failed" &&
+        expected?.status === "failed" &&
+        actual.failureCodes.join("\u0000") !== expected.failureCodes.join("\u0000")
+      ) {
+        return "The failure-code set changed; review and annotate a new expectation.";
+      }
+      return "Repair the state, or explicitly renew with a new reason and a 1–30 day window.";
+    default:
+      return undefined;
+  }
+}
+
+function inspectLifecycleGuidance(change: ContractProposalChange): string | undefined {
+  if (change.operation === "exception") {
+    return "Renewal requires a new annotation reason and current 1–30 day window before accepting this named change.";
+  }
+  if (change.operation !== "expectation") return undefined;
+  const before = change.before as Readonly<Record<string, unknown>> | null;
+  const after = change.after as Readonly<Record<string, unknown>> | null;
+  if (before?.["status"] === "failed" && after?.["status"] === "passed") {
+    return "Recovery removes the known-failure expectation; accept this named change after reviewing the fresh pass.";
+  }
+  if (before?.["status"] === "failed" && after?.["status"] === "failed") {
+    const failureCodes = after["failureCodes"];
+    const eligible = Array.isArray(failureCodes) && failureCodes.every((code) =>
+      typeof code === "string" &&
+      (CONTRACT_FAILURE_CODES as readonly string[]).includes(code)
+    );
+    return eligible
+      ? "Changed failure codes require a new owner, reason, and 1–30 day exception before acceptance."
+      : "This failure includes an ineligible code and cannot be annotated or accepted as a known failure; repair it instead.";
+  }
+  return undefined;
+}
+
 /** Formats one completed public-site Quick Check without exposing diagnostics. */
 export function formatCheckSummary(result: CheckResult): string {
   const executions = result.report.executions;
@@ -557,14 +662,41 @@ export function formatGuardSummary(result: GuardResult): string {
     0,
     maximumGuardTerminalFindings,
   );
+  const describedExceptions = new Set<string>();
   for (const [index, finding] of visibleFindings.entries()) {
-    const marker = finding.kind === "matched" ||
-      finding.kind === "matched-known-failure"
+    const activeKnownFailure = finding.kind === "matched-known-failure" &&
+      finding.expected.status === "failed" &&
+      contractExceptionLifecycle(
+        finding.expected.exception,
+        result.comparison.evaluatedOn,
+      ).status === "active";
+    const marker = finding.kind === "matched" || activeKnownFailure
       ? "✓"
       : finding.kind === "run-error" ? "!" : "✗";
     lines.push(
       `${marker} ${terminalText(finding.id ?? "run")} · ${finding.kind.toUpperCase()}`,
     );
+    if (
+      "expected" in finding &&
+      finding.expected?.status === "failed"
+    ) {
+      lines.push(`    Expected: ${contractOutcomeLabel(finding.expected)}`);
+      if ("actual" in finding) {
+        lines.push(`    Actual: ${contractOutcomeLabel(finding.actual)}`);
+      }
+      if (!describedExceptions.has(finding.id)) {
+        describedExceptions.add(finding.id);
+        lines.push(
+          `    Exception: ${terminalText(finding.expected.exception.owner)} · ${exceptionLifecycleLabel(finding.expected.exception, result.comparison.evaluatedOn)} · through ${finding.expected.exception.expiresOn}`,
+          `    Reason: ${terminalText(finding.expected.exception.reason)}`,
+        );
+      }
+      const guidance = governanceGuidance(
+        finding,
+        result.comparison.evaluatedOn,
+      );
+      if (guidance !== undefined) lines.push(`    Next: ${guidance}`);
+    }
     const machineFinding = result.machineVerdict.findings[index];
     const findingRecord = machineFinding !== null &&
         typeof machineFinding === "object" &&
@@ -764,13 +896,17 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
           changeId: parsed.changeId,
           cwd: options.cwd,
         });
+        const lifecycleGuidance = inspectLifecycleGuidance(result.change);
         stdout([
           `Change: ${terminalText(result.change.id)}`,
           `Proposal: ${terminalText(result.proposalPath)}`,
+          ...(lifecycleGuidance === undefined
+            ? []
+            : ["Exception lifecycle:", lifecycleGuidance]),
           "Before:",
-          JSON.stringify(result.change.before, null, 2),
+          inspectJson(result.change.before),
           "After:",
-          JSON.stringify(result.change.after, null, 2),
+          inspectJson(result.change.after),
           "",
         ].join("\n"));
         return 0;
@@ -785,7 +921,18 @@ export async function runCli(options: RunCliOptions = {}): Promise<CliExitCode> 
           owner: parsed.owner,
           reason: parsed.reason,
         });
-        stdout(`Annotated ${terminalText(result.changeId)} in ${terminalText(result.metadataPath)}.\n`);
+        const lifecycle = contractExceptionLifecycle(
+          { expiresOn: parsed.expiresOn },
+          parsed.createdOn,
+        );
+        stdout([
+          `Annotated ${terminalText(result.changeId)} in ${terminalText(result.metadataPath)}.`,
+          `Owner: ${terminalText(parsed.owner)}`,
+          `Reason: ${terminalText(parsed.reason)}`,
+          `Window: ${parsed.createdOn} → ${parsed.expiresOn} (${quantity(lifecycle.daysUntilExpiry, "UTC day")})`,
+          "Acceptance is named and single-use; dates never renew automatically.",
+          "",
+        ].join("\n"));
         return 0;
       }
       const result = await acceptContractChanges({

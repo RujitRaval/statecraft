@@ -967,6 +967,9 @@ All 1 execution passed.
       owner: "checkout-team",
       reason: "UIW-2041 tracks repair",
     });
+    expect(stdout.messages.join("")).toContain("Owner: checkout-team");
+    expect(stdout.messages.join("")).toContain("Window: 2026-09-03 → 2026-09-17 (14 UTC days)");
+    expect(stdout.messages.join("")).toContain("dates never renew automatically");
 
     stdout.messages.length = 0;
     acceptContractChangesMock.mockResolvedValueOnce({
@@ -1038,6 +1041,206 @@ All 1 execution passed.
     const summary = formatGuardSummary(result);
     expect(summary.match(/^✓ /gmu)).toHaveLength(20);
     expect(summary).toContain("… 1 finding omitted; see the machine verdict.");
+  });
+
+  it("presents exact known-failure ownership, expiry, renewal, and recovery guidance", () => {
+    const base = completedGuard("failed");
+    const activeExpectation = {
+      exception: {
+        createdOn: "2026-09-01",
+        expiresOn: "2026-09-03",
+        owner: "checkout\u202Eteam",
+        reason: "UIW-2041\u034F tracks the repair",
+      },
+      failureCodes: ["ASSERTION_FAILED" as const],
+      status: "failed" as const,
+    };
+    const expiredExpectation = {
+      ...activeExpectation,
+      exception: { ...activeExpectation.exception, expiresOn: "2026-09-02" },
+    };
+    const findings: ContractComparisonResult["findings"] = [
+      {
+        actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+        expected: expiredExpectation,
+        id: "billing/error/mobile/dark",
+        kind: "expired-exception",
+      },
+      {
+        actual: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+        expected: expiredExpectation,
+        id: "billing/error/mobile/dark",
+        kind: "matched-known-failure",
+      },
+      {
+        actual: { status: "passed" },
+        expected: activeExpectation,
+        id: "checkout/error/mobile/dark",
+        kind: "recovered-known-failure",
+      },
+      {
+        actual: { failureCodes: ["NAVIGATION_FAILED"], status: "failed" },
+        expected: activeExpectation,
+        id: "shipping/error/mobile/dark",
+        kind: "changed-known-failure",
+      },
+    ];
+    const result: GuardResult = {
+      ...base,
+      comparison: { ...base.comparison, evaluatedOn: "2026-09-03", findings },
+      machineVerdict: {
+        ...base.machineVerdict,
+        evaluatedOn: "2026-09-03",
+        findings: findings as unknown as readonly JsonValue[],
+      },
+    };
+
+    const summary = formatGuardSummary(result);
+    expect(summary).toContain("Expected: failed (ASSERTION_FAILED)");
+    expect(summary).toContain("Actual: passed");
+    expect(summary).toContain("checkout\\u{202e}team · expires today; active through 23:59:59.999 UTC");
+    expect(summary).toContain("expired 1 UTC day ago");
+    expect(summary).toContain("Reason: UIW-2041\\u{034f} tracks the repair");
+    expect(summary).toContain("explicitly renew with a new reason and a 1–30 day window");
+    expect(summary).toContain("exact failure-code set still matches, but the exception is expired");
+    expect(summary).not.toContain("✓ billing/error/mobile/dark · MATCHED-KNOWN-FAILURE");
+    expect(summary).not.toContain("exception applies only");
+    expect(summary).toContain("accept the expectation change to remove contract debt");
+    expect(summary).toContain("ineligible code; repair it because it cannot become a known failure");
+  });
+
+  it("keeps exception ownership visible during missing-coordinate and config drift", () => {
+    const base = completedGuard("failed");
+    const expectation = {
+      exception: {
+        createdOn: "2026-09-01",
+        expiresOn: "2026-09-15",
+        owner: "checkout-team",
+        reason: "UIW-2041 tracks the repair",
+      },
+      failureCodes: ["ASSERTION_FAILED" as const],
+      status: "failed" as const,
+    };
+    const findings: ContractComparisonResult["findings"] = [
+      {
+        actual: null,
+        contractConfigFingerprint: digest,
+        expected: expectation,
+        id: "billing/error/mobile/dark",
+        kind: "missing-coordinate",
+      },
+      {
+        actual: { status: "passed" },
+        contractConfigFingerprint: digest,
+        currentConfigFingerprint: `sha256:${"1".repeat(64)}`,
+        expected: expectation,
+        id: "checkout/error/mobile/dark",
+        kind: "unaccepted-config-drift",
+      },
+    ];
+    const result: GuardResult = {
+      ...base,
+      comparison: { ...base.comparison, findings },
+      machineVerdict: {
+        ...base.machineVerdict,
+        findings: findings as unknown as readonly JsonValue[],
+      },
+    };
+
+    const summary = formatGuardSummary(result);
+    expect(summary.match(/Exception: checkout-team/g)).toHaveLength(2);
+    expect(summary.match(/Reason: UIW-2041 tracks the repair/g)).toHaveLength(2);
+    expect(summary).toContain("Actual: not present");
+  });
+
+  it("explains explicit renewal and recovery when inspecting named changes", async () => {
+    const stdout = outputCapture();
+    const candidate = ".uiwitness/contract-candidates/abc.proposal.json";
+    inspectContractChangeMock.mockResolvedValueOnce({
+      change: {
+        after: null,
+        before: {
+          createdOn: "2026-08-01",
+          expiresOn: "2026-08-15",
+          owner: "checkout\u202Eteam",
+          reason: "UIW-2041\u034F tracks\u0007 repair",
+        },
+        coordinateId: "checkout/error/mobile/dark",
+        id: "exception:checkout/error/mobile/dark",
+        operation: "exception",
+      },
+      proposalPath: candidate,
+    });
+
+    await expect(runCli({
+      args: [
+        "contract",
+        "inspect",
+        "--candidate",
+        candidate,
+        "--change",
+        "exception:checkout/error/mobile/dark",
+      ],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    const renewalInspection = stdout.messages.join("");
+    expect(renewalInspection).toContain("Renewal requires a new annotation reason");
+    expect(renewalInspection).toContain("checkout\\\\u{202e}team");
+    expect(renewalInspection).toContain("UIW-2041\\\\u{034f} tracks\\\\u{0007} repair");
+    expect(renewalInspection).not.toContain("\u202E");
+    expect(renewalInspection).not.toContain("\u034F");
+    expect(renewalInspection).not.toContain("\u0007");
+
+    stdout.messages.length = 0;
+    inspectContractChangeMock.mockResolvedValueOnce({
+      change: {
+        after: { status: "passed" },
+        before: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+        coordinateId: "checkout/error/mobile/dark",
+        id: "expectation:checkout/error/mobile/dark",
+        operation: "expectation",
+      },
+      proposalPath: candidate,
+    });
+    await expect(runCli({
+      args: [
+        "contract",
+        "inspect",
+        "--candidate",
+        candidate,
+        "--change",
+        "expectation:checkout/error/mobile/dark",
+      ],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(stdout.messages.join("")).toContain("Recovery removes the known-failure expectation");
+
+    stdout.messages.length = 0;
+    inspectContractChangeMock.mockResolvedValueOnce({
+      change: {
+        after: { failureCodes: ["NAVIGATION_FAILED"], status: "failed" },
+        before: { failureCodes: ["ASSERTION_FAILED"], status: "failed" },
+        coordinateId: "checkout/error/mobile/dark",
+        id: "expectation:checkout/error/mobile/dark",
+        operation: "expectation",
+      },
+      proposalPath: candidate,
+    });
+    await expect(runCli({
+      args: [
+        "contract",
+        "inspect",
+        "--candidate",
+        candidate,
+        "--change",
+        "expectation:checkout/error/mobile/dark",
+      ],
+      cwd: "/project",
+      stdout: stdout.write,
+    })).resolves.toBe(0);
+    expect(stdout.messages.join("")).toContain("cannot be annotated or accepted as a known failure");
   });
 
   it("prints expected guard failures without exposing unexpected errors", async () => {

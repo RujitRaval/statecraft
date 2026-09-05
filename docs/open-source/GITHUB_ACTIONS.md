@@ -7,7 +7,7 @@ UIWitness ships a thin composite Action that runs the `uiwitness` version alread
 Install the exact UIWitness release and its documented Playwright version as development dependencies, commit the lockfile, and make sure your application can be built and served in CI.
 
 ```bash
-npm install --save-dev --save-exact uiwitness@0.26.6 playwright@1.62.1
+npm install --save-dev --save-exact uiwitness@0.26.7 playwright@1.62.1
 ```
 
 Pin the Action to the full 40-character commit SHA for the same release. Replace `<full-release-commit-sha>` below with the SHA shown on that GitHub Release. The SemVer comment is for humans; the SHA is the cryptographically stable reference.
@@ -56,12 +56,12 @@ jobs:
           exit 1
       - name: Guard promised product states
         id: uiwitness
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
 ```
 
 The Action reads its own checked-in `VERSION`, runs the project-local `uiwitness --version`, and stops before browser work if the versions differ. Each guard invocation writes and validates a new exclusive internal `--json` verdict copy, so stale evidence already in the workspace cannot satisfy the current job. The repair for version drift is exact: update the package and Action pin to the same release, reinstall, and commit the lockfile. UIWitness does not fall back to `npx`, a global binary, or an implicit package download.
 
-Full SemVer tags such as `v0.26.6` are protected by repository tag rules and are a readable convenience, but GitHub can technically move a tag. Mutable major tags are not published. Use the full release SHA for the strongest supply-chain boundary. To roll back, pin both the dependency and Action to the prior known-good release and rerun the same consumer proof.
+Full SemVer tags such as `v0.26.7` are protected by repository tag rules and are a readable convenience, but GitHub can technically move a tag. Mutable major tags are not published. Use the full release SHA for the strongest supply-chain boundary. To roll back, pin both the dependency and Action to the prior known-good release and rerun the same consumer proof.
 
 ## Inputs
 
@@ -80,7 +80,7 @@ Values move from Action expressions into environment variables and then into a s
 ```yaml
       - name: Guard a non-default contract
         id: uiwitness
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
         with:
           config: config/uiwitness.config.mts
           contract: contracts/product-states.json
@@ -97,7 +97,7 @@ The project-local CLI remains authoritative:
 - `1` becomes `verdict=failed` and `exit-class=contract-failure`; the job fails.
 - `2`, a missing CLI, a version mismatch, or an invalid sidecar becomes `verdict=error` and `exit-class=setup-error`; the job fails.
 
-The step summary includes totals by finding kind and the first 20 findings in canonical order. It is capped deterministically at 512 KiB of UTF-8. Blocking-finding annotations default to 10 and cannot exceed 50. Workflow-command characters and Markdown are escaped; the complete result remains in `.uiwitness/contract-verdict.json` and the offline report.
+The step summary includes totals by finding kind and the first 20 findings in canonical order. Known-failure entries include their bounded owner, reason, expiry date, active/expired UTC lifecycle, exact expected/actual codes, and eligibility-aware next step; blocking annotations include the owner and lifecycle context. It is capped deterministically at 512 KiB of UTF-8. Blocking-finding annotations default to 10 and cannot exceed 50. Workflow-command characters and Markdown are escaped, control and default-ignorable Unicode characters in legacy schema-v1 ownership text are rendered as explicit code-point escapes, and two-digit findings retain correctly nested metadata; the complete result remains in `.uiwitness/contract-verdict.json` and the offline report. New annotations reject those characters. Renew expired exact failures locally with a newly annotated `exception:<coordinate>` change and an updated reason. Recovery removes the exception through an `expectation:<coordinate>` change, changed eligible failure codes require a new expectation decision, and ineligible failures must be repaired—nothing renews automatically in GitHub.
 
 Do not convert a nonzero Action result into success. That would hide both product-state regressions and runs that could not prove the contract.
 
@@ -107,7 +107,7 @@ Evidence upload is off by default. Enable it only when the repository and captur
 
 ```yaml
       - name: Guard and retain evidence for one day
-        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.7
         with:
           upload-artifact: true
           retention-days: 1

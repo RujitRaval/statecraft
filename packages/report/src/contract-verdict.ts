@@ -2,6 +2,7 @@ import {
   CONTRACT_FAILURE_CODES,
   CONTRACT_FINDING_KINDS,
   CONTRACT_FINDING_PRECEDENCE,
+  contractExceptionLifecycle,
   type ContractFailureCode,
   type ContractFindingKind,
   type ContractRunErrorReason,
@@ -66,13 +67,16 @@ export interface ContractFindingView {
   readonly coordinateId: string | null;
   readonly exception: {
     readonly createdOn: string;
+    readonly daysUntilExpiry: number;
     readonly expiresOn: string;
     readonly owner: string;
     readonly reason: string;
+    readonly status: "active" | "expired";
   } | null;
   readonly expected: string;
   readonly kind: ContractFindingKind;
   readonly label: string;
+  readonly guidance: string | null;
   readonly remediate: string | null;
   readonly reproduce: string | null;
   readonly runErrorReasons: readonly ContractRunErrorReason[];
@@ -113,6 +117,14 @@ function boundedString(value: unknown, label: string, maximum: number): string {
     throw new TypeError(`${label} must not exceed ${maximum.toLocaleString("en-US")} characters.`);
   }
   return selected;
+}
+
+function visibleGovernanceText(value: string): string {
+  return [...value].map((character) =>
+    /[\p{Cc}\p{Default_Ignorable_Code_Point}]/u.test(character)
+      ? `\\u{${character.codePointAt(0)!.toString(16).padStart(4, "0")}}`
+      : character
+  ).join("");
 }
 
 function assertOnlyKeys(
@@ -196,7 +208,10 @@ function outcome(value: unknown, label: string): ParsedOutcome {
   throw new TypeError(`${label}.status must be passed or failed.`);
 }
 
-function exception(value: unknown): ContractFindingView["exception"] {
+function exception(
+  value: unknown,
+  evaluatedOn: string,
+): ContractFindingView["exception"] {
   if (value === undefined) return null;
   const selected = record(value, "Contract finding exception");
   assertOnlyKeys(
@@ -226,21 +241,26 @@ function exception(value: unknown): ContractFindingView["exception"] {
   }
   return Object.freeze({
     createdOn,
+    ...contractExceptionLifecycle({ expiresOn }, evaluatedOn),
     expiresOn,
-    owner: boundedString(
+    owner: visibleGovernanceText(boundedString(
       selected["owner"],
       "Contract finding exception.owner",
       1_024,
-    ),
-    reason: boundedString(
+    )),
+    reason: visibleGovernanceText(boundedString(
       selected["reason"],
       "Contract finding exception.reason",
       1_024,
-    ),
+    )),
   });
 }
 
-function expectation(value: unknown, label: string): ParsedExpectation {
+function expectation(
+  value: unknown,
+  label: string,
+  evaluatedOn: string,
+): ParsedExpectation {
   const selected = record(value, label);
   if (selected["status"] === "passed") {
     assertOnlyKeys(selected, ["status"], label);
@@ -258,7 +278,7 @@ function expectation(value: unknown, label: string): ParsedExpectation {
       `${label}.failureCodes`,
       contractFailureCodes,
     );
-    const selectedException = exception(selected["exception"]);
+    const selectedException = exception(selected["exception"], evaluatedOn);
     if (selectedException === null) {
       throw new TypeError(`${label}.exception is required for failed expectations.`);
     }
@@ -359,36 +379,43 @@ function findingCommand(
 }
 
 const findingPresentation: Readonly<
-  Record<ContractFindingKind, Pick<ContractFindingView, "label" | "tone">>
+  Record<ContractFindingKind, Pick<ContractFindingView, "guidance" | "label" | "tone">>
 > = Object.freeze({
   "changed-known-failure": Object.freeze({
+    guidance: "The failure-code set changed, so the existing exception does not apply. Review and annotate the new exact expectation.",
     label: "Changed known failure",
     tone: "critical",
   }),
   "expired-exception": Object.freeze({
+    guidance: "Repair the state, or explicitly renew with a new reason and a current 1–30 day window.",
     label: "Expired exception",
     tone: "warning",
   }),
-  matched: Object.freeze({ label: "Matched", tone: "calm" }),
+  matched: Object.freeze({ guidance: null, label: "Matched", tone: "calm" }),
   "matched-known-failure": Object.freeze({
+    guidance: "This accepted exception applies only to the displayed exact failure-code set.",
     label: "Known failure",
     tone: "warning",
   }),
   "missing-coordinate": Object.freeze({
+    guidance: null,
     label: "Unaccepted drift",
     tone: "warning",
   }),
   "recovered-known-failure": Object.freeze({
+    guidance: "The state recovered. Accept the expectation change to remove this stale contract debt.",
     label: "Recovered known failure",
     tone: "warning",
   }),
-  regression: Object.freeze({ label: "Regression", tone: "critical" }),
-  "run-error": Object.freeze({ label: "Incomplete run", tone: "critical" }),
+  regression: Object.freeze({ guidance: null, label: "Regression", tone: "critical" }),
+  "run-error": Object.freeze({ guidance: null, label: "Incomplete run", tone: "critical" }),
   "unaccepted-addition": Object.freeze({
+    guidance: null,
     label: "Unaccepted drift",
     tone: "warning",
   }),
   "unaccepted-config-drift": Object.freeze({
+    guidance: null,
     label: "Unaccepted drift",
     tone: "warning",
   }),
@@ -415,6 +442,8 @@ function finding(
     : requiredString(idValue, `Contract finding ${index + 1}.id`);
   let actualLabel = "Incomplete";
   let expectedLabel = "Not available";
+  let actualOutcome: ParsedOutcome | null = null;
+  let expectedOutcome: ParsedExpectation | null = null;
   let selectedException: ContractFindingView["exception"] = null;
   let selectedRunErrorReasons: readonly ContractRunErrorReason[] = Object.freeze([]);
 
@@ -425,6 +454,7 @@ function finding(
     selectedRunErrorReasons = validateRunError(selected, coordinateId, label);
   } else if (kind === "unaccepted-addition") {
     const actual = outcome(selected["actual"], `${label}.actual`);
+    actualOutcome = actual;
     if (selected["expected"] !== null) {
       throw new TypeError(`${label}.expected must be null.`);
     }
@@ -435,14 +465,17 @@ function finding(
     if (selected["actual"] !== null) {
       throw new TypeError(`${label}.actual must be null.`);
     }
-    const expected = expectation(selected["expected"], `${label}.expected`);
+    const expected = expectation(selected["expected"], `${label}.expected`, evaluatedOn);
+    expectedOutcome = expected;
     fingerprint(selected["contractConfigFingerprint"], `${label}.contractConfigFingerprint`);
     actualLabel = "Not present";
     expectedLabel = expected.label;
     selectedException = expected.exception;
   } else {
     const actual = outcome(selected["actual"], `${label}.actual`);
-    const expected = expectation(selected["expected"], `${label}.expected`);
+    const expected = expectation(selected["expected"], `${label}.expected`, evaluatedOn);
+    actualOutcome = actual;
+    expectedOutcome = expected;
     actualLabel = actual.label;
     expectedLabel = expected.label;
     selectedException = expected.exception;
@@ -499,6 +532,28 @@ function finding(
     throw new TypeError(`${label}.expected exception starts after evaluation.`);
   }
   const presentation = findingPresentation[kind];
+  let guidance = presentation.guidance;
+  if (kind === "matched-known-failure" && selectedException?.status === "expired") {
+    guidance = "The exact failure-code set still matches, but the exception is expired.";
+  } else if (
+    kind === "changed-known-failure" &&
+    actualOutcome?.failureCodes.some((code) => !contractFailureCodes.has(code as ContractFailureCode))
+  ) {
+    guidance = "This failure includes an ineligible code. Repair it because it cannot become a known failure.";
+  } else if (kind === "expired-exception" && actualOutcome !== null) {
+    if (actualOutcome.status === "passed") {
+      guidance = "The state recovered. Accept the expectation change to remove this stale contract debt.";
+    } else if (
+      actualOutcome.failureCodes.some((code) => !contractFailureCodes.has(code as ContractFailureCode))
+    ) {
+      guidance = "This failure includes an ineligible code. Repair it because it cannot become a known failure.";
+    } else if (
+      expectedOutcome !== null &&
+      !sameCodes(actualOutcome.failureCodes, expectedOutcome.failureCodes)
+    ) {
+      guidance = "The failure-code set changed. Review and annotate the new exact expectation.";
+    }
+  }
   const remediate = findingCommand(
     selected,
     "remediate",
@@ -516,6 +571,7 @@ function finding(
     coordinateId,
     exception: selectedException,
     expected: expectedLabel,
+    guidance,
     kind,
     label: presentation.label,
     remediate,
@@ -571,12 +627,18 @@ export function transformContractVerdict(
     finding(item, index, evaluatedOn)
   );
   const identities = new Set<string>();
+  const findingsByCoordinate = new Map<string, ContractFindingView[]>();
   for (const [index, item] of findings.entries()) {
     const identity = `${item.coordinateId ?? ""}\u0000${item.kind}`;
     if (identities.has(identity)) {
       throw new TypeError("Contract verdict findings must not contain duplicate coordinate kinds.");
     }
     identities.add(identity);
+    if (item.coordinateId !== null) {
+      const group = findingsByCoordinate.get(item.coordinateId) ?? [];
+      group.push(item);
+      findingsByCoordinate.set(item.coordinateId, group);
+    }
     if (index > 0 && compareFinding(findings[index - 1]!, item) > 0) {
       throw new TypeError("Contract verdict findings must use canonical order.");
     }
@@ -587,18 +649,41 @@ export function transformContractVerdict(
   ) {
     throw new TypeError("Contract verdict run errors cannot include comparison findings.");
   }
-  for (const item of findings) {
+  const allowedPairs = new Set([
+    "unaccepted-config-drift,expired-exception",
+    "expired-exception,changed-known-failure",
+    "expired-exception,recovered-known-failure",
+    "expired-exception,matched-known-failure",
+  ]);
+  for (const group of findingsByCoordinate.values()) {
+    const pair = group.map(({ kind }) => kind).join(",");
+    if (group.length > 2 || (group.length === 2 && !allowedPairs.has(pair))) {
+      throw new TypeError("Contract verdict contains an impossible coordinate finding combination.");
+    }
     if (
-      item.coordinateId !== null &&
-      item.exception !== null &&
-      item.exception.expiresOn < evaluatedOn &&
-      item.kind !== "expired-exception" &&
-      item.kind !== "missing-coordinate" &&
-      !identities.has(`${item.coordinateId}\u0000expired-exception`)
+      group.length === 2 &&
+      (group[0]!.actual !== group[1]!.actual ||
+       group[0]!.expected !== group[1]!.expected ||
+       JSON.stringify(group[0]!.exception) !== JSON.stringify(group[1]!.exception))
     ) {
+      throw new TypeError("Contract verdict coordinate findings disagree on outcomes.");
+    }
+    const expired = group.some(({ kind }) => kind === "expired-exception");
+    if (group.length === 1 && expired) {
+      throw new TypeError("Contract verdict expired exception is missing its coordinate outcome.");
+    }
+    const requiresExpired = group.some((item) =>
+      item.kind !== "missing-coordinate" &&
+      item.exception !== null &&
+      item.exception.expiresOn < evaluatedOn
+    );
+    if (requiresExpired && !expired) {
       throw new TypeError(
         "Contract verdict expired expectations require an expired-exception finding.",
       );
+    }
+    if (expired && !requiresExpired) {
+      throw new TypeError("Contract verdict exception expiry disagrees with its coordinate findings.");
     }
   }
   const derivedVerdict = findings.some(({ kind }) => kind === "run-error")
