@@ -15,7 +15,7 @@ npx uiwitness --version
 
 `check <url>` needs no UIWitness config. It discovers at most five same-origin HTML pages by default, checks each at mobile/desktop × light/dark, and writes screenshots, schema-v1 JSON, and the kinetic offline report beneath `.uiwitness/`. Use `--max-pages <1-20>` to change the bounded discovery budget or `--headed` to watch Chromium. Add `--write-config` to save an overwrite-safe `uiwitness.config.mts` and `uiwitness/scenarios/public/default.mts`; the untouched result runs through `npx uiwitness scan`. Run it only against websites you own or are authorized to test.
 
-New `check`, `scan`, and `open` operations use `.uiwitness/report/uiwitness.json` and `.uiwitness/report/index.html`. They never rename, copy, delete, or inspect a pre-existing `.statecraft/` evidence tree. The schema remains version 1, and programmatic report readers continue to accept legacy `.statecraft/artifacts/**` screenshot references without rewriting them.
+New `check`, `scan`, and `open` operations use `.uiwitness/report/uiwitness.json` and `.uiwitness/report/index.html`. They never rename, copy, delete, or inspect a pre-existing `.statecraft/` evidence tree. Quick Check and configured runs using default `all` retention emit schema v1; configured `failures-only` or `none` runs emit schema v2. Version-aware readers accept both versions, while the schema-v1 reader continues to accept legacy `.statecraft/artifacts/**` screenshot references without rewriting them.
 
 `init` generates `uiwitness.config.mts` and `uiwitness/scenarios/home/success.mts`, so the starter works without changing npm's default package type.
 

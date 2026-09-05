@@ -115,7 +115,7 @@ Known failures match only when the observed unique sorted stable failure-code se
 
 `contractConfigDigest(configuration)` returns the RFC 8785 SHA-256 digest of the canonical ordered coordinate-ID/config-fingerprint inventory. `CONTRACT_CONFIG_DIGEST_ALGORITHM` identifies that projection. `contractVerdictStatus(findings)` applies the same stable overall rule independently: any `run-error` produces `error`, only all-matched findings produce `passed`, and every other set produces `failed`. `CONTRACT_FINDING_KINDS` publishes the complete finding vocabulary.
 
-The CLI adapts project config and the same run's in-memory schema-v1 report into these inputs, persists a deterministic machine verdict, and exposes stable process semantics. The browser-independent comparison contract stays owned here.
+The CLI adapts project config and the same run's in-memory schema-v1 or schema-v2 report into these inputs, persists a deterministic machine verdict, and exposes stable process semantics. The browser-independent comparison contract stays owned here.
 
 ## Contract proposals and named acceptance
 
