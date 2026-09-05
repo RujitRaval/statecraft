@@ -4,6 +4,27 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.6.0] - 2026-09-04
+
+### Added
+
+- Repositories can now run the State Contract Guard through a thin, root-level composite GitHub Action that uses the exact project-local UIWitness CLI and preserves its success, contract-failure, and setup-error semantics.
+- Pull requests receive a bounded job summary, deterministic blocking annotations, stable verdict outputs, and an opt-in one-day evidence artifact without requiring secrets or registry downloads.
+- The CLI now exposes its exact release version through `uiwitness --version` without loading configuration or launching a browser.
+
+### Changed
+
+- Public GitHub Actions guidance now documents least-privilege workflow permissions, fork-safe usage, immutable full-SHA pinning, exact CLI version parity, and the separation between the source Action and the later registry release proof.
+
+### Fixed
+
+- The Node.js 22 contract benchmark now warms the exact workload before measuring it, removing cold-start and JIT noise while retaining the one-second execution and 256 MiB memory limits.
+
+### Security
+
+- The Action validates a fresh invocation-exclusive machine verdict, rejects malformed or contradictory outcome shapes, neutralizes modern and legacy runner commands in subprocess output, passes user-controlled paths as inert arguments, and fails closed on version or evidence drift.
+- Evidence upload remains disabled by default and uses an immutable `actions/upload-artifact` revision when explicitly enabled.
+
 ## [0.26.5.0] - 2026-09-04
 
 ### Added

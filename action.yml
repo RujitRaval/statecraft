@@ -1,0 +1,84 @@
+name: UIWitness Contract Guard
+description: Run the project-local UIWitness contract guard with bounded GitHub summaries and annotations.
+author: UIWitness
+
+inputs:
+  config:
+    description: Optional workspace-contained UIWitness config path.
+    required: false
+    default: ""
+  contract:
+    description: Optional workspace-contained state-contract path.
+    required: false
+    default: ""
+  upload-artifact:
+    description: Explicitly upload the complete local .uiwitness evidence bundle.
+    required: false
+    default: "false"
+  retention-days:
+    description: Evidence retention in days; values above one must be chosen explicitly.
+    required: false
+    default: "1"
+  annotation-cap:
+    description: Maximum blocking annotations; defaults to 10 and cannot exceed 50.
+    required: false
+    default: "10"
+
+outputs:
+  verdict:
+    description: The authoritative UIWitness verdict (passed, failed, or error).
+    value: ${{ steps.guard.outputs.verdict }}
+  exit-class:
+    description: Stable Action classification (success, contract-failure, or setup-error).
+    value: ${{ steps.guard.outputs.exit-class }}
+  report-path:
+    description: Project-relative offline HTML report path.
+    value: ${{ steps.guard.outputs.report-path }}
+  contract-digest:
+    description: Canonical committed contract digest when a verdict was produced.
+    value: ${{ steps.guard.outputs.contract-digest }}
+  finding-count:
+    description: Total canonical findings in the machine verdict.
+    value: ${{ steps.guard.outputs.finding-count }}
+  matched-count:
+    description: Findings that matched an ordinary or active known-failure expectation.
+    value: ${{ steps.guard.outputs.matched-count }}
+  blocking-count:
+    description: Findings that prevent a passing contract verdict.
+    value: ${{ steps.guard.outputs.blocking-count }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run project-local UIWitness guard
+      id: guard
+      continue-on-error: true
+      shell: bash
+      env:
+        UIWITNESS_INPUT_CONFIG: ${{ inputs.config }}
+        UIWITNESS_INPUT_CONTRACT: ${{ inputs.contract }}
+        UIWITNESS_INPUT_UPLOAD_ARTIFACT: ${{ inputs.upload-artifact }}
+        UIWITNESS_INPUT_RETENTION_DAYS: ${{ inputs.retention-days }}
+        UIWITNESS_INPUT_ANNOTATION_CAP: ${{ inputs.annotation-cap }}
+      run: node "$GITHUB_ACTION_PATH/.github/actions/uiwitness-guard/index.mjs" run
+
+    - name: Upload UIWitness evidence
+      if: ${{ always() && inputs.upload-artifact == 'true' }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: uiwitness-contract-evidence
+        path: .uiwitness
+        include-hidden-files: true
+        if-no-files-found: error
+        retention-days: ${{ inputs.retention-days }}
+
+    - name: Preserve UIWitness exit semantics
+      if: ${{ always() }}
+      shell: bash
+      env:
+        UIWITNESS_GUARD_EXIT_CODE: ${{ steps.guard.outputs.exit-code }}
+      run: node "$GITHUB_ACTION_PATH/.github/actions/uiwitness-guard/index.mjs" finalize
+
+branding:
+  color: green
+  icon: eye

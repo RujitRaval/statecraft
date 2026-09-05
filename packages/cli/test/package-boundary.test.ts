@@ -43,6 +43,7 @@ interface PackageManifest {
   name?: string;
   private?: boolean;
   type?: string;
+  version?: string;
 }
 
 describe("uiwitness package boundary", () => {
@@ -137,8 +138,17 @@ describe("uiwitness package boundary", () => {
     const binPath = fileURLToPath(
       new URL("../dist/bin.js", import.meta.url),
     );
+    const manifest = JSON.parse(
+      await readFile(new URL("../package.json", import.meta.url), "utf8"),
+    ) as PackageManifest;
 
     try {
+      await expect(
+        execFileAsync(process.execPath, [binPath, "--version"], { cwd: project }),
+      ).resolves.toEqual({
+        stderr: "",
+        stdout: `${manifest.version}\n`,
+      });
       await expect(
         execFileAsync(process.execPath, [binPath, "init"], { cwd: project }),
       ).resolves.toMatchObject({

@@ -1,8 +1,16 @@
 # GitHub Actions
 
-This workflow template uses the published `uiwitness` CLI package. Repository contributors can also run `corepack pnpm release:smoke` to exercise the complete built-CLI consumer gate against the fictional Northline example.
+UIWitness ships a thin composite Action that runs the `uiwitness` version already installed and locked by your repository. It never downloads product logic, reads pull-request text, mutates the pull request, or uploads evidence unless you explicitly enable that step.
 
-Add `uiwitness` and the documented exact Playwright version to the project's development dependencies and lock them in `package-lock.json`. Make sure `npm run build` plus `npm run start` produce and serve the application at `http://127.0.0.1:3000`. Adjust those two commands and the readiness URL for a different stack.
+## Install and pin
+
+Install the exact UIWitness release and its documented Playwright version as development dependencies, commit the lockfile, and make sure your application can be built and served in CI.
+
+```bash
+npm install --save-dev --save-exact uiwitness@0.26.6 playwright@1.62.1
+```
+
+Pin the Action to the full 40-character commit SHA for the same release. Replace `<full-release-commit-sha>` below with the SHA shown on that GitHub Release. The SemVer comment is for humans; the SHA is the cryptographically stable reference.
 
 ```yaml
 name: UIWitness
@@ -14,15 +22,15 @@ permissions:
   contents: read
 
 jobs:
-  scan:
-    name: Product-state coverage
+  guard:
+    name: Product-state contract
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22.20.0
           cache: npm
@@ -46,29 +54,75 @@ jobs:
           done
           cat "$RUNNER_TEMP/uiwitness-app.log"
           exit 1
-      - name: Scan product states
-        run: npx --no-install uiwitness scan
-      - name: Upload UIWitness evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: uiwitness-report
-          path: .uiwitness
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 7
+      - name: Guard promised product states
+        id: uiwitness
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
 ```
 
-## Exit behavior
+The Action reads its own checked-in `VERSION`, runs the project-local `uiwitness --version`, and stops before browser work if the versions differ. Each guard invocation writes and validates a new exclusive internal `--json` verdict copy, so stale evidence already in the workspace cannot satisfy the current job. The repair for version drift is exact: update the package and Action pin to the same release, reinstall, and commit the lockfile. UIWitness does not fall back to `npx`, a global binary, or an implicit package download.
 
-The scan step preserves UIWitness's normal exit contract:
+Full SemVer tags such as `v0.26.6` are protected by repository tag rules and are a readable convenience, but GitHub can technically move a tag. Mutable major tags are not published. Use the full release SHA for the strongest supply-chain boundary. To roll back, pin both the dependency and Action to the prior known-good release and rerun the same consumer proof.
 
-- `0`: every configured execution passed.
-- `1`: the scan completed and one or more executions failed. The job fails, while `if: always()` still uploads the report.
-- `2`: configuration, setup, or internal execution failed. The job fails and the uploaded report may be absent.
+## Inputs
 
-Do not convert every nonzero exit into success. Doing so hides both product-state failures and setup failures. A repository with a deliberately failing demonstration fixture may instead add its own exact known-failure validator, as UIWitness's `release:smoke` gate does for the fictional Northline example.
+Only five inputs are accepted:
 
-## Privacy
+| Input | Default | Contract |
+| --- | --- | --- |
+| `config` | empty | Optional workspace-contained config path passed as one argv value. |
+| `contract` | empty | Optional workspace-contained contract path passed as one argv value. |
+| `upload-artifact` | `false` | The complete `.uiwitness` evidence bundle is uploaded only when exactly `true`. |
+| `retention-days` | `1` | Integer from 1 through 90. Choose any value above one explicitly. |
+| `annotation-cap` | `10` | Integer from 0 through 50; 50 is the hard maximum. |
 
-The upload step is explicit CI configuration, not UIWitness telemetry. It uploads the complete `.uiwitness` bundle because the offline HTML references screenshots in its sibling `artifacts/` directory. Reports can contain screenshots, URLs, and application data. Artifacts from a public repository must be treated as public; do not upload sensitive captures there. Use a private repository with tightly restricted read access or omit the upload step when evidence is sensitive. Always use fictional or approved test data and choose the shortest useful retention period.
+Values move from Action expressions into environment variables and then into a shell-free child-process argv array. Branch names, pull-request titles, comments, and other GitHub context strings are never executed. Config and contract paths retain the CLI's workspace-containment, symbolic-link, and regular-file validation.
+
+```yaml
+      - name: Guard a non-default contract
+        id: uiwitness
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
+        with:
+          config: config/uiwitness.config.mts
+          contract: contracts/product-states.json
+          annotation-cap: 20
+```
+
+## Outputs and failure behavior
+
+The Action exports `verdict`, `exit-class`, `report-path`, `contract-digest`, `finding-count`, `matched-count`, and `blocking-count`. Outputs contain stable classifications, paths, digests, and aggregate numbers—not screenshots, diagnostics, commands, or arbitrary user text.
+
+The project-local CLI remains authoritative:
+
+- `0` becomes `verdict=passed` and `exit-class=success`.
+- `1` becomes `verdict=failed` and `exit-class=contract-failure`; the job fails.
+- `2`, a missing CLI, a version mismatch, or an invalid sidecar becomes `verdict=error` and `exit-class=setup-error`; the job fails.
+
+The step summary includes totals by finding kind and the first 20 findings in canonical order. It is capped deterministically at 512 KiB of UTF-8. Blocking-finding annotations default to 10 and cannot exceed 50. Workflow-command characters and Markdown are escaped; the complete result remains in `.uiwitness/contract-verdict.json` and the offline report.
+
+Do not convert a nonzero Action result into success. That would hide both product-state regressions and runs that could not prove the contract.
+
+## Evidence upload
+
+Evidence upload is off by default. Enable it only when the repository and captured application data are appropriate for GitHub artifact storage:
+
+```yaml
+      - name: Guard and retain evidence for one day
+        uses: RujitRaval/uiwitness@<full-release-commit-sha> # v0.26.6
+        with:
+          upload-artifact: true
+          retention-days: 1
+```
+
+The Action uses the repository's immutable `actions/upload-artifact` revision and uploads the complete `.uiwitness` directory so the offline report keeps its screenshots and sidecars. An explicitly requested upload failure fails the integration job without changing the CLI verdict. Reports can contain screenshots, URLs, application data, and private route/state inventories. Treat artifacts in a public repository as public; use a restricted private repository or keep upload disabled for sensitive evidence.
+
+## Fork safety and permissions
+
+The workflow needs only `contents: read`. A normal `pull_request` run for a fork receives a read-only token and no repository secrets. The Action asks for no write permission and performs no pull-request mutation.
+
+Do not work around missing fork secrets with `pull_request_target` or a secret-bearing `workflow_run` that checks out untrusted contribution code. Environment approval does not sandbox a scenario or future authentication module. Secret-bearing authenticated coverage belongs on the exact reviewed commit promoted to a protected trusted branch; the memory-only authentication protocol is a later roadmap slice.
+
+Scenario and config modules are trusted repository code and execute with the job's privileges. UIWitness can keep its own adapter deterministic and injection-safe, but it cannot sandbox code your repository chooses to run.
+
+## Manual scan alternative
+
+Repositories that do not yet maintain `uiwitness.contract.json` may keep a direct `npx --no-install uiwitness scan` step and an explicit immutable `actions/upload-artifact` step. That remains ordinary CLI wiring, not the contract-aware Action. Establish the first reviewed contract with `npx --no-install uiwitness contract init` before switching the pull-request job to the official guard Action.
