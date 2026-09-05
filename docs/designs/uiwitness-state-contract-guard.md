@@ -985,7 +985,7 @@ Synthesized from this review's findings. Execute in order; each item ships throu
   - Surfaced by: D16, D20, D24–D25 — Action/CLI parity, fork safety, minimum permissions, injection safety, and bounded output are mandatory.
   - Files: root `action.yml`, `.github/actions/**` if needed, Action tests, `docs/open-source/GITHUB_ACTIONS.md`.
   - Verify: project-local version match, malicious input/fork secret sentinel, 512 KiB summary, annotation caps, upload-off default.
-- [ ] **T8 (P1, human: ~2 days / Codex: ~3h)** — Governance — Complete exception lifecycle and presentation
+- [x] **T8 (P1, human: ~2 days / Codex: ~3h)** — Governance — Complete exception lifecycle and presentation
   - Surfaced by: D18, D23 and Sections 2/4 — known failures must be exact, owned, visible, recoverable, and limited to 30 days.
   - Files: core/CLI/report/Action governance surfaces and fixtures.
   - Verify: added/removed/substituted codes, eligibility, expiry/renewal/recovery across terminal/JSON/HTML/GitHub.

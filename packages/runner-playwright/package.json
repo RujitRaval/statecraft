@@ -1,6 +1,6 @@
 {
   "name": "uiwitness-runner-playwright",
-  "version": "0.26.6",
+  "version": "0.26.7",
   "description": "Playwright execution lifecycle for UIWitness.",
   "license": "MIT",
   "repository": {

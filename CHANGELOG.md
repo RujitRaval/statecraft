@@ -4,6 +4,24 @@ All notable changes to UIWitness will be documented in this file.
 
 This project uses the four-part version format required by the GStack ship workflow.
 
+## [0.26.7.0] - 2026-09-05
+
+### Added
+
+- Teams can now see each known failure's owner, reason, exact expected and actual codes, and active or expired UTC lifecycle consistently in the terminal, offline report, and GitHub pull-request output.
+- Expired exact failures now produce an immutable, named renewal change that can be accepted only with a new reason and a fresh 1–30 day exception window.
+- The public core API exposes deterministic exception-lifecycle calculation for clients that need the same UTC boundary semantics.
+
+### Changed
+
+- Recovery removes known-failure debt, changed eligible failure codes require a new expectation decision, and ineligible failures require repair; no path renews an exception automatically.
+- State Contract Guard documentation, architecture guidance, security policy, testing strategy, and roadmap status now cover the complete T8 governance lifecycle.
+
+### Security
+
+- New exception annotations reject control and default-ignorable Unicode characters, while existing schema-v1 contracts remain readable and human-facing surfaces visibly escape any legacy unsafe characters.
+- Proposal annotation and acceptance independently enforce ownership, changed renewal reasons, current UTC dates, exact named selection, and the 30-day maximum lifetime.
+
 ## [0.26.6.0] - 2026-09-04
 
 ### Added
