@@ -97,7 +97,7 @@ The project-local CLI remains authoritative:
 - `1` becomes `verdict=failed` and `exit-class=contract-failure`; the job fails.
 - `2`, a missing CLI, a version mismatch, or an invalid sidecar becomes `verdict=error` and `exit-class=setup-error`; the job fails.
 
-The step summary includes totals by finding kind and the first 20 findings in canonical order. It is capped deterministically at 512 KiB of UTF-8. Exact regression annotations default to 10 and cannot exceed 50. Workflow-command characters and Markdown are escaped; the complete result remains in `.uiwitness/contract-verdict.json` and the offline report.
+The step summary includes totals by finding kind and the first 20 findings in canonical order. It is capped deterministically at 512 KiB of UTF-8. Blocking-finding annotations default to 10 and cannot exceed 50. Workflow-command characters and Markdown are escaped; the complete result remains in `.uiwitness/contract-verdict.json` and the offline report.
 
 Do not convert a nonzero Action result into success. That would hide both product-state regressions and runs that could not prove the contract.
 
