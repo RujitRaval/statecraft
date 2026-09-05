@@ -16,6 +16,10 @@ This project uses the four-part version format required by the GStack ship workf
 
 - Public GitHub Actions guidance now documents least-privilege workflow permissions, fork-safe usage, immutable full-SHA pinning, exact CLI version parity, and the separation between the source Action and the later registry release proof.
 
+### Fixed
+
+- The Node.js 22 contract benchmark now warms the exact workload before measuring it, removing cold-start and JIT noise while retaining the one-second execution and 256 MiB memory limits.
+
 ### Security
 
 - The Action validates a fresh invocation-exclusive machine verdict, rejects malformed or contradictory outcome shapes, neutralizes modern and legacy runner commands in subprocess output, passes user-controlled paths as inert arguments, and fails closed on version or evidence drift.

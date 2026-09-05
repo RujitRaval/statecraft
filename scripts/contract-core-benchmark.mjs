@@ -59,17 +59,24 @@ async function runFixture() {
     viewportId: coordinate.viewportId,
   }));
 
+  const evaluateFixture = () => {
+    const contract = parseContract(source);
+    const contractHash = contractDigest(contract);
+    const comparison = compareContract({
+      complete: true,
+      configuration,
+      contract,
+      executions,
+      now: () => new Date("2026-09-03T00:00:00.000Z"),
+    });
+    return { comparison, contract, contractHash };
+  };
+
   const baselineRss = maximumResidentBytes();
+  evaluateFixture();
+  const additionalRssBytes = Math.max(0, maximumResidentBytes() - baselineRss);
   const started = performance.now();
-  const contract = parseContract(source);
-  const contractHash = contractDigest(contract);
-  const comparison = compareContract({
-    complete: true,
-    configuration,
-    contract,
-    executions,
-    now: () => new Date("2026-09-03T00:00:00.000Z"),
-  });
+  const { comparison, contract, contractHash } = evaluateFixture();
   const elapsedMs = performance.now() - started;
 
   return {
@@ -78,7 +85,7 @@ async function runFixture() {
     coordinates: contract.coordinates.length,
     elapsedMs,
     verdict: comparison.verdict,
-    additionalRssBytes: Math.max(0, maximumResidentBytes() - baselineRss),
+    additionalRssBytes,
   };
 }
 
