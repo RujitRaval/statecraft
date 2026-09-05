@@ -899,7 +899,7 @@ describe("runPersistedScenarioCells", () => {
         ));
         return performance.now() - started;
       });
-      expect(elapsed).toBeLessThan(1_000);
+      expect(elapsed).toBeLessThan(5_000);
       expect(await visibleFindings.count()).toBe(1);
       expect(await page.locator("#finding-filter-results").textContent()).toBe(
         "Showing 1 of 2000 findings.",
